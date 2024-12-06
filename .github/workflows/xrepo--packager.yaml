@@ -1,0 +1,39 @@
+name: Reusable Packager
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-path:
+        required: true
+        type: string
+      python-version:
+        required: true
+        type: string
+
+jobs:
+
+  package:
+    runs-on: ubuntu-latest
+    outputs:
+      version: '${{ steps.package.outputs.version }}'
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: '${{ inputs.python-version }}'
+
+      - name: Package Sdist + Wheel
+        id: package
+        run: |
+          hatch --env develop build
+          # TODO: Generate GPG signatures for artifacts.
+          echo "version=$(hatch --env develop version 2>/dev/null)" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+        shell: bash
+
+      - name: Preserve Distributions
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions--${{ github.run_id }}
+          path: ${{ inputs.artifacts-path }}

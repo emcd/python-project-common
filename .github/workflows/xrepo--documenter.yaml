@@ -1,0 +1,91 @@
+name: Reusable Documenter
+
+on:
+  workflow_call:
+    inputs:
+      include-reports:
+        description: 'Include code reports with website?'
+        default: false
+        required: false
+        type: boolean
+      python-version:
+        required: true
+        type: string
+
+jobs:
+
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: '${{ inputs.python-version }}'
+
+      - name: Restore Coverage Reports
+        if: ${{ inputs.include-reports }}
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports--${{ github.run_id }}
+          path: .auxiliary/artifacts/coverage-pytest
+
+      - name: Generate Documentation
+        id: generate
+        run: |
+          hatch --env develop run docsgen
+        shell: bash
+
+      - name: Acquire Common Repository Location
+        uses: emcd/python-project-common/.github/actions/repo-path@master
+        id: common-repo
+
+      # TODO: Sign commit with GPG key or use Github API.
+      #       If Github API, need to upload tarball to LFS endpoint first.
+      #       References:
+      #         https://github.com/orgs/community/discussions/24623
+      #         https://www.mattmoriarity.com/2019-04-25-uploading-media-with-git-lfs
+      #         https://github.com/AnesFoufa/githublfs/blob/main/githublfs.py
+      - name: Update Website
+        id: update-website
+        run: |
+          set -eu -o pipefail
+          git config --global user.name 'Github Actions Robot'
+          git config --global user.email '${{ github.actor }}@users.noreply.github.com'
+          tarball="$(pwd)/.auxiliary/publications/website.tar.xz"
+          git fetch origin publication:publication || true
+          git checkout publication -- "${tarball}" || true
+          version="$(hatch --env develop version 2>/dev/null)"
+          hatch --env develop run python \
+            "${{ steps.common-repo.outputs.path }}/executables/update-website.py" "${version}"
+          git add "${tarball}"
+          # Commit to publication branch without checkout.
+          # https://stackoverflow.com/a/66850396/14833542
+          git branch --force publication \
+            $(git commit-tree $(git write-tree) -p publication -m "Update documents for publication.")
+          git push origin publication:publication
+          echo "website=$(pwd)/.auxiliary/artifacts/website" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+        shell: bash
+
+      - name: Upload Pages Artifact
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '${{ steps.update-website.outputs.website }}'
+
+  publish:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: generate
+    permissions:
+      id-token: write # to verify deployment originates from appropriate source
+      pages: write    # to deploy to Pages
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+
+      - name: Deploy Pages Artifact
+        id: deployment
+        uses: actions/deploy-pages@v4

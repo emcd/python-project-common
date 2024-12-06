@@ -1,0 +1,42 @@
+name: Reusable Reporter
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        required: true
+        type: string
+
+jobs:
+
+  report-coverage:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: '${{ inputs.python-version }}'
+
+      - name: Restore Coverage Results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-results--*--${{ github.run_id }}
+          path: .auxiliary/caches/pytest
+          merge-multiple: true
+
+      - name: Report Coverage
+        run: |
+          set -eu
+          hatch --env develop run coverage combine
+          # Note: Ignore errors because of mismatched source paths in combined coverage.
+          hatch --env develop run coverage report --ignore-errors
+          hatch --env develop run coverage html --ignore-errors
+          hatch --env develop run coverage xml --ignore-errors
+        shell: bash
+
+      - name: Preserve Coverage Reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports--${{ github.run_id }}
+          path: .auxiliary/artifacts/coverage-pytest

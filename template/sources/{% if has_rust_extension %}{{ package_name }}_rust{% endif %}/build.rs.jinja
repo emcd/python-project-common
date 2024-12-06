@@ -1,0 +1,43 @@
+use std::fs::File;
+use std::io::Read;
+use std::path::PathBuf;
+use regex::Regex;
+
+fn main() {
+    // Read Python package version
+    let mut init_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    init_path.pop();  // up from {{ package_name }}_rust
+    init_path.push("{{ package_name }}");
+    init_path.push("__init__.py");
+
+    // If not found, try the editable install layout
+    if !init_path.exists() {
+        init_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        init_path.pop();  // up from {{ package_name }}_rust
+        init_path.pop();  // up from sources
+        init_path.push("sources");
+        init_path.push("{{ package_name }}");
+        init_path.push("__init__.py");
+    }
+
+    let mut init_content = String::new();
+    File::open(&init_path)
+        .unwrap_or_else(|_| panic!("Failed to open __init__.py at {:?}", init_path))
+        .read_to_string(&mut init_content)
+        .expect("Failed to read __init__.py");
+
+    // Extract version using regex
+    let version_re = Regex::new(r#"__version__\s*=\s*['"]([^'"]+)['"]"#)
+        .expect("Failed to compile version regex");
+
+    if let Some(captures) = version_re.captures(&init_content) {
+        let version = captures.get(1)
+            .expect("No version capture group")
+            .as_str();
+
+        // Pass version to Rust compiler for use in lib.rs
+        println!("cargo:rustc-env=CRATE_VERSION={}", version);
+    } else {
+        panic!("Could not find __version__ in __init__.py");
+    }
+}

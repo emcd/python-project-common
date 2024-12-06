@@ -1,0 +1,81 @@
+name: Reusable Tester
+
+on:
+  workflow_call:
+    inputs:
+      matrix-exclusions:
+        default: '[]'
+        required: false
+        type: string
+      platforms:
+        required: true
+        type: string
+      python-descriptors:
+        required: true
+        type: string
+      python-versions:
+        required: true
+        type: string
+      rust-targets:
+        default: '[]'
+        required: false
+        type: string
+
+jobs:
+
+  lint-and-build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: '${{ fromJSON(inputs.python-versions)[0] }}'
+
+      - name: Lint
+        # TODO: Only exclude Semgrep on Windows.
+        #       https://github.com/returntocorp/semgrep/issues/1330
+        if: ${{ 'Windows' != runner.os }}
+        run: |
+          hatch --env develop run linters
+
+      - name: Document
+        run: |
+          hatch --env develop run docsgen
+
+      - name: Package
+        run: |
+          hatch --env develop run packagers
+
+
+  test-coverage:
+    strategy:
+      matrix:
+        platform: ${{ fromJSON(inputs.platforms) }}
+        python-version: ${{ fromJSON(inputs.python-versions) }}
+        exclude: ${{ fromJSON(inputs.matrix-exclusions) }}
+    runs-on: ${{ matrix.platform }}
+    needs: [lint-and-build]
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: '${{ matrix.python-version }}'
+
+      # TODO: Setup Rust, if desired.
+
+      - name: Test
+        run: |
+          set -eu
+          v=${{ fromJSON(inputs.python-descriptors)[ matrix.python-version ].hatch }}
+          hatch --env "qa.${v}" run coverage run
+        shell: bash
+
+      # TODO: Optional Rust testing.
+
+      - name: Preserve Coverage Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-results--${{ matrix.platform }}--${{ matrix.python-version }}--${{ github.run_id }}
+          path: .auxiliary/caches/pytest/coverage.sqlite3.*

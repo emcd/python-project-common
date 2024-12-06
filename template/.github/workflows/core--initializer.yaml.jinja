@@ -1,0 +1,125 @@
+name: init
+
+on:
+  workflow_call:
+    outputs:
+      matrix-exclusions:
+        description: 'Array of excluded platform-Python version pairs in JSON format.'
+        value: {% raw %}${{ jobs.define-constants.outputs.matrix-exclusions }}{% endraw %}
+      platforms:
+        description: 'Array of platforms in JSON format.'
+        value: {% raw %}${{ jobs.define-constants.outputs.platforms }}{% endraw %}
+      pypi-api-urls:
+        description: 'Map of PyPI API endpoint names to URLS in JSON format.'
+        value: {% raw %}${{ jobs.define-constants.outputs.pypi-api-urls }}{% endraw %}
+      pypi-package-urls:
+        description: 'Map of PyPI package endpoint names to URLS in JSON format.'
+        value: {% raw %}${{ jobs.define-constants.outputs.pypi-package-urls }}{% endraw %}
+      python-versions:
+        description: 'Array of Python versions in JSON format.'
+        value: {% raw %}${{ jobs.define-constants.outputs.python-versions }}{% endraw %}
+      rust-targets:
+        description: 'Map of platforms to supported Rust targets in JSON format.'
+        value: {% raw %}${{ jobs.define-constants.outputs.rust-targets }}{% endraw %}
+
+jobs:
+  define-constants:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-exclusions: {% raw %}${{ steps.matrix-exclusions.outputs.items }}{% endraw %}
+      platforms: {% raw %}${{ steps.platforms.outputs.platforms }}{% endraw %}
+      pypi-api-urls: {% raw %}${{ steps.pypi-urls.outputs.apis }}{% endraw %}
+      pypi-package-urls: {% raw %}${{ steps.pypi-urls.outputs.packages }}{% endraw %}
+      python-descriptors: {% raw %}${{ steps.python.outputs.specs }}{% endraw %}
+      python-versions: {% raw %}${{ steps.python.outputs.versions }}{% endraw %}
+      rust-targets: {% raw %}${{ steps.rust-targets.outputs.targets }}{% endraw %}
+    steps:
+
+      - name: Declare Platforms
+        id: platforms
+        run: |
+          set -eu
+          echo -n 'names=' >>${GITHUB_OUTPUT}
+          platforms="$(jq --compact-output >>${GITHUB_OUTPUT} <<EOF
+          [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+          EOF
+          )"
+          echo "platforms=${platforms}" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Declare Python Versions
+        id: python-versions
+        run: |
+          set -eu
+          python_descriptors="$(jq --compact-output <<EOF
+          {
+            {% for version in python_versions -%}
+            "{{ version }}": {"hatch": "py{{version}}"}{% if not loop.last or pypy_versions %},{% endif %}
+            {%- endfor %}
+            {% for version in pypy_versions -%}
+            "pypy{{ version }}": {"hatch": "pypy{{version}}"}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+          }
+          EOF
+          )"
+          echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
+          echo -n 'versions=' >>${GITHUB_OUTPUT}
+          echo "${python_descriptors}" | jq --compact-output 'keys_unsorted' >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Declare Matrix Exclusions
+        id: matrix-exclusions
+        run: |
+          set -eu
+          # PyPy has slow I/O, even slower on Windows.
+          items="$(jq --compact-output <<EOF
+          [
+            {% for version in pypy_versions -%}
+            {"platform": "windows-latest", "python-version": "pypy{{ version }}"}{% if not loop.last %},{% endif %}
+            {%- endfor %}
+          ]
+          EOF
+          )"
+          echo "items=${items}" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Declare PyPI URLs
+        id: pypi-urls
+        run: |
+          set -eu
+          packages="$(jq --compact-output << EOF
+          {
+            "pypi": "https://pypi.org/p/",
+            "testpypi": "https://test.pypi.org/p/"
+          }
+          EOF
+          )"
+          echo "packages=${packages}" >>${GITHUB_OUTPUT}
+          apis="$(jq --compact-output << EOF
+          {
+            "pypi": "https://upload.pypi.org/legacy/",
+            "testpypi": "https://test.pypi.org/legacy/"
+          }
+          EOF
+          )"
+          echo "apis=${apis}" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Define Rust Targets
+        id: rust-targets
+        run: |
+          set -eu
+          {% if has_rust_extension -%}
+          targets="$(jq --compact-output <<EOF
+          {
+            "ubuntu-latest": ["x86_64-unknown-linux-gnu"],
+            "macos-latest": ["x86_64-apple-darwin", "aarch64-apple-darwin"],
+            "windows-latest": ["x86_64-pc-windows-msvc"]
+          }
+          EOF
+          )"
+          echo "targets=${targets}" >>${GITHUB_OUTPUT}
+          {% else -%}
+          echo "targets=[]" >>${GITHUB_OUTPUT}
+          {%- endif %}
+          cat ${GITHUB_OUTPUT}

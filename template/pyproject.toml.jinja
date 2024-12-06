@@ -1,0 +1,409 @@
+[build-system]
+requires = [
+  {% if has_rust_extension -%}
+  'maturin~=1.7',
+  {%- else %}
+  'hatchling',
+  {%- endif %}
+]
+{% if has_rust_extension -%}
+build-backend = 'maturin'
+{%- else %}
+build-backend = 'hatchling.build'
+{%- endif %}
+
+[project]
+name = '{{ package_name }}'
+description = '{{ description }}'
+dynamic = [ 'version' ]
+license = 'Apache-2.0'
+readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
+requires-python = '>= {{ python_version_min }}'
+dependencies = [
+  'typing-extensions',
+]
+classifiers = [ # https://pypi.org/classifiers
+  'Development Status :: {{ development_status }}',
+  #'Intended Audience :: Developers',
+  'License :: OSI Approved :: Apache Software License',
+  'Programming Language :: Python :: 3 :: Only',
+  {% for version in python_versions -%}
+  'Programming Language :: Python :: {{ version }}',
+  {% endfor %}
+  'Programming Language :: Python :: Implementation :: CPython',
+  {% if pypy_versions -%}
+  'Programming Language :: Python :: Implementation :: PyPy',
+  {%- endif %}
+  #'Topic :: Software Development',
+  # TODO: Add classifiers as appropriate.
+]
+keywords = [
+    {% for keyword in keywords -%}
+    '{{ keyword }}',
+    {% endfor %}
+]
+[[project.authors]]
+name = '{{ author_name }}'
+email = '{{ author_email }}'
+[project.urls]
+'Homepage' = 'https://github.com/{{ gh_owner }}/{{ project_name }}'
+{% if enable_publication -%}
+'Documentation' = 'https://{{ gh_owner }}.github.io/{{ project_name }}'
+'Download' = 'https://pypi.org/project/{{ package_name }}/#files'
+{%- endif %}
+'Source Code' = 'https://github.com/{{ gh_owner }}/{{ project_name }}'
+'Issue Tracker' = 'https://github.com/{{ gh_owner }}/{{ project_name }}/issues'
+
+[tool.SELF]
+year-of-origin = {{ year_of_origin }}
+
+[tool.bandit]
+exclude_dirs = [ 'tests' ]
+
+# https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.run]
+branch = true
+command_line = '-m pytest'
+data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
+parallel = true
+source = [ 'sources', 'tests' ]
+[tool.coverage.html]
+directory = '.auxiliary/artifacts/coverage-pytest'
+[tool.coverage.xml]
+output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
+
+# https://hatch.pypa.io/latest/config/metadata/
+{% if not has_rust_extension -%}
+[tool.hatch.build]
+directory = '.auxiliary/artifacts/hatch-build'
+[tool.hatch.build.targets.sdist]
+only-include = [ 'sources/{{ package_name }}' ]
+[tool.hatch.build.targets.wheel]
+only-include = [ 'sources/{{ package_name }}' ]
+[tool.hatch.build.targets.wheel.sources]
+'sources/{{ package_name }}' = '{{ package_name }}'
+{%- endif %}
+[tool.hatch.envs.default]
+python = '{{ python_version_min }}'
+[tool.hatch.envs.develop]
+description = ''' Development environment. '''
+dependencies = [
+  'Jinja2',
+  'bandit',
+  'coverage[toml]',
+  'furo',
+  {% if has_property_tests -%}
+  'hypothesis',
+  {%- endif %}
+  'icecream',
+  {% if has_rust_extension -%}
+  'maturin~=1.7',
+  #'maturin-import-hook',
+  {%- endif %}
+  'packaging',
+  'pre-commit',
+  'pylint',
+  'pyright',
+  'pytest',
+  'ruff',
+  'semgrep',
+  'sphinx',
+  'sphinx-copybutton',
+  'sphinx-inline-tabs',
+  'towncrier',
+  'tryceratops',
+]
+post-install-commands = [
+  {% if has_rust_extension -%}
+  #'''python -m maturin_import_hook site install''',
+  {%- endif %}
+]
+[tool.hatch.envs.develop.scripts]
+docsgen = [
+  '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
+     documentation/sphinx .auxiliary/artifacts/sphinx-doctest''',
+  '''sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
+     documentation/sphinx .auxiliary/artifacts/sphinx-linkcheck''',
+  '''sphinx-build -a -d .auxiliary/caches/sphinx \
+     documentation/sphinx .auxiliary/artifacts/sphinx-html''',
+]
+linters = [
+  'ruff check --quiet sources documentation tests',
+  'bandit --configfile pyproject.toml --quiet --recursive sources',
+  'tryceratops sources',
+  'pyright sources',
+  'pylint sources documentation tests',
+  'semgrep --config p/python --error --quiet --skip-unknown-extensions sources',
+  {% if has_rust_extension -%}
+  'semgrep --config p/rust --error --quiet --skip-unknown-extensions sources',
+  {%- endif %}
+]
+packagers = [
+  'hatch build',
+  # TODO? Sign packages.
+]
+testers = [
+  'coverage erase',
+  'coverage run',
+  'coverage combine',
+  'coverage report --skip-covered',
+  'coverage html',
+  'coverage xml',
+]
+make-all = [
+  'linters',
+  'testers',
+  'packagers',
+  'docsgen',
+]
+[tool.hatch.envs.qa]
+description = ''' Quality assurance environment. '''
+template = 'develop'
+[[tool.hatch.envs.qa.matrix]]
+python = [
+    {% for version in python_versions -%}
+    '{{ version }}',
+    {%- endfor %}
+    {% for version in pypy_versions -%}
+    'pypy{{ version }}',
+    {%- endfor %}
+]
+[tool.hatch.version]
+path = 'sources/{{ package_name }}/__init__.py'
+
+{% if has_rust_extension -%}
+[tool.maturin]
+compatibility = 'manylinux2014'
+features = [ 'pyo3/extension-module' ]
+include = [ '.gitignore', 'LICENSE.txt', 'README.rst', 'pyproject.toml' ]
+manifest-path = 'sources/{{ package_name }}_rust/Cargo.toml'
+module-name = '{{ package_name }}._rust'
+python-packages = [ '{{ package_name }}' ]
+python-source = 'sources'
+strip = true
+{%- endif %}
+
+[tool.mypy]
+cache_dir = '.auxiliary/caches/mypy'
+disable_error_code = [ 'attr-defined', 'name-defined' ]
+implicit_optional = true
+pretty = true
+strict = false
+# TODO: Completely disable.
+
+# https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
+[tool.pylint.main]
+fail-under = 10
+load-plugins = [
+  # 'pylint.extensions.bad_builtin',
+  'pylint.extensions.broad_try_clause',
+  'pylint.extensions.check_elif',
+  'pylint.extensions.code_style',
+  'pylint.extensions.confusing_elif',
+  # 'pylint.extensions.consider_ternary_expression',
+  'pylint.extensions.dict_init_mutate',
+  'pylint.extensions.dunder',
+  'pylint.extensions.eq_without_hash',
+  'pylint.extensions.for_any_all',
+  'pylint.extensions.magic_value',
+  'pylint.extensions.mccabe',
+  'pylint.extensions.no_self_use',
+  'pylint.extensions.overlapping_exceptions',
+  'pylint.extensions.private_import',
+  'pylint.extensions.redefined_loop_name',
+  'pylint.extensions.redefined_variable_type',
+  # 'pylint.extensions.set_membership',
+  # 'pylint.extensions.while_used',
+]
+recursive = false
+suggestion-mode = true
+
+[tool.pylint.basic]
+const-rgx = '([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$'
+good-names = [ '_', '__' ]
+include-naming-hint = true
+
+[tool.pylint.classes]
+defining-attr-methods = [ '__init__', '__new__', '__post_init__' ]
+exclude-protected = [ ]
+valid-classmethod-first-arg = [ 'selfclass' ]
+valid-metaclass-classmethod-first-arg = [ 'factory' ]
+
+[tool.pylint.design]
+# TODO: exclude-too-few-public-methods: Consider exception hierarchies.
+ignored-parents = [
+  'abc.ABCMeta',
+  '{{ package_name }}.exceptions.Omniexception',
+  '{{ package_name }}.exceptions.Omnierror',
+  'builtins.AttributeError',
+  'builtins.BaseException',
+  'builtins.Exception',
+  'builtins.KeyError',
+  'builtins.TypeError',
+  'builtins.ValueError',
+  'builtins.type',
+]
+max-args = 5
+max-attributes = 7
+max-bool-expr = 3
+max-branches = 12
+max-locals = 10
+max-parents = 3
+max-public-methods = 10
+max-returns = 6
+max-statements = 30
+min-public-methods = 1
+
+[tool.pylint.exceptions]
+overgeneral-exceptions = [
+  '{{ package_name }}.exceptions.Omnierror',
+  '{{ package_name }}.exceptions.Omniexception',
+  'builtins.BaseException',
+  'builtins.Exception'
+]
+
+[tool.pylint.format]
+ignore-long-lines = '''^(\s*<?https?://\S+>?|([^'"]*\s+)?#.*)$'''
+max-line-length = 79
+max-module-lines = 800
+single-line-class-stmt = true
+single-line-if-stmt = true
+
+[tool.pylint.imports]
+allow-wildcard-with-all = false
+# TODO: ext-import-graph
+# TODO: int-import-graph
+
+[tool.pylint.logging]
+logging-format-style = 'new'
+
+[tool.pylint.'messages control']
+disable = [
+  'bad-dunder-name',
+  'consider-using-assignment-expr',
+  'consider-using-f-string',
+  'duplicate-code',  # TODO: Re-enable after heuristic is fixed.
+  'fixme',
+  'f-string-without-interpolation',
+  'import-outside-toplevel',
+  'multiple-statements',
+  'reimported',
+  'too-few-public-methods',
+  'ungrouped-imports',
+  'use-dict-literal',
+  'wrong-import-order',
+  'wrong-import-position',
+]
+
+[tool.pylint.refactoring]
+max-nested-blocks = 3
+never-returning-functions = [ 'sys.exit', 'argparse.parse_error' ]
+
+[tool.pylint.reports]
+msg-template = '{path} {line:3d},{column:2d} [{symbol}] {msg}'
+output-format = 'colorized'
+reports = false
+score = true
+
+[tool.pylint.similarities]
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+ignore-signatures = true
+min-similarity-lines = 5
+
+[tool.pylint.spelling]
+max-spelling-suggestions = 4
+# TODO: spelling-dict
+
+[tool.pylint.typecheck]
+contextmanager-decorators = [ 'contextlib.contextmanager' ]
+ignored-checks-for-mixins = [
+  'attribute-defined-outside-init',
+  'no-member',
+  'not-async-context-manager',
+  'not-context-manager',
+]
+#ignored-classes = [ 'thread._local', '_thread._local', 'argparse.Namespace' ]
+ignore-mixin-members = false
+missing-member-hint = true
+missing-member-hint-distance = 1
+missing-member-max-choices = 2
+# TODO? mixin-class-rgx
+# TODO: signature-mutators
+
+[tool.pylint.variables]
+additional-builtins = [ 'ic' ]
+callbacks = [ ]
+dummy-variables-rgx = '''_$'''
+ignored-argument-names = '''_.*'''
+redefining-builtins-modules = [ 'builtins', 'io' ]
+
+[tool.pyright]
+include = [ 'sources' ]
+reportConstantRedefinition = true
+reportInvalidTypeVarUse = true
+reportMatchNotExhaustive = true
+reportMissingImports = true
+reportMissingTypeStubs = true
+reportMissingTypeArgument = true
+reportPrivateUsage = true
+reportSelfClsParameterName = false
+reportUnknownArgumentType = true
+reportUnknownLambdaType = true
+reportUnknownMemberType = true
+reportUnknownParameterType = true
+reportUnknownVariableType = true
+reportUnnecessaryCast = true
+reportUnnecessaryComparison = true
+reportUntypedBaseClass = true
+reportUntypedClassDecorator = true
+reportUntypedFunctionDecorator = true
+reportUntypedNamedTuple = true
+reportUnusedExpression = true
+#strict = [ 'sources' ]
+stubPath = 'sources/{{ package_name }}/_typedecls'
+
+[tool.pytest.ini_options]
+# Note: Cannot run doctests from Pytest, because Pytest tries to update '_'
+#       attribute on protected modules. Instead, we use Sphinx to run doctests.
+minversion = '8.1'
+addopts = '--capture=no --exitfirst -rfE'
+testpaths = [ 'tests', 'sources' ]
+python_files = [ '*.py' ]
+python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
+cache_dir = '.auxiliary/caches/pytest'
+
+[tool.ruff]
+builtins = [ 'ic' ]
+cache-dir = '.auxiliary/caches/ruff'
+[tool.ruff.lint]
+ignore = [
+  'E701', # Multiple statements on one line
+]
+
+[tool.towncrier]
+directory = 'documentation/towncrier'
+filename = 'changelog.rst'
+package = '{{ package_name }}'
+package_dir = 'sources'
+[[tool.towncrier.type]]
+directory = 'bugfix'
+name = 'Bugfixes'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'docs'
+name = 'Documentation Improvements'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'feature'
+name = 'Features'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'platform'
+name = 'Supported Platforms'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'removal'
+name = 'Deprecations and Removals'
+showcontent = true

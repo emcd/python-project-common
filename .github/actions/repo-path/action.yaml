@@ -1,0 +1,19 @@
+name: 'Common Repository Root'
+
+description: 'Provides path to common repository root.'
+
+outputs:
+  path:
+    description: 'Path to common repository root'
+    value: ${{ steps.get_path.outputs.path }}
+
+runs:
+  using: 'composite'
+  steps:
+
+    - id: get_path
+      run: |
+        action_dir="${{ github.action_path }}"
+        repo_root="$(dirname $(dirname $(dirname "${action_dir}")))"
+        echo "path=${repo_root}" >> $GITHUB_OUTPUT
+      shell: bash
