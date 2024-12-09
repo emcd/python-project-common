@@ -16,7 +16,6 @@ jobs:
     needs: [initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@gha
     with:
-#      platforms: '["ubuntu-latest"]'
       python-descriptors: '{"3.10":{"hatch":"py3.10"}}'
       python-versions: '["3.10"]'
       matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'

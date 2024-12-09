@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-  
+
   'hatchling',
 ]
 
@@ -25,14 +25,14 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
-  
+
   'Programming Language :: Python :: Implementation :: CPython',
   'Programming Language :: Python :: Implementation :: PyPy',
   #'Topic :: Software Development',
   # TODO: Add classifiers as appropriate.
 ]
 keywords = [
-    
+
 ]
 [[project.authors]]
 name = 'Eric McDonald'
@@ -79,16 +79,16 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
-  
+
   'icecream',
-  
+
   'packaging',
   'pre-commit',
   'pylint',
   'pyright',
   'pytest',
   'ruff',
-  'semgrep',
+  'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
   'sphinx-copybutton',
   'sphinx-inline-tabs',
@@ -96,7 +96,7 @@ dependencies = [
   'tryceratops',
 ]
 post-install-commands = [
-  
+
 ]
 [tool.hatch.envs.develop.scripts]
 docsgen = [
@@ -114,7 +114,7 @@ linters = [
   'pyright sources',
   'pylint sources documentation tests',
   'semgrep --config p/python --error --quiet --skip-unknown-extensions sources',
-  
+
 ]
 packagers = [
   'hatch build',
