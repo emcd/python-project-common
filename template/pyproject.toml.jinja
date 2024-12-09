@@ -106,7 +106,7 @@ dependencies = [
   'pyright',
   'pytest',
   'ruff',
-  'semgrep',
+  'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
   'sphinx-copybutton',
   'sphinx-inline-tabs',

@@ -5,42 +5,45 @@ on:
     outputs:
       matrix-exclusions:
         description: 'Array of excluded platform-Python version pairs in JSON format.'
-        value: {% raw %}${{ jobs.define-constants.outputs.matrix-exclusions }}{% endraw %}
+        value: {% raw %}'${{ jobs.define-constants.outputs.matrix-exclusions }}'{% endraw %}
       platforms:
         description: 'Array of platforms in JSON format.'
-        value: {% raw %}${{ jobs.define-constants.outputs.platforms }}{% endraw %}
+        value: {% raw %}'${{ jobs.define-constants.outputs.platforms }}'{% endraw %}
       pypi-api-urls:
         description: 'Map of PyPI API endpoint names to URLS in JSON format.'
-        value: {% raw %}${{ jobs.define-constants.outputs.pypi-api-urls }}{% endraw %}
+        value: {% raw %}'${{ jobs.define-constants.outputs.pypi-api-urls }}'{% endraw %}
       pypi-package-urls:
         description: 'Map of PyPI package endpoint names to URLS in JSON format.'
-        value: {% raw %}${{ jobs.define-constants.outputs.pypi-package-urls }}{% endraw %}
+        value: {% raw %}'${{ jobs.define-constants.outputs.pypi-package-urls }}'{% endraw %}
+      python-descriptors:
+        description: 'Map of Python versions to specifications in JSON format.'
+        value: {% raw %}'${{ jobs.define-constants.outputs.python-descriptors }}'{% endraw %}
       python-versions:
         description: 'Array of Python versions in JSON format.'
-        value: {% raw %}${{ jobs.define-constants.outputs.python-versions }}{% endraw %}
+        value: {% raw %}'${{ jobs.define-constants.outputs.python-versions }}'{% endraw %}
       rust-targets:
         description: 'Map of platforms to supported Rust targets in JSON format.'
-        value: {% raw %}${{ jobs.define-constants.outputs.rust-targets }}{% endraw %}
+        value: {% raw %}'${{ jobs.define-constants.outputs.rust-targets }}'{% endraw %}
 
 jobs:
+
   define-constants:
     runs-on: ubuntu-latest
     outputs:
-      matrix-exclusions: {% raw %}${{ steps.matrix-exclusions.outputs.items }}{% endraw %}
-      platforms: {% raw %}${{ steps.platforms.outputs.platforms }}{% endraw %}
-      pypi-api-urls: {% raw %}${{ steps.pypi-urls.outputs.apis }}{% endraw %}
-      pypi-package-urls: {% raw %}${{ steps.pypi-urls.outputs.packages }}{% endraw %}
-      python-descriptors: {% raw %}${{ steps.python.outputs.specs }}{% endraw %}
-      python-versions: {% raw %}${{ steps.python.outputs.versions }}{% endraw %}
-      rust-targets: {% raw %}${{ steps.rust-targets.outputs.targets }}{% endraw %}
+      matrix-exclusions: {% raw %}'${{ steps.matrix-exclusions.outputs.items }}'{% endraw %}
+      platforms: {% raw %}'${{ steps.platforms.outputs.platforms }}'{% endraw %}
+      pypi-api-urls: {% raw %}'${{ steps.pypi-urls.outputs.apis }}'{% endraw %}
+      pypi-package-urls: {% raw %}'${{ steps.pypi-urls.outputs.packages }}'{% endraw %}
+      python-descriptors: {% raw %}'${{ steps.python-versions.outputs.specs }}'{% endraw %}
+      python-versions: {% raw %}'${{ steps.python-versions.outputs.names }}'{% endraw %}
+      rust-targets: {% raw %}'${{ steps.rust-targets.outputs.targets }}'{% endraw %}
     steps:
 
       - name: Declare Platforms
         id: platforms
         run: |
           set -eu
-          echo -n 'names=' >>${GITHUB_OUTPUT}
-          platforms="$(jq --compact-output >>${GITHUB_OUTPUT} <<EOF
+          platforms="$(jq --compact-output <<EOF
           [ "ubuntu-latest", "macos-latest", "windows-latest" ]
           EOF
           )"
@@ -63,7 +66,7 @@ jobs:
           EOF
           )"
           echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
-          echo -n 'versions=' >>${GITHUB_OUTPUT}
+          echo -n 'names=' >>${GITHUB_OUTPUT}
           echo "${python_descriptors}" | jq --compact-output 'keys_unsorted' >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
 
