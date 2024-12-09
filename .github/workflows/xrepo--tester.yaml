@@ -16,10 +16,6 @@ on:
       python-versions:
         required: true
         type: string
-      rust-targets:
-        default: '[]'
-        required: false
-        type: string
 
 jobs:
 
