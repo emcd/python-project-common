@@ -5,38 +5,38 @@ on:
     outputs:
       matrix-exclusions:
         description: 'Array of excluded platform-Python version pairs in JSON format.'
-        value: ${{ jobs.define-constants.outputs.matrix-exclusions }}
+        value: '${{ jobs.define-constants.outputs.matrix-exclusions }}'
       platforms:
         description: 'Array of platforms in JSON format.'
-        value: ${{ jobs.define-constants.outputs.platforms }}
+        value: '${{ jobs.define-constants.outputs.platforms }}'
       pypi-api-urls:
         description: 'Map of PyPI API endpoint names to URLS in JSON format.'
-        value: ${{ jobs.define-constants.outputs.pypi-api-urls }}
+        value: '${{ jobs.define-constants.outputs.pypi-api-urls }}'
       pypi-package-urls:
         description: 'Map of PyPI package endpoint names to URLS in JSON format.'
-        value: ${{ jobs.define-constants.outputs.pypi-package-urls }}
+        value: '${{ jobs.define-constants.outputs.pypi-package-urls }}'
       python-descriptors:
         description: 'Map of Python versions to specifications in JSON format.'
         value: '${{ jobs.define-constants.outputs.python-descriptors }}'
       python-versions:
         description: 'Array of Python versions in JSON format.'
-        value: ${{ jobs.define-constants.outputs.python-versions }}
+        value: '${{ jobs.define-constants.outputs.python-versions }}'
       rust-targets:
         description: 'Map of platforms to supported Rust targets in JSON format.'
-        value: ${{ jobs.define-constants.outputs.rust-targets }}
+        value: '${{ jobs.define-constants.outputs.rust-targets }}'
 
 jobs:
 
   define-constants:
     runs-on: ubuntu-latest
     outputs:
-      matrix-exclusions: ${{ steps.matrix-exclusions.outputs.items }}
-      platforms: ${{ steps.platforms.outputs.platforms }}
-      pypi-api-urls: ${{ steps.pypi-urls.outputs.apis }}
-      pypi-package-urls: ${{ steps.pypi-urls.outputs.packages }}
-      python-descriptors: ${{ steps.python.outputs.specs }}
-      python-versions: ${{ steps.python.outputs.names }}
-      rust-targets: ${{ steps.rust-targets.outputs.targets }}
+      matrix-exclusions: '${{ steps.matrix-exclusions.outputs.items }}'
+      platforms: '${{ steps.platforms.outputs.platforms }}'
+      pypi-api-urls: '${{ steps.pypi-urls.outputs.apis }}'
+      pypi-package-urls: '${{ steps.pypi-urls.outputs.packages }}'
+      python-descriptors: '${{ steps.python.outputs.specs }}'
+      python-versions: '${{ steps.python.outputs.names }}'
+      rust-targets: '${{ steps.rust-targets.outputs.targets }}'
     steps:
 
       - name: Declare Platforms
