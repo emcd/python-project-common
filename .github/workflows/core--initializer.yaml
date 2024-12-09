@@ -52,7 +52,10 @@ jobs:
           set -eu
           python_descriptors="$(jq --compact-output <<EOF
           {
-            "3.10": {"hatch": "py3.10"},"3.11": {"hatch": "py3.11"},"3.12": {"hatch": "py3.12"},"3.13": {"hatch": "py3.13"},
+            "3.10": {"hatch": "py3.10"},
+            "3.11": {"hatch": "py3.11"},
+            "3.12": {"hatch": "py3.12"},
+            "3.13": {"hatch": "py3.13"},
             "pypy3.10": {"hatch": "pypy3.10"}
           }
           EOF
