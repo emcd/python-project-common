@@ -15,6 +15,9 @@ on:
       pypi-package-urls:
         description: 'Map of PyPI package endpoint names to URLS in JSON format.'
         value: ${{ jobs.define-constants.outputs.pypi-package-urls }}
+      python-descriptors:
+        description: 'Map of Python versions to specifications in JSON format.'
+        value: '${{ jobs.define-constants.outputs.python-descriptors }}'
       python-versions:
         description: 'Array of Python versions in JSON format.'
         value: ${{ jobs.define-constants.outputs.python-versions }}
@@ -23,6 +26,7 @@ on:
         value: ${{ jobs.define-constants.outputs.rust-targets }}
 
 jobs:
+
   define-constants:
     runs-on: ubuntu-latest
     outputs:
@@ -31,7 +35,7 @@ jobs:
       pypi-api-urls: ${{ steps.pypi-urls.outputs.apis }}
       pypi-package-urls: ${{ steps.pypi-urls.outputs.packages }}
       python-descriptors: ${{ steps.python.outputs.specs }}
-      python-versions: ${{ steps.python.outputs.versions }}
+      python-versions: ${{ steps.python.outputs.names }}
       rust-targets: ${{ steps.rust-targets.outputs.targets }}
     steps:
 
@@ -62,7 +66,7 @@ jobs:
           EOF
           )"
           echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
-          echo -n 'versions=' >>${GITHUB_OUTPUT}
+          echo -n 'names=' >>${GITHUB_OUTPUT}
           echo "${python_descriptors}" | jq --compact-output '. | keys_unsorted' >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
         shell: bash
