@@ -34,8 +34,8 @@ jobs:
       platforms: '${{ steps.platforms.outputs.platforms }}'
       pypi-api-urls: '${{ steps.pypi-urls.outputs.apis }}'
       pypi-package-urls: '${{ steps.pypi-urls.outputs.packages }}'
-      python-descriptors: '${{ steps.python.outputs.specs }}'
-      python-versions: '${{ steps.python.outputs.names }}'
+      python-descriptors: '${{ steps.python-versions.outputs.specs }}'
+      python-versions: '${{ steps.python-versions.outputs.names }}'
       rust-targets: '${{ steps.rust-targets.outputs.targets }}'
     steps:
 
