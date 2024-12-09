@@ -45,6 +45,7 @@ jobs:
           )"
           echo "platforms=${platforms}" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
+        shell: bash
 
       - name: Declare Python Versions
         id: python-versions
@@ -64,6 +65,7 @@ jobs:
           echo -n 'versions=' >>${GITHUB_OUTPUT}
           echo "${python_descriptors}" | jq --compact-output 'keys_unsorted' >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
+        shell: bash
 
       - name: Declare Matrix Exclusions
         id: matrix-exclusions
