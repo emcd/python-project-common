@@ -27,8 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+
+
       - name: Prepare Python
-        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        uses: emcd/python-project-common/.github/actions/python-hatch@gha
         with:
           python-version: ${{ fromJSON(inputs.python-versions)[0] }}
 
