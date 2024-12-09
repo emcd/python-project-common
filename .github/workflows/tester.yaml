@@ -15,15 +15,18 @@ jobs:
   test:
     needs: [initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@gha
-#    with:
+    with:
+      platforms: '["ubuntu-latest"]'
+      python-descriptors: '{"3.10":{"hatch":"py3.10"}}'
+      python-versions: '["3.10"]'
 #      matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'
 #      platforms: '${{ needs.initialize.outputs.platforms }}'
 #      python-descriptors: '${{ needs.initialize.outputs.python-descriptors }}'
 #      python-versions: '${{ needs.initialize.outputs.python-versions }}'
 
 
-  report:
-    needs: [initialize, test]
-    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1
-    with:
-      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+#  report:
+#    needs: [initialize, test]
+#    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1
+#    with:
+#      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
