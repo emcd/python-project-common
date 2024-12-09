@@ -63,7 +63,7 @@ jobs:
           )"
           echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
           echo -n 'versions=' >>${GITHUB_OUTPUT}
-          echo "${python_descriptors}" | jq --compact-output 'keys_unsorted' >>${GITHUB_OUTPUT}
+          echo "${python_descriptors}" | jq --compact-output '. | keys_unsorted' >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
         shell: bash
 
