@@ -27,12 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-
-
       - name: Prepare Python
         uses: emcd/python-project-common/.github/actions/python-hatch@gha
         with:
-          python-version: ${{ fromJSON(inputs.python-versions)[0] }}
+          python-version: '${{ fromJSON(inputs.python-versions)[0] }}'
 
       - name: Lint
         # TODO: Only exclude Semgrep on Windows.
