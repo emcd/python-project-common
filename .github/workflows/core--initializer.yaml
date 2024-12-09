@@ -39,7 +39,6 @@ jobs:
         id: platforms
         run: |
           set -eu
-          echo -n 'names=' >>${GITHUB_OUTPUT}
           platforms="$(jq --compact-output >>${GITHUB_OUTPUT} <<EOF
           [ "ubuntu-latest", "macos-latest", "windows-latest" ]
           EOF
