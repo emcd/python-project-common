@@ -84,6 +84,7 @@ jobs:
           )"
           echo "items=${items}" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
+        shell: bash
 
       - name: Declare PyPI URLs
         id: pypi-urls
