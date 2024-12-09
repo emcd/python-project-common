@@ -20,7 +20,6 @@ jobs:
       platforms: '${{ needs.initialize.outputs.platforms }}'
       python-descriptors: '${{ needs.initialize.outputs.python-descriptors }}'
       python-versions: '${{ needs.initialize.outputs.python-versions }}'
-      
 
   report:
     needs: [initialize, test]
