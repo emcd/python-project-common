@@ -24,7 +24,7 @@ jobs:
     steps:
 
       - name: Prepare Python
-        uses: emcd/python-frigid/.github/actions/python-hatch@master
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
         with:
           python-version: '${{ fromJSON(inputs.python-versions)[0] }}'
 
