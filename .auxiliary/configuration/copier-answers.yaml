@@ -1,0 +1,23 @@
+# Changes here will be overwritten by Copier
+_src_path: template
+author_email: emcd@users.noreply.github.com
+author_name: Eric McDonald
+description: Project management utilities.
+development_status: 3 - Alpha
+enable_publication: false
+gh_owner: emcd
+gh_version: v1
+has_property_tests: false
+has_rust_extension: false
+keywords: []
+package_name: emcd_projects
+project_name: python-project-common
+pypy_versions:
+- '3.10'
+python_version_min: '3.10'
+python_versions:
+- '3.10'
+- '3.11'
+- '3.12'
+- '3.13'
+year_of_origin: 2024

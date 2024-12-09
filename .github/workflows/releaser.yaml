@@ -1,0 +1,61 @@
+name: release
+
+on:
+  push:
+    tags: [ 'v[1-9]+.*' ]
+  workflow_dispatch:
+    inputs:
+      which-pypi:
+        description: 'Which Python package index?'
+        required: true
+        type: choice
+        options:
+          - pypi
+          - testpypi
+        default: testpypi
+
+env:
+  DISTRIBUTIONS_PATH: '.auxiliary/artifacts/hatch-build'
+
+jobs:
+
+  initialize:
+    uses: ./.github/workflows/core--initializer.yaml
+
+  test:
+    needs: [initialize]
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1
+    with:
+      matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'
+      platforms: '${{ needs.initialize.outputs.platforms }}'
+      python-descriptors: '${{ needs.initialize.outputs.python-descriptors }}'
+      python-versions: '${{ needs.initialize.outputs.python-versions }}'
+      
+
+  report:
+    needs: [initialize, test]
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1
+    with:
+      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  docsgen:
+    needs: [initialize, report]
+    permissions:
+      contents: write
+      id-token: write
+      pages: write
+    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@v1
+    with:
+      include-reports: true
+      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  package:
+    needs: [initialize, docsgen]
+    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@v1
+    with:
+      artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
+      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  
+
+  
