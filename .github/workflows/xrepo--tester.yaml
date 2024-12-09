@@ -30,7 +30,7 @@ jobs:
       - name: Prepare Python
         uses: emcd/python-project-common/.github/actions/python-hatch@master
         with:
-          python-version: '${{ fromJSON(inputs.python-versions)[0] }}'
+          python-version: ${{ fromJSON(inputs.python-versions)[0] }}
 
       - name: Lint
         # TODO: Only exclude Semgrep on Windows.
