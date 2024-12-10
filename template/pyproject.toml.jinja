@@ -1,12 +1,12 @@
 [build-system]
 requires = [
-  {% if has_rust_extension -%}
+  {%- if has_rust_extension %}
   'maturin~=1.7',
   {%- else %}
   'hatchling',
   {%- endif %}
 ]
-{% if has_rust_extension -%}
+{%- if has_rust_extension %}
 build-backend = 'maturin'
 {%- else %}
 build-backend = 'hatchling.build'
@@ -27,27 +27,27 @@ classifiers = [ # https://pypi.org/classifiers
   #'Intended Audience :: Developers',
   'License :: OSI Approved :: Apache Software License',
   'Programming Language :: Python :: 3 :: Only',
-  {% for version in python_versions -%}
+  {%- for version in python_versions %}
   'Programming Language :: Python :: {{ version }}',
-  {% endfor %}
+  {%- endfor %}
   'Programming Language :: Python :: Implementation :: CPython',
-  {% if pypy_versions -%}
+  {%- if pypy_versions %}
   'Programming Language :: Python :: Implementation :: PyPy',
   {%- endif %}
   #'Topic :: Software Development',
   # TODO: Add classifiers as appropriate.
 ]
 keywords = [
-    {% for keyword in keywords -%}
+    {%- for keyword in keywords %}
     '{{ keyword }}',
-    {% endfor %}
+    {%- endfor %}
 ]
 [[project.authors]]
 name = '{{ author_name }}'
 email = '{{ author_email }}'
 [project.urls]
 'Homepage' = 'https://github.com/{{ gh_owner }}/{{ project_name }}'
-{% if enable_publication -%}
+{%- if enable_publication %}
 'Documentation' = 'https://{{ gh_owner }}.github.io/{{ project_name }}'
 'Download' = 'https://pypi.org/project/{{ package_name }}/#files'
 {%- endif %}
@@ -73,13 +73,15 @@ directory = '.auxiliary/artifacts/coverage-pytest'
 output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 
 # https://hatch.pypa.io/latest/config/metadata/
-{% if not has_rust_extension -%}
+{%- if not has_rust_extension %}
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
 only-include = [ 'sources/{{ package_name }}' ]
+strict-naming = false
 [tool.hatch.build.targets.wheel]
 only-include = [ 'sources/{{ package_name }}' ]
+strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/{{ package_name }}' = '{{ package_name }}'
 {%- endif %}
@@ -92,11 +94,11 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
-  {% if has_property_tests -%}
+  {%- if has_property_tests %}
   'hypothesis',
   {%- endif %}
   'icecream',
-  {% if has_rust_extension -%}
+  {%- if has_rust_extension %}
   'maturin~=1.7',
   #'maturin-import-hook',
   {%- endif %}
@@ -114,7 +116,7 @@ dependencies = [
   'tryceratops',
 ]
 post-install-commands = [
-  {% if has_rust_extension -%}
+  {%- if has_rust_extension %}
   #'''python -m maturin_import_hook site install''',
   {%- endif %}
 ]
@@ -134,7 +136,8 @@ linters = [
   'pyright sources',
   'pylint sources documentation tests',
   'semgrep --config p/python --error --quiet --skip-unknown-extensions sources',
-  {% if has_rust_extension -%}
+  {%- if has_rust_extension %}
+  # TODO: clippy
   'semgrep --config p/rust --error --quiet --skip-unknown-extensions sources',
   {%- endif %}
 ]
@@ -161,15 +164,17 @@ description = ''' Quality assurance environment. '''
 template = 'develop'
 [[tool.hatch.envs.qa.matrix]]
 python = [
-    {% for version in python_versions -%}
+    {%- for version in python_versions %}
     '{{ version }}',
     {%- endfor %}
-    {% for version in pypy_versions -%}
+    {%- for version in pypy_versions %}
     'pypy{{ version }}',
     {%- endfor %}
 ]
 [tool.hatch.version]
 path = 'sources/{{ package_name }}/__init__.py'
+
+# TODO: isort: https://pycqa.github.io/isort/docs/configuration/options.html
 
 {% if has_rust_extension -%}
 [tool.maturin]
@@ -183,13 +188,16 @@ python-source = 'sources'
 strip = true
 {%- endif %}
 
+# https://mypy.readthedocs.io/en/stable/config_file.html
 [tool.mypy]
+# Note: Due to repeated painful experiences with Mypy, we use Pyright instead.
+#       Pyright properly handles TypeVars, etc...
 cache_dir = '.auxiliary/caches/mypy'
-disable_error_code = [ 'attr-defined', 'name-defined' ]
-implicit_optional = true
+exclude = [ '.*' ]  # Ignore everything
+ignore_errors = true
+follow_imports = 'skip'
 pretty = true
 strict = false
-# TODO: Completely disable.
 
 # https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
 [tool.pylint.main]
@@ -339,6 +347,7 @@ dummy-variables-rgx = '''_$'''
 ignored-argument-names = '''_.*'''
 redefining-builtins-modules = [ 'builtins', 'io' ]
 
+# https://microsoft.github.io/pyright/#/configuration
 [tool.pyright]
 include = [ 'sources' ]
 reportConstantRedefinition = true
@@ -407,3 +416,5 @@ showcontent = true
 directory = 'removal'
 name = 'Deprecations and Removals'
 showcontent = true
+
+# TODO: yapf: https://github.com/google/yapf?tab=readme-ov-file#knobs
