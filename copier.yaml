@@ -1,8 +1,8 @@
 _min_copier_version: "9.0"
 
-_templates_suffix: .jinja
 _answers_file: .auxiliary/configuration/copier-answers.yaml
-
+_subdirectory: template
+_templates_suffix: .jinja
 
 project_name:
     type: str
@@ -12,9 +12,19 @@ project_name:
         Project name must contain only lowercase letters, numbers, and hyphens
         {% endif %}
 
+distribution_name:
+    type: str
+    help: Python distribution name (name on PyPI)
+    default: "{{ project_name }}"
+    validator: >-
+        {% if not (project_name | regex_search("^[a-z][a-z0-9-]*$")) %}
+        Distribution name must contain only lowercase letters, numbers, and hyphens
+        {% endif %}
+
 package_name:
     type: str
-    help: Python package name
+    help: Python package name (name to import)
+    default: "{{ distribution_name | replace('-','_') | replace(' ','_') | lower }}"
     validator: >-
         {% if not (package_name | regex_search("^[a-z][a-z0-9_]*$")) %}
         Package name must be lowercase, start with a letter,
@@ -24,11 +34,6 @@ package_name:
 description:
     type: str
     help: Brief package description
-
-keywords:
-    type: yaml
-    help: Package keywords as YAML list
-    default: []
 
 author_name:
     type: str
@@ -95,23 +100,19 @@ year_of_origin:
     help: Year project was started
     default: "{{ '%Y' | strftime }}"
 
-has_rust_extension:
+enable_rust_extension:
     type: bool
-    help: |
-      Include Rust extension support?
+    help: 'Include Rust extension support?'
     default: false
 
-has_property_tests:
+enable_property_tests:
     type: bool
-    help: |
-      Enable property-based testing?
-      (Hypothesis for Python, proptest for Rust)
+    help: 'Enable property-based testing?'
     default: false
 
 enable_publication:
     type: bool
-    help: |
-      Enable package and documentation publication?
+    help: 'Enable package and documentation publication?'
     default: false
 
 gh_owner:
@@ -119,7 +120,7 @@ gh_owner:
     help: Github repository owner
     default: 'emcd'
 
-gh_version:
+gha_version:
     type: str
-    help: Version of Github workflows and actions to use
+    help: Version of cross-repo common Github workflows and actions to use
     default: v1

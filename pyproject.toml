@@ -1,13 +1,11 @@
 [build-system]
 requires = [
-
   'hatchling',
 ]
-
 build-backend = 'hatchling.build'
 
 [project]
-name = 'emcd_projects'
+name = 'emcd-projects'
 description = 'Project management utilities.'
 dynamic = [ 'version' ]
 license = 'Apache-2.0'
@@ -25,21 +23,17 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
-
   'Programming Language :: Python :: Implementation :: CPython',
   'Programming Language :: Python :: Implementation :: PyPy',
   #'Topic :: Software Development',
   # TODO: Add classifiers as appropriate.
 ]
-keywords = [
-
-]
+keywords = [ ] # TODO: Add keywords.
 [[project.authors]]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-project-common'
-
 'Source Code' = 'https://github.com/emcd/python-project-common'
 'Issue Tracker' = 'https://github.com/emcd/python-project-common/issues'
 
@@ -66,8 +60,10 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
 only-include = [ 'sources/emcd_projects' ]
+strict-naming = false
 [tool.hatch.build.targets.wheel]
 only-include = [ 'sources/emcd_projects' ]
+strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/emcd_projects' = 'emcd_projects'
 [tool.hatch.envs.default]
@@ -79,9 +75,7 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
-
   'icecream',
-
   'packaging',
   'pre-commit',
   'pylint',
@@ -96,7 +90,6 @@ dependencies = [
   'tryceratops',
 ]
 post-install-commands = [
-
 ]
 [tool.hatch.envs.develop.scripts]
 docsgen = [
@@ -114,7 +107,6 @@ linters = [
   'pyright sources',
   'pylint sources documentation tests',
   'semgrep --config p/python --error --quiet --skip-unknown-extensions sources',
-
 ]
 packagers = [
   'hatch build',
@@ -139,21 +131,29 @@ description = ''' Quality assurance environment. '''
 template = 'develop'
 [[tool.hatch.envs.qa.matrix]]
 python = [
-    '3.10','3.11','3.12','3.13',
+    '3.10',
+    '3.11',
+    '3.12',
+    '3.13',
     'pypy3.10',
 ]
 [tool.hatch.version]
 path = 'sources/emcd_projects/__init__.py'
 
+# TODO: isort: https://pycqa.github.io/isort/docs/configuration/options.html
 
 
+
+# https://mypy.readthedocs.io/en/stable/config_file.html
 [tool.mypy]
+# Note: Due to repeated painful experiences with Mypy, we use Pyright instead.
+#       Pyright properly handles TypeVars, etc...
 cache_dir = '.auxiliary/caches/mypy'
-disable_error_code = [ 'attr-defined', 'name-defined' ]
-implicit_optional = true
+exclude = [ '.*' ]  # Ignore everything
+ignore_errors = true
+follow_imports = 'skip'
 pretty = true
 strict = false
-# TODO: Completely disable.
 
 # https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
 [tool.pylint.main]
@@ -303,6 +303,7 @@ dummy-variables-rgx = '''_$'''
 ignored-argument-names = '''_.*'''
 redefining-builtins-modules = [ 'builtins', 'io' ]
 
+# https://microsoft.github.io/pyright/#/configuration
 [tool.pyright]
 include = [ 'sources' ]
 reportConstantRedefinition = true
@@ -371,3 +372,5 @@ showcontent = true
 directory = 'removal'
 name = 'Deprecations and Removals'
 showcontent = true
+
+# TODO: yapf: https://github.com/google/yapf?tab=readme-ov-file#knobs
