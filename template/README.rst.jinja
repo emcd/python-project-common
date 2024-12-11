@@ -22,12 +22,13 @@
 
 {% if enable_publication -%}
 .. image:: https://img.shields.io/pypi/v/{{ distribution_name }}
-   :alt: Project Version
+   :alt: Package Version
    :target: https://pypi.org/project/{{ distribution_name }}/
 
 .. image:: https://img.shields.io/pypi/status/{{ distribution_name }}
    :alt: PyPI - Status
    :target: https://pypi.org/project/{{ distribution_name }}/
+{%- endif %}
 
 .. image:: https://github.com/{{ gh_owner }}/{{ project_name }}/actions/workflows/tester.yaml/badge.svg?branch=master&event=push
    :alt: Tests Status
@@ -37,13 +38,14 @@
    :alt: Code Coverage Percentage
    :target: https://github.com/{{ gh_owner }}/{{ project_name }}/actions/workflows/tester.yaml
 
+.. image:: https://img.shields.io/github/license/{{ gh_owner }}/{{ project_name }}
+   :alt: Project License
+   :target: https://github.com/{{ gh_owner }}/{{ project_name }}/blob/master/LICENSE.txt
+
+{% if enable_publication -%}
 .. image:: https://img.shields.io/pypi/pyversions/{{ distribution_name }}
    :alt: Python Versions
    :target: https://pypi.org/project/{{ distribution_name }}/
-
-.. image:: https://img.shields.io/pypi/l/{{ package_name }}
-   :alt: Project License
-   :target: https://github.com/{{ gh_owner }}/{{ project_name }}/blob/master/LICENSE.txt
 {%- endif %}
 
 

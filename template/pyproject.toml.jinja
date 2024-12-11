@@ -59,7 +59,7 @@ exclude_dirs = [ 'tests' ]
 # https://coverage.readthedocs.io/en/latest/config.html
 [tool.coverage.run]
 branch = true
-command_line = '-m pytest'
+command_line = '-m pytest' # TODO? '--fail-under'
 data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
 parallel = true
 source = [ 'sources', 'tests' ]
@@ -116,6 +116,11 @@ post-install-commands = [
   #'''python -m maturin_import_hook site install''',
   {%- endif %}
 ]
+[tool.hatch.envs.develop.env-vars]
+{%- if enable_property_tests %}
+HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
+{%- endif %}
+PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
 [tool.hatch.envs.develop.scripts]
 docsgen = [
   '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
@@ -126,15 +131,23 @@ docsgen = [
      documentation/sphinx .auxiliary/artifacts/sphinx-html''',
 ]
 linters = [
-  'ruff check --quiet sources documentation tests',
-  'bandit --configfile pyproject.toml --quiet --recursive sources',
-  'tryceratops sources',
-  'pyright sources',
-  'pylint sources documentation tests',
-  'semgrep --config p/python --error --quiet --skip-unknown-extensions sources',
+  '''ruff check --quiet sources documentation tests''',
   {%- if enable_rust_extension %}
-  # TODO: clippy
-  'semgrep --config p/rust --error --quiet --skip-unknown-extensions sources',
+  # TODO: Use '-C' flag, which is only on nightly, as of 2024-12-11.
+  '''cargo check --manifest-path sources/{{ crate_name }}/Cargo.toml''',
+  '''cargo clippy --manifest-path sources/{{ crate_name }}/Cargo.toml \
+     -- --deny warnings --warn clippy::pedantic''',
+  # TODO: cargo deny # Not installed with Cargo by default.
+  {%- endif %}
+  '''bandit --configfile pyproject.toml --quiet --recursive sources''',
+  '''tryceratops sources''',
+  '''pyright sources''',
+  '''pylint sources documentation tests''',
+  '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
+     sources/{{ package_name }}''',
+  {%- if enable_rust_extension %}
+  '''semgrep --config p/rust --error --quiet --skip-unknown-extensions \
+     sources/{{ crate_name }}''',
   {%- endif %}
 ]
 packagers = [
@@ -177,8 +190,8 @@ path = 'sources/{{ package_name }}/__init__.py'
 compatibility = 'manylinux2014'
 features = [ 'pyo3/extension-module' ]
 include = [ '.gitignore', 'LICENSE.txt', 'README.rst', 'pyproject.toml' ]
-manifest-path = 'sources/{{ package_name }}_rust/Cargo.toml'
-module-name = '{{ package_name }}._rust'
+manifest-path = 'sources/{{ crate_name }}/Cargo.toml'
+module-name = '{{ package_name }}.{{ extension_name }}'
 python-packages = [ '{{ package_name }}' ]
 python-source = 'sources'
 strip = true
@@ -198,6 +211,8 @@ strict = false
 # https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
 [tool.pylint.main]
 fail-under = 10
+# TODO: jobs: Consider parallelization if output interleaving, dependency
+#             grouping, and similarities detection bugs have been fixed.
 load-plugins = [
   # 'pylint.extensions.bad_builtin',
   'pylint.extensions.broad_try_clause',
@@ -221,18 +236,15 @@ load-plugins = [
 ]
 recursive = false
 suggestion-mode = true
-
 [tool.pylint.basic]
 const-rgx = '([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$'
 good-names = [ '_', '__' ]
 include-naming-hint = true
-
 [tool.pylint.classes]
 defining-attr-methods = [ '__init__', '__new__', '__post_init__' ]
 exclude-protected = [ ]
 valid-classmethod-first-arg = [ 'selfclass' ]
-valid-metaclass-classmethod-first-arg = [ 'factory' ]
-
+valid-metaclass-classmethod-first-arg = [ 'clscls' ]
 [tool.pylint.design]
 # TODO: exclude-too-few-public-methods: Consider exception hierarchies.
 ignored-parents = [
@@ -257,7 +269,6 @@ max-public-methods = 10
 max-returns = 6
 max-statements = 30
 min-public-methods = 1
-
 [tool.pylint.exceptions]
 overgeneral-exceptions = [
   '{{ package_name }}.exceptions.Omnierror',
@@ -265,22 +276,18 @@ overgeneral-exceptions = [
   'builtins.BaseException',
   'builtins.Exception'
 ]
-
 [tool.pylint.format]
 ignore-long-lines = '''^(\s*<?https?://\S+>?|([^'"]*\s+)?#.*)$'''
 max-line-length = 79
 max-module-lines = 800
 single-line-class-stmt = true
 single-line-if-stmt = true
-
 [tool.pylint.imports]
 allow-wildcard-with-all = false
 # TODO: ext-import-graph
 # TODO: int-import-graph
-
 [tool.pylint.logging]
 logging-format-style = 'new'
-
 [tool.pylint.'messages control']
 disable = [
   'bad-dunder-name',
@@ -298,28 +305,23 @@ disable = [
   'wrong-import-order',
   'wrong-import-position',
 ]
-
 [tool.pylint.refactoring]
 max-nested-blocks = 3
 never-returning-functions = [ 'sys.exit', 'argparse.parse_error' ]
-
 [tool.pylint.reports]
 msg-template = '{path} {line:3d},{column:2d} [{symbol}] {msg}'
 output-format = 'colorized'
 reports = false
 score = true
-
 [tool.pylint.similarities]
 ignore-comments = true
 ignore-docstrings = true
 ignore-imports = true
 ignore-signatures = true
 min-similarity-lines = 5
-
 [tool.pylint.spelling]
 max-spelling-suggestions = 4
 # TODO: spelling-dict
-
 [tool.pylint.typecheck]
 contextmanager-decorators = [ 'contextlib.contextmanager' ]
 ignored-checks-for-mixins = [
@@ -333,9 +335,8 @@ ignore-mixin-members = false
 missing-member-hint = true
 missing-member-hint-distance = 1
 missing-member-max-choices = 2
-# TODO? mixin-class-rgx
-# TODO: signature-mutators
-
+#mixin-class-rgx = '.*[Mm]ixin'
+#signature-mutators = [ ]
 [tool.pylint.variables]
 additional-builtins = [ 'ic' ]
 callbacks = [ ]

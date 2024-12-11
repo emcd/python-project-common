@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 const VERSION: &str = env!("CRATE_VERSION");
 
 #[pymodule]
-fn _rust(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
+fn {{ extension_name }}(_py: Python<'_>, m: &PyModule) -> PyResult<()> {
     m.add("__version__", VERSION)?;
     Ok(())
 }

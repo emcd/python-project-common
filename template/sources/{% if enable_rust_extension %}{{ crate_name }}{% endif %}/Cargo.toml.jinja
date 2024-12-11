@@ -1,0 +1,20 @@
+[package]
+name = '{{ crate_name }}'
+version = '0.1.0'  # Will be updated by build.rs
+edition = '2021'
+publish = false
+
+[lib]
+name = '{{ extension_name }}'  # Importable as {{ package_name }}.{{ extension_name }}
+crate-type = [ 'cdylib' ]
+
+[dependencies]
+pyo3 = { version = '0.20', features = [ 'extension-module' ] }
+
+[build-dependencies]
+regex = '1.11'
+
+{%- if enable_property_tests %}
+[dev-dependencies]
+proptest = '1.5'
+{%- endif %}
