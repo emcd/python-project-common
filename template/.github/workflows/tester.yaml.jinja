@@ -14,18 +14,18 @@ jobs:
 
   test:
     needs: [initialize]
-    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@{{ gh_version }}
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@{{ gha_version }}
     with:
       matrix-exclusions: {% raw %}'${{ needs.initialize.outputs.matrix-exclusions }}'{% endraw %}
       platforms: {% raw %}'${{ needs.initialize.outputs.platforms }}'{% endraw %}
       python-descriptors: {% raw %}'${{ needs.initialize.outputs.python-descriptors }}'{% endraw %}
       python-versions: {% raw %}'${{ needs.initialize.outputs.python-versions }}'{% endraw %}
-      {% if has_rust_extension -%}
+      {% if enable_rust_extension -%}
       rust-targets: {% raw %}'${{ needs.initialize.outputs.rust-targets }}'{% endraw %}
       {%- endif %}
 
   report:
     needs: [initialize, test]
-    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@{{ gh_version }}
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@{{ gha_version }}
     with:
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}

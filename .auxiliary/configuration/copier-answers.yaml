@@ -1,15 +1,16 @@
 # Changes here will be overwritten by Copier
-_src_path: template
+_commit: v1.0.2
+_src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
 description: Project management utilities.
 development_status: 3 - Alpha
+distribution_name: emcd-projects
+enable_property_tests: false
 enable_publication: false
+enable_rust_extension: false
 gh_owner: emcd
-gh_version: v1
-has_property_tests: false
-has_rust_extension: false
-keywords: []
+gha_version: v1
 package_name: emcd_projects
 project_name: python-project-common
 pypy_versions:
