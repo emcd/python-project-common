@@ -54,7 +54,7 @@ jobs:
         id: python-versions
         run: |
           set -eu
-          python_descriptors="$(cat <<'EOF' | yq --output-format=json
+          python_descriptors="$(cat <<'EOF' | yq --output-format=json | jq --compact-output
           {%- for version in python_versions %}
           "{{ version }}":
             hatch: "py{{ version }}"
