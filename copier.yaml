@@ -119,8 +119,3 @@ gh_owner:
     type: str
     help: Github repository owner
     default: 'emcd'
-
-gha_version:
-    type: str
-    help: Version of cross-repo common Github workflows and actions to use
-    default: v1
