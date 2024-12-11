@@ -12,44 +12,33 @@
 # ruff: noqa: E402,F401
 
 
-def _prepare( ):
-    from pathlib import Path
-    from sys import path as module_discovery_locations
-    from tomli import load  # TODO: Python 3.11: tomllib
-    project_location = Path( __file__ ).parent.parent.parent
-    pyproject_location = project_location / 'pyproject.toml'
-    module_discovery_locations.insert( 0, str( Path( __file__ ).parent ) )
-    module_discovery_locations.insert( 0, str( project_location / 'sources' ) )
-    with pyproject_location.open( 'rb' ) as project_file:
-        return load( project_file )
-
-
-def _calculate_copyright_notice( information, copyright_holder ):
+def _calculate_copyright_notice( ):
     from datetime import datetime as DateTime
-    first_year = information[ 'tool' ][ 'SELF' ][ 'year-of-origin' ]
+    first_year = 2024
     now_year = DateTime.utcnow( ).year
     if first_year < now_year: year_range = f"{first_year}-{now_year}"
     else: year_range = str( first_year )
-    return f"{year_range}, {copyright_holder}"
+    return f"{year_range}, Eric McDonald"
 
 
-def _import_version( information ):
+def _import_version( ):
     from importlib import import_module
-    module = import_module( information[ 'project' ][ 'name' ] )
+    from pathlib import Path
+    from sys import path
+    project_location = Path( __file__ ).parent.parent.parent
+    path.insert( 0, str( project_location / 'sources' ) )
+    module = import_module( 'emcd_projects' )
     return module.__version__
 
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-_information = _prepare( )
-import conf_extras # pylint: disable=import-error
-
-project = _information[ 'project' ][ 'name' ]
-author = _information[ 'project' ][ 'authors' ][ 0 ][ 'name' ]
+project = 'python-project-common'
+author = 'Eric McDonald'
 copyright = ( # pylint: disable=redefined-builtin
-    _calculate_copyright_notice( _information, author ) )
-release = version = _import_version( _information )
+    _calculate_copyright_notice( ) )
+release = version = _import_version( )
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -93,7 +82,15 @@ nitpick_ignore = [
 # -- Options for linkcheck builder -------------------------------------------
 
 linkcheck_ignore = [
-    *conf_extras.linkcheck_ignore,
+    # Circular dependency between building HTML and publishing it.
+    r'https://emcd\.github\.io/python-project-common/.*',
+    # Stack Overflow rate limits too aggressively, which breaks matrix builds.
+    r'https://stackoverflow\.com/help/.*',
+    # Repository does not exist during initial development.
+    r'https://github\.com/emcd/python-project-common',
+    r'https://github\.com/emcd/python-project-common/.*',
+    # Package does not exist during initial development.
+    r'https://pypi.org/project/emcd_projects/',
 ]
 
 # -- Options for HTML output -------------------------------------------------

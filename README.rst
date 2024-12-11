@@ -17,7 +17,7 @@
    +--------------------------------------------------------------------------+
 
 *******************************************************************************
-                                  emcd_projects
+                                  emcd-projects
 *******************************************************************************
 
 🛠️A collection of reusable GitHub Actions workflows and a Copier template for
@@ -39,7 +39,6 @@ Features
    - Documentation generation and publication
    - Package building and publication
    - Code quality reporting
-
 
 `More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
 ===============================================================================
@@ -70,7 +69,7 @@ Features
 
 .. image:: https://microsoft.github.io/pyright/img/pyright_badge.svg
    :alt: Pyright
-   :target: https://microsoft.github.io/pyright/
+   :target: https://microsoft.github.io/pyright
 
 .. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
    :alt: Ruff

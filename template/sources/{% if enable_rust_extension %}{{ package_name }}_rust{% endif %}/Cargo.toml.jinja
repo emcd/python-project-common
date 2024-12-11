@@ -14,7 +14,7 @@ pyo3 = { version = "0.20", features = ["extension-module"] }
 [build-dependencies]
 regex = "1.10"
 
-{%- if has_property_tests %}
+{%- if enable_property_tests %}
 [dev-dependencies]
 proptest = "1.4"
 {%- endif %}

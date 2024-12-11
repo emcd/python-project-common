@@ -24,19 +24,19 @@ jobs:
 
   test:
     needs: [initialize]
-    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@{{ gh_version }}
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@{{ gha_version }}
     with:
       matrix-exclusions: {% raw %}'${{ needs.initialize.outputs.matrix-exclusions }}'{% endraw %}
       platforms: {% raw %}'${{ needs.initialize.outputs.platforms }}'{% endraw %}
       python-descriptors: {% raw %}'${{ needs.initialize.outputs.python-descriptors }}'{% endraw %}
       python-versions: {% raw %}'${{ needs.initialize.outputs.python-versions }}'{% endraw %}
-      {% if has_rust_extension -%}
+      {% if enable_rust_extension -%}
       rust-targets: {% raw %}'${{ needs.initialize.outputs.rust-targets }}'{% endraw %}
       {%- endif %}
 
   report:
     needs: [initialize, test]
-    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@{{ gh_version }}
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@{{ gha_version }}
     with:
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}
 
@@ -46,14 +46,14 @@ jobs:
       contents: write
       id-token: write
       pages: write
-    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@{{ gh_version }}
+    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@{{ gha_version }}
     with:
       include-reports: true
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}
 
   package:
     needs: [initialize, docsgen]
-    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@{{ gh_version }}
+    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@{{ gha_version }}
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}
@@ -96,7 +96,7 @@ jobs:
     steps:
 
       - name: Prepare Python
-        uses: emcd/python-project-common/.github/actions/python-hatch@{{ gh_version }}
+        uses: emcd/python-project-common/.github/actions/python-hatch@{{ gha_version }}
         with:
           python-version: {% raw %}${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}{% endraw %}
 

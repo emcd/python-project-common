@@ -250,35 +250,12 @@ Copier Updates
 
 The project was created from a Copier template. To update from the template:
 
-1. Ensure your working directory is clean (commit or stash changes).
+1. Ensure the working directory is clean (commit or stash changes).
 
 2. Run the update command:
    ::
 
-        copier update --trust
-
-3. Review the changes:
-   ::
-
-        git diff
-
-4. If the changes look correct, commit them:
-   ::
-
-        git commit -am "Update from Copier template"
-
-5. If there are conflicts:
-
-   a. Resolve them manually, keeping in mind:
-
-      * Local customizations you want to preserve
-      * Template improvements you want to adopt
-
-   b. After resolving conflicts:
-      ::
-
-           git add .
-           git commit -m "Update from Copier template"
+        copier update --answers-file .auxiliary/configuration/copier-answers.yaml
 
 .. note:: The update process preserves your answers from the previous template
           generation. You can override specific answers using the ``--data``
