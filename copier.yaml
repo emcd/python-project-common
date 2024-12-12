@@ -1,5 +1,8 @@
 _min_copier_version: "9.0"
 
+# TODO: Derive 'crate_name' and use that rather than '_rust'
+#       appended to the Python package name.
+
 _answers_file: .auxiliary/configuration/copier-answers.yaml
 _subdirectory: template
 _templates_suffix: .jinja
@@ -104,6 +107,26 @@ enable_rust_extension:
     type: bool
     help: 'Include Rust extension support?'
     default: false
+
+crate_name:
+    type: str
+    help: Rust crate name
+    default: "{{ package_name }}_rust"
+    when: "{{ enable_rust_extension }}"
+    validator: >-
+        {% if not (crate_name | regex_search("^[a-z][a-z0-9_-]*$")) %}
+        Crate name must contain only lowercase letters, numbers, underscores, and hyphens
+        {% endif %}
+
+extension_name:
+    type: str
+    help: Extension module name
+    default: "_extension"
+    when: "{{ enable_rust_extension }}"
+    validator: >-
+        {% if not (extension_name | regex_search("^[a-z_][a-z0-9_]*$")) %}
+        Extension name must contain only lowercase letters, numbers, and underscores
+        {% endif %}
 
 enable_property_tests:
     type: bool
