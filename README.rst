@@ -20,6 +20,18 @@
                                   emcd-projects
 *******************************************************************************
 
+.. image:: https://github.com/emcd/python-project-common/actions/workflows/tester.yaml/badge.svg?branch=master&event=push
+   :alt: Tests Status
+   :target: https://github.com/emcd/python-project-common/actions/workflows/tester.yaml
+
+.. image:: https://emcd.github.io/python-project-common/coverage.svg
+   :alt: Code Coverage Percentage
+   :target: https://github.com/emcd/python-project-common/actions/workflows/tester.yaml
+
+.. image:: https://img.shields.io/github/license/emcd/python-project-common
+   :alt: Project License
+   :target: https://github.com/emcd/python-project-common/blob/master/LICENSE.txt
+
 🛠️A collection of reusable GitHub Actions workflows and a Copier template for
 Python projects. Provides standardized CI/CD pipelines and project structure
 with optional Rust extension support.
@@ -74,7 +86,3 @@ Features
 .. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
    :alt: Ruff
    :target: https://github.com/astral-sh/ruff
-
-
-
-

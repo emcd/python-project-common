@@ -138,6 +138,23 @@ enable_publication:
     help: 'Enable package and documentation publication?'
     default: false
 
+inject_foundations:
+    type: bool
+    help: 'Include foundational constructs?'
+    default: false
+
+inject_immutables:
+    type: bool
+    help: 'Include support for immutables with concealment?'
+    when: "{{ inject_foundations }}"
+    default: false
+
+inject_docstring_utils:
+    type: bool
+    help: 'Include utilities for docstring generation?'
+    when: "{{ inject_foundations }}"
+    default: false
+
 gh_owner:
     type: str
     help: Github repository owner

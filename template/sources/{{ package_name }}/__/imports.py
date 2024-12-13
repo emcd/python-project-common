@@ -18,22 +18,18 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Common imports and type aliases used throughout the package. '''
 
-# ruff: noqa: F401
 # pylint: disable=unused-import
+# ruff: noqa: F401
 
 
 from __future__ import annotations
 
 import collections.abc as cabc
-import functools as funct
 import types
 
 import typing_extensions as typx
 
 
 ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
-
-
-__all__ = ( )
