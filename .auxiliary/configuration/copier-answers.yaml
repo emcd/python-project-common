@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v1.2
+_commit: v1.3
 _src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
@@ -10,6 +10,7 @@ enable_property_tests: false
 enable_publication: false
 enable_rust_extension: false
 gh_owner: emcd
+inject_foundations: false
 package_name: emcd_projects
 project_name: python-project-common
 pypy_versions:

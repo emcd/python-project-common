@@ -18,14 +18,11 @@
 #============================================================================#
 
 
-''' Project management utilities. '''
+''' Common constants, imports, and utilities. '''
 
 
-from . import __
-from . import exceptions
+# Expose everything from internal modules.
+from .imports import *
 
 
-__version__ = '1.0a0'
-
-
-# TODO: Reclassify package modules as immutable and concealed.
+__all__ = ( )
