@@ -77,6 +77,8 @@ nitpick_ignore = [
     ( 'py:class', "module" ),
     ( 'py:class',
       "v, remove specified key and return the corresponding value." ),
+    # Type annotation weirdnesses.
+    ( 'py:class', "typing_extensions.Any" ),
 ]
 
 # -- Options for linkcheck builder -------------------------------------------

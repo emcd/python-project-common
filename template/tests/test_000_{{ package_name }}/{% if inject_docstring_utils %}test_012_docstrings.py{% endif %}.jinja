@@ -18,23 +18,42 @@
 #============================================================================#
 
 
-''' Assert basic characteristics of Rust extension module. '''
+''' Assert correct function of docstring utilities. '''
 
+
+import pytest
 
 from . import PACKAGE_NAME, cache_import_module
 
 
-def test_000_sanity( ):
-    ''' Extension module is sane. '''
-    module = cache_import_module( f"{PACKAGE_NAME}.{{ extension_name }}" )
-    assert module.__package__ == PACKAGE_NAME
-    assert module.__name__ == f"{PACKAGE_NAME}.{{ extension_name }}"
+MODULE_QNAME = f"{PACKAGE_NAME}.__.docstrings"
 
 
-def test_010_version_sync( ):
-    ''' Extension module version matches package version. '''
-    package = cache_import_module( PACKAGE_NAME )
-    module = cache_import_module( f"{PACKAGE_NAME}.{{ extension_name }}" )
-    assert hasattr( module, '__version__' )
-    assert isinstance( module.__version__, str )
-    assert module.__version__ == package.__version__
+def test_100_container_init( ):
+    ''' Docstring container is a string subclass. '''
+    module = cache_import_module( MODULE_QNAME )
+    doc = module.Docstring( 'test' )
+    assert isinstance( doc, str )
+    assert 'test' == doc
+
+
+def test_200_generator_fragments( ):
+    ''' Docstring generator handles various fragment types. '''
+    class Example:
+        ''' Class docstring. '''
+
+    module = cache_import_module( MODULE_QNAME )
+    result = module.generate_docstring(
+        Example,
+        module.Docstring( 'Container string' ) )
+    assert 'Class docstring. \n\nContainer string' == result
+
+
+def test_210_generator_lookup( ):
+    ''' Docstring generator uses provided lookup table. '''
+    module = cache_import_module( MODULE_QNAME )
+    test_table = { 'test_key': 'Test value' }
+    result = module.generate_docstring( 'test_key', table = test_table )
+    assert 'Test value' == result
+    with pytest.raises( KeyError ):
+        module.generate_docstring( 'nonexistent', table = test_table )

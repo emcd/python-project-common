@@ -18,23 +18,18 @@
 #============================================================================#
 
 
-''' Assert basic characteristics of Rust extension module. '''
+''' Assert correct function of common imports. '''
 
+
+import pytest
 
 from . import PACKAGE_NAME, cache_import_module
 
 
-def test_000_sanity( ):
-    ''' Extension module is sane. '''
-    module = cache_import_module( f"{PACKAGE_NAME}.{{ extension_name }}" )
-    assert module.__package__ == PACKAGE_NAME
-    assert module.__name__ == f"{PACKAGE_NAME}.{{ extension_name }}"
-
-
-def test_010_version_sync( ):
-    ''' Extension module version matches package version. '''
-    package = cache_import_module( PACKAGE_NAME )
-    module = cache_import_module( f"{PACKAGE_NAME}.{{ extension_name }}" )
-    assert hasattr( module, '__version__' )
-    assert isinstance( module.__version__, str )
-    assert module.__version__ == package.__version__
+@pytest.mark.parametrize(
+    'module_name', ( 'cabc', 'types', 'typx' )
+)
+def test_100_exports( module_name ):
+    ''' Module exports expected names. '''
+    module = cache_import_module( f"{PACKAGE_NAME}.__.imports" )
+    assert hasattr( module, module_name )

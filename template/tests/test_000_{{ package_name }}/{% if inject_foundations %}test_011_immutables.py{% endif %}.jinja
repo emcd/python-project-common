@@ -1,0 +1,203 @@
+# vim: set filetype=python fileencoding=utf-8:
+# -*- coding: utf-8 -*-
+
+#============================================================================#
+#                                                                            #
+#  Licensed under the Apache License, Version 2.0 (the "License");           #
+#  you may not use this file except in compliance with the License.          #
+#  You may obtain a copy of the License at                                   #
+#                                                                            #
+#      http://www.apache.org/licenses/LICENSE-2.0                            #
+#                                                                            #
+#  Unless required by applicable law or agreed to in writing, software       #
+#  distributed under the License is distributed on an "AS IS" BASIS,         #
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #
+#  See the License for the specific language governing permissions and       #
+#  limitations under the License.                                            #
+#                                                                            #
+#============================================================================#
+
+
+''' Assert correct function of immutables. '''
+
+
+from platform import python_implementation
+
+import pytest
+
+from . import PACKAGE_NAME, cache_import_module
+
+
+MODULE_QNAME = f"{PACKAGE_NAME}.__.immutables"
+THESE_CLASSES_NAMES = ( 'ImmutableClass', )
+
+pypy_skip_mark = pytest.mark.skipif(
+    'PyPy' == python_implementation( ),
+    reason = "PyPy handles class cell updates differently" )
+
+
+def test_100_concealer_instantiation( ):
+    ''' Concealer extension class instantiates. '''
+    module = cache_import_module( MODULE_QNAME )
+    obj = module.ConcealerExtension( )
+    assert isinstance( obj, module.ConcealerExtension )
+    assert hasattr( obj, '_attribute_visibility_includes_' )
+
+
+def test_110_concealer_visibility( ):
+    ''' Concealer extension class conceals attributes according to rules. '''
+    module = cache_import_module( MODULE_QNAME )
+
+    class Example( module.ConcealerExtension ):
+        _attribute_visibility_includes_ = frozenset( ( '_visible', ) )
+
+    obj = Example( )
+    obj.public = 42
+    obj._hidden = 24
+    obj._visible = 12
+    assert ( '_visible', 'public' ) == tuple( sorted( dir( obj ) ) )
+
+
+@pytest.mark.parametrize( 'class_name', THESE_CLASSES_NAMES )
+def test_200_immutable_class_init( class_name ):
+    ''' Class prevents modification after initialization. '''
+    module = cache_import_module( MODULE_QNAME )
+    factory = getattr( module, class_name )
+
+    class Example( metaclass = factory ):
+        value = 42
+
+    with pytest.raises( AttributeError ): Example.value = 24
+    with pytest.raises( AttributeError ): del Example.value
+
+
+@pytest.mark.parametrize( 'class_name', THESE_CLASSES_NAMES )
+def test_210_immutable_class_visibility( class_name ):
+    ''' Class conceals attributes according to rules. '''
+    module = cache_import_module( MODULE_QNAME )
+    factory = getattr( module, class_name )
+
+    class Example( metaclass = factory ):
+        _class_behaviors_ = { 'foobar' }
+        _class_attribute_visibility_includes_ = frozenset( ( '_visible', ) )
+        public = 42
+        _hidden = 24
+        _visible = 12
+
+    assert ( '_visible', 'public' ) == tuple( sorted( dir( Example ) ) )
+
+
+@pypy_skip_mark
+@pytest.mark.parametrize( 'class_name', THESE_CLASSES_NAMES )
+def test_220_immutable_class_decorators( class_name ):
+    ''' Class handles decorators correctly. '''
+    from dataclasses import dataclass
+    module = cache_import_module( MODULE_QNAME )
+    factory = getattr( module, class_name )
+
+    def add_attr( cls ):
+        cls.added = 'value'
+        return cls
+
+    class Example(
+        metaclass = factory,
+        decorators = ( dataclass( slots = True ), add_attr )
+    ):
+        field: str = 'test'
+
+    assert hasattr( Example, '__slots__' )
+    assert 'value' == Example.added
+    with pytest.raises( AttributeError ): Example.added = 'changed'
+
+
+@pypy_skip_mark
+def test_221_immutable_class_replacement_super_method( ):
+    ''' ImmutableClass handles class replacement by decorators. '''
+    from dataclasses import dataclass
+    module = cache_import_module( MODULE_QNAME )
+    factory = module.ImmutableClass
+
+    class Example(
+        metaclass = factory,
+        decorators = ( dataclass( slots = True ), )
+    ):
+        field1: str
+        field2: int
+
+        def method_with_super( self ):
+            ''' References class cell on CPython. '''
+            super( ).__init__( )
+            return self.__class__.__name__
+
+    obj = Example( field1 = 'test', field2 = 42 )
+    assert 'Example' == obj.method_with_super( )
+    assert hasattr( Example, '__slots__' )
+    with pytest.raises( AttributeError ):
+        Example.field1 = 'changed'
+
+
+@pypy_skip_mark
+def test_222_immutable_class_replacement_super_property( ):
+    ''' ImmutableClass handles class replacement by decorators. '''
+    from dataclasses import dataclass
+    module = cache_import_module( MODULE_QNAME )
+    factory = module.ImmutableClass
+
+    class Example(
+        metaclass = factory,
+        decorators = ( dataclass( slots = True ), )
+    ):
+        field1: str
+        field2: int
+
+        @property
+        def prop_with_class( self ):
+            ''' References class cell on CPython. '''
+            return self.__class__.__name__
+
+    obj = Example( field1 = 'test', field2 = 42 )
+    assert 'Example' == obj.prop_with_class
+    assert hasattr( Example, '__slots__' )
+    with pytest.raises( AttributeError ):
+        Example.field1 = 'changed'
+
+
+def test_300_immutable_object_init( ):
+    ''' Object prevents modification after initialization. '''
+    module = cache_import_module( MODULE_QNAME )
+
+    class Example( module.ImmutableObject ):
+        def __init__( self ):
+            super( module.ImmutableObject, self ).__setattr__( 'value', 42 )
+            super( ).__init__( )
+
+    obj = Example( )
+    with pytest.raises( AttributeError ): obj.value = 24
+    with pytest.raises( AttributeError ): obj.new_attr = 'test'
+    with pytest.raises( AttributeError ): del obj.value
+
+
+def test_400_name_calculation( ):
+    ''' Name calculation functions work correctly. '''
+    module = cache_import_module( MODULE_QNAME )
+    assert 'builtins.NoneType' == module.calculate_fqname( None )
+    assert (
+        'builtins.type'
+        == module.calculate_fqname( module.ConcealerExtension ) )
+
+
+@pytest.mark.parametrize(
+    'provided, expected',
+    (
+        ( { 'foo': 12 }, ( ) ),
+        ( { '_foo': cache_import_module }, ( ) ),
+        (
+            { 'public_func': lambda: None },
+            ( 'public_func', )
+        ),
+    )
+)
+def test_500_attribute_discovery( provided, expected ):
+    ''' Public attributes are discovered from dictionary. '''
+    module = cache_import_module( MODULE_QNAME )
+    assert expected == module.discover_public_attributes( provided )
