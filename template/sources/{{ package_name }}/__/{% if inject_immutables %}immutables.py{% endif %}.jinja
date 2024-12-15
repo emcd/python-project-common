@@ -20,13 +20,13 @@
 
 ''' Attribute concealment and immutability. '''
 
-# pylint: disable=unused-wildcard-import,wildcard-import
-# ruff: noqa: F403,F405
-
 
 from __future__ import annotations
 
-from .imports import *
+import collections.abc as cabc
+import types
+
+import typing_extensions as typx
 
 
 ClassDecorators: typx.TypeAlias = (
@@ -179,6 +179,22 @@ class ConcealerExtension:
                 or name in self._attribute_visibility_includes_ ) )
 
 
+class ImmutableModule(
+    ConcealerExtension, types.ModuleType, metaclass = ImmutableClass
+):
+    ''' Concealment and immutability on module attributes. '''
+
+    def __delattr__( self, name: str ) -> None:
+        raise AttributeError( # noqa: TRY003
+            f"Cannot delete attribute {name!r} "
+            f"on module {self.__name__!r}." ) # pylint: disable=no-member
+
+    def __setattr__( self, name: str, value: typx.Any ) -> None:
+        raise AttributeError( # noqa: TRY003
+            f"Cannot assign attribute {name!r} "
+            f"on module {self.__name__!r}." ) # pylint: disable=no-member
+
+
 class ImmutableObject( ConcealerExtension, metaclass = ImmutableClass ):
     ''' Concealment and immutability on instance attributes. '''
 
@@ -216,3 +232,34 @@ def discover_public_attributes(
     return tuple( sorted(
         name for name, attribute in attributes.items( )
         if not name.startswith( '_' ) and callable( attribute ) ) )
+
+def reclassify_modules(
+    attributes: typx.Annotated[
+        cabc.Mapping[ str, typx.Any ] | types.ModuleType | str,
+        typx.Doc( 'Module, module name, or dictionary of object attributes.' ),
+    ],
+    recursive: typx.Annotated[
+        bool,
+        typx.Doc( 'Recursively reclassify package modules?' ),
+    ] = False,
+) -> None:
+    ''' Reclassifies modules to be immutable. '''
+    from inspect import ismodule
+    from sys import modules
+    if isinstance( attributes, str ):
+        attributes = modules[ attributes ]
+    if isinstance( attributes, types.ModuleType ):
+        module = attributes
+        attributes = attributes.__dict__
+    else: module = None
+    package_name = (
+        attributes.get( '__package__' ) or attributes.get( '__name__' ) )
+    if not package_name: return
+    for value in attributes.values( ):
+        if not ismodule( value ): continue
+        if not value.__name__.startswith( f"{package_name}." ): continue
+        if recursive: reclassify_modules( value, recursive = True )
+        if isinstance( value, ImmutableModule ): continue
+        value.__class__ = ImmutableModule
+    if module and not isinstance( module, ImmutableModule ):
+        module.__class__ = ImmutableModule

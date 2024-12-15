@@ -162,7 +162,135 @@ def test_222_immutable_class_replacement_super_property( ):
         Example.field1 = 'changed'
 
 
-def test_300_immutable_object_init( ):
+# pylint: disable=no-member
+
+def test_300_module_reclassification_by_name( ):
+    ''' Module reclassification works with module name. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    test_module = ModuleType( f"{PACKAGE_NAME}.test" )
+    test_module.__package__ = PACKAGE_NAME
+    from sys import modules
+    modules[ test_module.__name__ ] = test_module
+    module.reclassify_modules( test_module.__name__ )
+    assert isinstance( test_module, module.ImmutableModule )
+    with pytest.raises( AttributeError ):
+        test_module.new_attr = 42
+
+
+def test_301_module_reclassification_by_object( ):
+    ''' Module reclassification works with module object. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    test_module = ModuleType( f"{PACKAGE_NAME}.test" )
+    test_module.__package__ = PACKAGE_NAME
+    module.reclassify_modules( test_module )
+    assert isinstance( test_module, module.ImmutableModule )
+    with pytest.raises( AttributeError ):
+        test_module.new_attr = 42
+
+
+def test_302_recursive_module_reclassification( ):
+    ''' Recursive module reclassification works. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    root = ModuleType( f"{PACKAGE_NAME}.test" )
+    root.__package__ = PACKAGE_NAME
+    sub1 = ModuleType( f"{PACKAGE_NAME}.test.sub1" )
+    sub2 = ModuleType( f"{PACKAGE_NAME}.test.sub2" )
+    root.sub1 = sub1
+    root.sub2 = sub2
+    module.reclassify_modules( root, recursive = True )
+    assert isinstance( root, module.ImmutableModule )
+    assert isinstance( sub1, module.ImmutableModule )
+    assert isinstance( sub2, module.ImmutableModule )
+    with pytest.raises( AttributeError ):
+        root.new_attr = 42
+    with pytest.raises( AttributeError ):
+        sub1.new_attr = 42
+    with pytest.raises( AttributeError ):
+        sub2.new_attr = 42
+
+
+def test_303_module_reclassification_respects_package( ):
+    ''' Module reclassification only affects package modules. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    root = ModuleType( f"{PACKAGE_NAME}.test" )
+    root.__package__ = PACKAGE_NAME
+    external = ModuleType( "other_package.module" )
+    other_pkg = ModuleType( "other_package" )
+    root.external = external
+    root.other_pkg = other_pkg
+    module.reclassify_modules( root, recursive = True )
+    assert isinstance( root, module.ImmutableModule )
+    assert not isinstance( external, module.ImmutableModule )
+    assert not isinstance( other_pkg, module.ImmutableModule )
+    with pytest.raises( AttributeError ):
+        root.new_attr = 42
+    external.new_attr = 42  # Should work
+    assert 42 == external.new_attr
+
+
+def test_304_module_reclassification_by_dict( ):
+    ''' Module reclassification works with attribute dictionary. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    m1 = ModuleType( f"{PACKAGE_NAME}.test1" )
+    m2 = ModuleType( f"{PACKAGE_NAME}.test2" )
+    m3 = ModuleType( "other.module" )
+    attrs = {
+        '__package__': PACKAGE_NAME,
+        'module1': m1,
+        'module2': m2,
+        'external': m3,
+        'other': 42,
+    }
+    module.reclassify_modules( attrs )
+    assert isinstance( m1, module.ImmutableModule )
+    assert isinstance( m2, module.ImmutableModule )
+    assert not isinstance( m3, module.ImmutableModule )
+    with pytest.raises( AttributeError ):
+        m1.new_attr = 42
+    with pytest.raises( AttributeError ):
+        m2.new_attr = 42
+    m3.new_attr = 42  # Should work
+
+
+def test_305_module_reclassification_requires_package( ):
+    ''' Module reclassification requires package name. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    m1 = ModuleType( f"{PACKAGE_NAME}.test1" )
+    attrs = { 'module1': m1 }
+    module.reclassify_modules( attrs )
+    assert not isinstance( m1, module.ImmutableModule )
+    m1.new_attr = 42
+    assert 42 == m1.new_attr
+
+
+def test_306_module_attribute_operations( ):
+    ''' Module prevents attribute deletion and modification. '''
+    module = cache_import_module( MODULE_QNAME )
+    from types import ModuleType
+    test_module = ModuleType( f"{PACKAGE_NAME}.test" )
+    test_module.__package__ = PACKAGE_NAME
+    test_module.existing = 42
+    module.reclassify_modules( test_module )
+    with pytest.raises( AttributeError ) as exc_info:
+        del test_module.existing
+    assert "Cannot delete attribute 'existing'" in str( exc_info.value )
+    assert test_module.__name__ in str( exc_info.value )
+    with pytest.raises( AttributeError ) as exc_info:
+        test_module.existing = 24
+    assert "Cannot assign attribute 'existing'" in str( exc_info.value )
+    assert test_module.__name__ in str( exc_info.value )
+    assert 42 == test_module.existing
+
+# pylint: enable=no-member
+
+
+def test_400_immutable_object_init( ):
     ''' Object prevents modification after initialization. '''
     module = cache_import_module( MODULE_QNAME )
 
@@ -177,7 +305,7 @@ def test_300_immutable_object_init( ):
     with pytest.raises( AttributeError ): del obj.value
 
 
-def test_400_name_calculation( ):
+def test_500_name_calculation( ):
     ''' Name calculation functions work correctly. '''
     module = cache_import_module( MODULE_QNAME )
     assert 'builtins.NoneType' == module.calculate_fqname( None )
@@ -197,7 +325,7 @@ def test_400_name_calculation( ):
         ),
     )
 )
-def test_500_attribute_discovery( provided, expected ):
+def test_600_attribute_discovery( provided, expected ):
     ''' Public attributes are discovered from dictionary. '''
     module = cache_import_module( MODULE_QNAME )
     assert expected == module.discover_public_attributes( provided )
