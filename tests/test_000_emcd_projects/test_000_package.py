@@ -23,7 +23,7 @@
 
 import pytest
 
-from .__ import (
+from . import (
     MODULES_NAMES_BY_MODULE_QNAME,
     MODULES_QNAMES,
     PACKAGES_NAMES,

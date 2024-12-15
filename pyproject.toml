@@ -79,6 +79,7 @@ dependencies = [
   'packaging',
   'pre-commit',
   'pylint',
+  'pylint-per-file-ignores',
   'pyright',
   'pytest',
   'ruff',
@@ -183,6 +184,7 @@ load-plugins = [
   'pylint.extensions.redefined_variable_type',
   # 'pylint.extensions.set_membership',
   # 'pylint.extensions.while_used',
+  'pylint_per_file_ignores',
 ]
 recursive = false
 suggestion-mode = true
@@ -255,6 +257,11 @@ disable = [
   'wrong-import-order',
   'wrong-import-position',
 ]
+# TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
+per-file-ignores = '''
+  /tests/:attribute-defined-outside-init,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,unexpected-keyword-arg
+  __init__\.py:unused-import
+''' # Note: Paths are regexes.
 [tool.pylint.refactoring]
 max-nested-blocks = 3
 never-returning-functions = [ 'sys.exit', 'argparse.parse_error' ]
@@ -335,7 +342,13 @@ builtins = [ 'ic' ]
 cache-dir = '.auxiliary/caches/ruff'
 [tool.ruff.lint]
 ignore = [
-  'E701', # Multiple statements on one line
+  'E701', # multiple-statements-on-one-line-colon
+]
+[tool.ruff.lint.per-file-ignores]
+'__init__.py' = [
+  'F401', # unused-import
+  'F403', # undefined-local-with-import-star
+  'F405', # undefined-local-with-import-star-usage
 ]
 
 [tool.towncrier]

@@ -18,14 +18,18 @@
 #============================================================================#
 
 
-''' Project management utilities. '''
+''' Assert correct function of common imports. '''
 
 
-from . import __
-from . import exceptions
+import pytest
+
+from . import PACKAGE_NAME, cache_import_module
 
 
-__version__ = '1.0a0'
-
-
-# TODO: Reclassify package modules as immutable and concealed.
+@pytest.mark.parametrize(
+    'module_name', ( 'cabc', 'types', 'typx' )
+)
+def test_100_exports( module_name ):
+    ''' Module exports expected names. '''
+    module = cache_import_module( f"{PACKAGE_NAME}.__.imports" )
+    assert hasattr( module, module_name )
