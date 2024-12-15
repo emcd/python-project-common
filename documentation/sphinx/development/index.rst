@@ -21,15 +21,15 @@
 
 
 *******************************************************************************
-Contribution
+Development
 *******************************************************************************
-
-Contribution to this project is welcome! However, it must follow the code of
-conduct for the project.
 
 .. toctree::
    :maxdepth: 2
 
-   conduct
-   contacts
-   ../development/index
+   environment
+   practices
+   style
+   devapi
+   releases
+   maintenance

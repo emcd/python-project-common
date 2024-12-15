@@ -20,16 +20,12 @@
 :tocdepth: 3
 
 
-*******************************************************************************
-Contribution
-*******************************************************************************
+Internal Development Interface
+===============================================================================
 
-Contribution to this project is welcome! However, it must follow the code of
-conduct for the project.
 
-.. toctree::
-   :maxdepth: 2
+Module ``emcd_projects.__``
+-------------------------------------------------------------------------------
 
-   conduct
-   contacts
-   ../development/index
+.. automodule:: emcd_projects.__
+   :ignore-module-all: true

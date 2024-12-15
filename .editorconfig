@@ -15,15 +15,19 @@ trim_trailing_whitespace = true
 [*.md]
 max_line_length = 79
 
-[*.py]
+[*.py,*.py.jinja]
 max_line_length = 79
 insert_final_newline = true
 
-[*.rst]
+[*.rs,*.rs.jinja]
+max_line_length = 79
+insert_final_newline = true
+
+[*.rst,*.rst.jinja]
 indent_size = 2
 max_line_length = 79
 
-[*.toml]
+[*.toml,*.toml.jinja]
 indent_size = 2
 
 [*.yaml]

@@ -89,6 +89,7 @@ dependencies = [
   'sphinx-inline-tabs',
   'towncrier',
   'tryceratops',
+  'yapf',
 ]
 post-install-commands = [
 ]
@@ -144,7 +145,35 @@ python = [
 [tool.hatch.version]
 path = 'sources/emcd_projects/__init__.py'
 
-# TODO: isort: https://pycqa.github.io/isort/docs/configuration/options.html
+# https://pycqa.github.io/isort/docs/configuration/options.html
+# https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
+[tool.isort]
+atomic = true
+#color = false
+#combine_as = false
+#combine_straight_imports = false
+#extra_standard_library = [ ]
+follow_links = false
+#force_alphabetical_sort_within_sections = false
+#float_to_top = false
+honor_noqa = true
+#ignore_whitespace = false
+include_trailing_comma = true
+# known_OTHER: substitute OTHER
+known_first_party = [ 'emcd_projects' ]
+#known_third_party = [ ]
+#line_length = 79
+#lines_after_imports = -1 # automatic
+#lines_before_imports = -1 # automatic
+multi_line_output = 3 # vertical hanging indent
+#quiet = false
+#sections = [ 'FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER' ]
+skip_gitignore = true
+split_on_trailing_comma = true
+#src_paths = [ ]
+#star_first = false
+#supported_extensions = [ 'pxd', 'py', 'pyi', 'pyx' ]
+use_parentheses = true
 
 
 
@@ -377,4 +406,59 @@ directory = 'removal'
 name = 'Deprecations and Removals'
 showcontent = true
 
-# TODO: yapf: https://github.com/google/yapf?tab=readme-ov-file#knobs
+# https://github.com/google/yapf?tab=readme-ov-file#knobs
+# yapf --style-help
+[tool.yapf]
+align_closing_bracket_with_visual_indent = false
+allow_multiline_dictionary_keys = true
+allow_multiline_lambdas = true
+#allow_split_before_default_or_named_assigns = true
+#allow_split_before_dict_value = true
+blank_line_before_module_docstring = true
+#blank_line_before_nested_class_or_def = true
+#blank_lines_around_top_level_definition = 2
+blank_lines_between_top_level_imports_and_variables = 2
+#coalesce_brackets = false
+#column_limit = 79
+#continuation_align_style = 'SPACE'
+#continuation_indent_width = 4
+dedent_closing_brackets = true
+#disable_ending_comma_heuristic = false
+#disable_split_list_with_comment = false
+#each_dict_entry_on_separate_line = true
+#force_multiline_dict = false
+indent_dictionary_value = true
+#indent_width = 4
+join_multiple_lines = true
+#space_between_ending_comma_and_closing_bracket = true
+space_inside_brackets = true
+spaces_around_default_or_named_assign = true
+spaces_around_dict_delimiters = true
+spaces_around_list_delimiters = true
+spaces_around_power_operator = true
+spaces_around_subscript_colon = true
+spaces_around_tuple_delimiters = true
+#spaces_before_comment = 2
+#split_all_comma_separated_values = false
+#split_all_top_level_comma_separated_values = false
+split_arguments_when_comma_terminated = true
+split_before_arithmetic_operator = true
+split_before_bitwise_operator = true
+split_before_closing_bracket = false
+#split_before_dict_set_generator = true
+split_before_dot = true
+split_before_expression_after_opening_paren = true
+split_before_first_argument = true
+split_before_logical_operator = true
+#split_before_named_assigns = true
+split_complex_comprehension = true
+split_penalty_after_opening_bracket = 100   # default: 300
+#split_penalty_after_unary_operator = 10000
+#split_penalty_arithmetic_operator = 300
+#split_penalty_before_if_expr = 0
+#split_penalty_bitwise_operator = 300
+#split_penalty_comprehension = 80
+#split_penalty_excess_character = 7000
+#split_penalty_for_added_line_split = 30
+#split_penalty_import_names = 0
+#split_penalty_logical_operator = 300

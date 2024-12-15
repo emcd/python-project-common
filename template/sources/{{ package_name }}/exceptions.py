@@ -25,11 +25,14 @@
 '''
 
 
+from . import __
+
+
 class Omniexception( BaseException ):
     ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute immutability.
+    # TODO: Class and instance attribute concealment and immutability.
 
-    _attribute_visibility_includes_: frozenset[ str ] = (
+    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
         frozenset( ( '__cause__', '__context__', ) ) )
 
 
