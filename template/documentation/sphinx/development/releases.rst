@@ -129,3 +129,76 @@ Postrelease Patch
 
 10. Cherry-pick patch and Towncrier commits back to ``master`` branch,
     resolving conflicts as necessary.
+
+Changelog Entries
+===============================================================================
+
+The project uses `Towncrier <https://towncrier.readthedocs.io/>`_ to manage its
+changelog. When making changes that should be noted in the changelog, add a
+file ("fragment") to the ``documentation/towncrier`` directory with of
+``<issue_number>.<type>.rst``, for changes with a Github issue, or
+``+<title>.<type>.rst``, for changes without an associated issue number.
+
+The entries will be collected and organized when a release is made, as
+described in the release process sections above.
+
+Available Types
+-------------------------------------------------------------------------------
+
+* ``bugfix``: For bug fixes
+* ``docs``: For documentation improvements
+* ``feature``: For new features
+* ``platform``: For changes to supported platforms
+* ``removal``: For deprecations and removals
+
+Format
+-------------------------------------------------------------------------------
+
+The file should contain a concise description of the change written in present
+tense. For example:
+
+.. code-block:: rst
+   :caption: documentation/towncrier/+immutable-modules.feature.rst
+
+   Add support for immutable module reclassification.
+
+The description should:
+
+* Start with a capital letter
+* End with a period
+* Use present tense (e.g., "Add", "Fix", "Update")
+* Focus on the what and why, not the how
+* Be understandable by users, not just developers
+
+Examples
+-------------------------------------------------------------------------------
+
+Bug Fix:
+    .. code-block:: rst
+       :caption: documentation/towncrier/456.bugfix.rst
+
+       Fix attribute visibility in immutable modules.
+
+Documentation:
+    .. code-block:: rst
+       :caption: documentation/towncrier/457.docs.rst
+
+       Improve release process documentation with Towncrier details.
+
+Feature:
+    .. code-block:: rst
+       :caption: documentation/towncrier/458.feature.rst
+
+       Add recursive module reclassification support.
+
+Platform:
+    .. code-block:: rst
+       :caption: documentation/towncrier/459.platform.rst
+
+       Add support for Python 3.13.
+
+Removal:
+    .. code-block:: rst
+       :caption: documentation/towncrier/460.removal.rst
+
+       Remove deprecated ``make_immutable`` function.
