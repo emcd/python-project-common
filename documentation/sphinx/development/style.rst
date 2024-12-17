@@ -48,7 +48,7 @@ Code Style
   style other than the project code style, will be rejected.
 
 
-.. todo:: Rust Guidance
+
 
 
 Specific Preferences
@@ -186,9 +186,8 @@ the last element unless the collection has a trailing comma::
         if is_valid( value ) ]
 
     # Multi-line conditional statements
-    if (
-        validate_input( data, strict = True )
-        and process_ready( )
+    if (  validate_input( data, strict = True )
+          and process_ready( )
     ): process( data )
 
 
