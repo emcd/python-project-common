@@ -387,6 +387,43 @@ Verb Prefixes
   ``validate_<object>``, which returns object or raises exception,
   ``is_<member-or-state>`` for type/state testing.
 
+Function Suffixes
+-------------------------------------------------------------------------------
+
+The project uses a limited set of function suffixes to indicate specific
+execution patterns:
+
+- ``_async``: Indicates asynchronous execution
+- ``_continuous``: Indicates generator/iterator return type (alternative:
+  ``_streaming`` when using Germanic-derived terms)
+- ``_recursive``: Indicates recursive execution when this is part of the
+  function's contract rather than an implementation detail
+
+Other execution patterns (parallel processing, batch operations, etc.) are
+better expressed through specific function names or appropriate use of
+threading/multiprocessing facilities.
+
+When Not to Use Suffixes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Avoid suffixes for:
+
+- Implementation details (``_cached``, ``_optimized``)
+- Alternative implementations (``_safe``, ``_fallback``)
+- Batch operations (use prefix ``mass_`` or ``multi_`` prefixes instead)
+- In-place operations (use Python's established patterns like list methods)
+- Development status (``_experimental``)
+- Debugging aids (``_verbose``)
+- Parallel processing (use appropriate concurrency primitives instead)
+
+These aspects are better handled through:
+
+- Separate, clearly named functions
+- Documentation of performance characteristics
+- Version control and release management
+- Logging and debugging facilities
+- Threading and multiprocessing facilities
+
 
 Linguistic Consistency
 ===============================================================================
@@ -408,9 +445,9 @@ linguistic consistency within:
 
 Within individual names, maintain agreement between verbs and nouns:
 
-- ``shape_set`` (Germanic verb with Germanic-derived noun)
-- ``validate_sequence`` (Latin verb with Latin-derived noun)
-- ``analyze_algorithm`` (Greek verb with Greek-influenced noun)
+- ``shape_set`` (Germanic-derived verb with Germanic-derived noun)
+- ``validate_sequence`` (Latin-derived verb with Latin-derived noun)
+- ``analyze_algorithm`` (Greek-derived verb with Greek-influenced noun)
 
 Technical abbreviations (``str``, ``obj``), acronyms (``xml``, ``json``), and
 some portmanteau words are linguistically neutral and can be used with terms
