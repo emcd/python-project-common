@@ -117,6 +117,36 @@ line as the definition when possible::
     def stub_function( data: bytes ) -> None: pass
 
 
+Docstrings
+-------------------------------------------------------------------------------
+
+* Use triple single-quotes for all docstrings.
+
+* For single-line docstrings, include one space after the opening quotes and
+  before the closing quotes:
+
+  .. code-block:: python
+
+      def example_function( ):
+          ''' An example function. '''
+
+* For multi-line docstrings, include a newline after the heading and
+  before the closing quotes. Indent continuation lines to match the opening
+  quotes:
+
+  .. code-block:: python
+
+      class ExampleClass:
+          ''' An example class.
+
+              This class demonstrates proper docstring formatting
+              with multiple lines of documentation.
+          '''
+
+* Place the closing triple quotes on their own line for multi-line docstrings,
+  indented to match the opening quotes.
+
+
 Imports
 -------------------------------------------------------------------------------
 

@@ -133,10 +133,10 @@ Postrelease Patch
 Changelog Entries
 ===============================================================================
 
-The project uses `Towncrier <https://towncrier.readthedocs.io/>`_ to manage its
-changelog. When making changes that should be noted in the changelog, add a
-file ("fragment") to the ``documentation/towncrier`` directory with of
-``<issue_number>.<type>.rst``, for changes with a Github issue, or
+The project uses `Towncrier <https://towncrier.readthedocs.io/en/stable/>`_ to
+manage its changelog. When making changes that should be noted in the
+changelog, add a file ("fragment") to the ``documentation/towncrier`` directory
+with of ``<issue_number>.<type>.rst``, for changes with a Github issue, or
 ``+<title>.<type>.rst``, for changes without an associated issue number.
 
 The entries will be collected and organized when a release is made, as
