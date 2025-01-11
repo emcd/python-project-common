@@ -93,7 +93,7 @@ repos:
     language: system
     always_run: true
     pass_filenames: false
-    entry: 'hatch --env develop run pylint --reports=no --score=no sources tests'
+    entry: 'hatch --env develop run pylint --recursive=yes --reports=no --score=no sources tests'
 
   - id: hatch-coverage
     name: 'Coverage: Pytest'

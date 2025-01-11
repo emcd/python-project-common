@@ -35,19 +35,19 @@ Code Style
     code panes with enlarged font sizes. (Enlarged font sizes are used to
     reduce eye strain and allow people to code without visual correction.)
 
-  - **Vertical Compactness**:
+  - **Vertical Compactness**.
 
-      - Function definitions, loop bodies, and condition bodies, which
-        consist of a single statement and which are sufficiently short,
-        should be placed on the same line as the statement that introduces
-        the body.
+    - Function definitions, loop bodies, and condition bodies, which
+      consist of a single statement and which are sufficiently short,
+      should be placed on the same line as the statement that introduces
+      the body.
 
-      - Blank lines should not be used to group statements within a function
-        body. If you need to group statements within a function body, then
-        perhaps the function should be refactored.
+    - Blank lines should not be used to group statements within a function
+      body. If you need to group statements within a function body, then
+      perhaps the function should be refactored.
 
-      - Function bodies should not be longer than thirty lines. I.e., one
-        should not have to scroll to read a function.
+    - Function bodies should not be longer than thirty lines. I.e., one
+      should not have to scroll to read a function.
 
 * Pull requests, which attempt to enforce the Python ``black`` style or any
   style other than the project code style, will be rejected.
