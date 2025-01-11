@@ -30,7 +30,9 @@ Package ``{{ package_name }}``
 .. todo:: Provide package description.
 
 
+{% if inject_exceptions -%}
 Module ``{{ package_name }}.exceptions``
 -------------------------------------------------------------------------------
 
 .. automodule:: {{ package_name }}.exceptions
+{%- endif %}

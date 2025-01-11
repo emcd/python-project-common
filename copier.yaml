@@ -143,6 +143,12 @@ inject_foundations:
     help: 'Include foundational constructs?'
     default: false
 
+inject_exceptions:
+    type: bool
+    help: 'Include base exceptions for package?'
+    when: "{{ inject_foundations }}"
+    default: false
+
 inject_immutables:
     type: bool
     help: 'Include support for immutables with concealment?'

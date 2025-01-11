@@ -281,8 +281,6 @@ valid-metaclass-classmethod-first-arg = [ 'clscls' ]
 # TODO: exclude-too-few-public-methods: Consider exception hierarchies.
 ignored-parents = [
   'abc.ABCMeta',
-  '{{ package_name }}.exceptions.Omniexception',
-  '{{ package_name }}.exceptions.Omnierror',
   'builtins.AttributeError',
   'builtins.BaseException',
   'builtins.Exception',
@@ -290,6 +288,12 @@ ignored-parents = [
   'builtins.TypeError',
   'builtins.ValueError',
   'builtins.type',
+  # --- BEGIN: Injected by Copier ---
+  {% if inject_exceptions -%}
+  '{{ package_name }}.exceptions.Omnierror',
+  '{{ package_name }}.exceptions.Omniexception',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 max-args = 5
 max-attributes = 7
@@ -303,10 +307,14 @@ max-statements = 30
 min-public-methods = 1
 [tool.pylint.exceptions]
 overgeneral-exceptions = [
+  'builtins.BaseException',
+  'builtins.Exception',
+  # --- BEGIN: Injected by Copier ---
+  {% if inject_exceptions -%}
   '{{ package_name }}.exceptions.Omnierror',
   '{{ package_name }}.exceptions.Omniexception',
-  'builtins.BaseException',
-  'builtins.Exception'
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 [tool.pylint.format]
 ignore-long-lines = '''^(\s*<?https?://\S+>?|([^'"]*\s+)?#.*)$'''
