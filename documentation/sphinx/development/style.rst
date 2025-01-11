@@ -35,52 +35,26 @@ Code Style
     code panes with enlarged font sizes. (Enlarged font sizes are used to
     reduce eye strain and allow people to code without visual correction.)
 
-  - **Vertical Compactness**: Function definitions, loop bodies, and condition
-    bodies, which consist of a single statement and which are sufficiently
-    short, should be placed on the same line as the statement that introduces
-    the body. Blank lines should not be used to group statements within a
-    function body. If you need to group statements within a function body, then
-    perhaps the function should be refactored. Function bodies should not be
-    longer than thirty lines. I.e., one should not have to scroll to read a
-    function.
+  - **Vertical Compactness**:
+
+      - Function definitions, loop bodies, and condition bodies, which
+        consist of a single statement and which are sufficiently short,
+        should be placed on the same line as the statement that introduces
+        the body.
+
+      - Blank lines should not be used to group statements within a function
+        body. If you need to group statements within a function body, then
+        perhaps the function should be refactored.
+
+      - Function bodies should not be longer than thirty lines. I.e., one
+        should not have to scroll to read a function.
 
 * Pull requests, which attempt to enforce the Python ``black`` style or any
   style other than the project code style, will be rejected.
 
 
-
-
-
 Specific Preferences
 ===============================================================================
-
-Collections
--------------------------------------------------------------------------------
-
-For short collections, keep them on one line::
-
-    points = [ ( 1, 2 ), ( 3, 4 ), ( 5, 6 ) ]
-
-    config = { 'name': 'example', 'value': 42 }
-
-For longer collections, split elements across lines::
-
-    matrix = [
-        [ 1, 2, 3, 4 ],
-        [ 5, 6, 7, 8 ],
-        [ 9, 10, 11, 12 ],
-    ]
-
-    settings = {
-        'name': 'example',
-        'description': 'A longer example that needs multiple lines',
-        'values': [ 1, 2, 3, 4, 5 ],
-        'nested': {
-            'key1': 'value1',
-            'key2': 'value2',
-        },
-    }
-
 
 Class and Function Definitions
 -------------------------------------------------------------------------------
@@ -113,6 +87,78 @@ line as the definition when possible::
     def simple_operation( value: int ) -> int: return value * 2
 
     def stub_function( data: bytes ) -> None: pass
+
+When a single-line form would overflow, always go to the a three-or-more-line
+form with the arguments on indented lines between the first and last lines.
+There is no two-line form. I.e., do this::
+
+    def semicomplex_function(
+        argument_1: int, argument_2: int, argument_3: str
+    ) -> bool: return True
+
+and *not* this::
+
+    def semicomplex_function( argument_1: int, argument_2: int, argument_3: str
+    ) -> bool: return True
+
+
+Collections
+-------------------------------------------------------------------------------
+
+For short collections, keep them on one line::
+
+    points = [ ( 1, 2 ), ( 3, 4 ), ( 5, 6 ) ]
+
+    config = { 'name': 'example', 'value': 42 }
+
+For longer collections, split elements one per line with a trailing comma after
+the last element::
+
+    matrix = [
+        [ 1, 2, 3, 4 ],
+        [ 5, 6, 7, 8 ],
+        [ 9, 10, 11, 12 ],
+    ]
+
+    settings = {
+        'name': 'example',
+        'description': 'A longer example that needs multiple lines',
+        'values': [ 1, 2, 3, 4, 5 ],
+        'nested': {
+            'key1': 'value1',
+            'key2': 'value2',
+        },
+    }
+
+
+Docstrings
+-------------------------------------------------------------------------------
+
+* Use triple single-quotes for all docstrings.
+
+* For single-line docstrings, include one space after the opening quotes and
+  before the closing quotes:
+
+  .. code-block:: python
+
+      def example_function( ):
+          ''' An example function. '''
+
+* For multi-line docstrings, include a newline after the heading and
+  before the closing quotes. Indent continuation lines to match the opening
+  quotes:
+
+  .. code-block:: python
+
+      class ExampleClass:
+          ''' An example class.
+
+              This class demonstrates proper docstring formatting
+              with multiple lines of documentation.
+          '''
+
+* Place the closing triple quotes on their own line for multi-line docstrings,
+  indented to match the opening quotes.
 
 
 Imports
@@ -222,10 +268,29 @@ that would make the line too long, use normal multi-line formatting::
     ): pass
 
 
+Spaces
+-------------------------------------------------------------------------------
+
+One space after opening delimiters (``(``, ``[``, ``{``) and one space before
+closing delimiters (``)``, ``]``, ``}``), *except* inside of f-strings and
+strings to which ``.format`` is applied.
+
+Empty collection literals have a single space between delimiters, ``( )``, ``[
+]``, ``{ }``. This includes function definitions and invocations with no
+arguments.
+
+A space on each side of ``=`` for nominative/keyword arguments::
+
+    def some_function( magic = 42 ): pass
+
+and *not*::
+
+    def some_function(magic=42): pass
+
 Strings
 -------------------------------------------------------------------------------
 
-Use single quotes for string literals unless using f-strings, ``.format( )``
+Use single quotes for string literals unless using f-strings, ``.format``
 method, or exception and logging messages::
 
     name = 'example'
@@ -236,6 +301,17 @@ method, or exception and logging messages::
 
     raise ValueError( "Invalid configuration value" )
     logger.error( "Failed to process item" )
+
+Do not use function calls or subscripts inside of f-string expressions. These
+can be opaque to some linters and syntax highlighters. Instead, use strings
+with the ``.format`` method for these cases, where the function calls or
+subscripts are performed on the arguments to ``.format``. This::
+
+    "Values: {values}".format( values = ', '.join( values ) )
+
+and *not* this::
+
+    f"Values: {', '.join( values )}"
 
 
 Automation

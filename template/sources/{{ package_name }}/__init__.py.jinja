@@ -22,7 +22,9 @@
 
 
 from . import __
+{%- if inject_exceptions %}
 from . import exceptions
+{%- endif %}
 
 
 __version__ = '1.0a0'
