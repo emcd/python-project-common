@@ -29,6 +29,7 @@ Development
 
    environment
    practices
+   nomenclature
    style
    devapi
    releases
