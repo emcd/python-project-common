@@ -145,7 +145,7 @@ linters = [
   '''bandit --configfile pyproject.toml --quiet --recursive sources''',
   '''tryceratops sources''',
   '''pyright sources''',
-  '''pylint sources documentation tests''',
+  '''pylint --recursive yes sources documentation tests''',
   '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
      sources/{{ package_name }}''',
   {%- if enable_rust_extension %}
