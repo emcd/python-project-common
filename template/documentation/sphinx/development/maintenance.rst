@@ -34,7 +34,7 @@ template can be incorporated into the project, ensuring adherence to evolving
 practices and technologies.
 
 Updates
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 1. Ensure the working directory is clean (commit or stash changes).
 
