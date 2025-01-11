@@ -25,7 +25,7 @@ from . import __
 from . import exceptions
 
 
-__version__ = '1.0a0'
+__version__ = '1.7a0'
 
 
 # TODO: Reclassify package modules as immutable and concealed.
