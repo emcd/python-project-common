@@ -2,6 +2,51 @@
 
 .. towncrier release notes start
 
+
+Copier Template 1.8.1 (2025-01-11)
+==================================
+
+Bugfixes
+--------
+
+- Add missing 'recursive' option to Pylint invocation in Git pre-push hook.
+
+
+Copier Template 1.8 (2025-01-11)
+================================
+
+Features
+--------
+
+- Add option to inject base exceptions for package.
+- Add 'recursive' option to Pylint invocation for better module discovery.
+
+Copier Template 1.7 (2025-01-10)
+================================
+
+Features
+--------
+
+- Add detailed nomenclature guide for Python and Rust projects.
+- Improve style guide with clarifications on whitespace and docstrings.
+- Update Towncrier documentation link to stable version.
+
+
+Copier Template 1.6 (2024-12-16)
+================================
+
+Features
+--------
+
+- Add Towncrier fragment documentation with examples.
+- Control emission of Rust-specific sections in documentation.
+
+Bugfixes
+--------
+
+- Add more Pylint ignores for test files.
+
+
 Copier Template 1.5 (2024-12-15)
 ================================
 
@@ -60,8 +105,8 @@ Features
 Copier Template 1.0.2 (2024-12-10)
 ==================================
 
-Fixes
------
+Bugfixes
+--------
 
 - Properly specify template directory.
 
@@ -69,8 +114,8 @@ Fixes
 Copier Template 1.0.1 (2024-12-08)
 ==================================
 
-Fixes
------
+Bugfixes
+--------
 
 - Fix assorted issues in template and workflows.
 
