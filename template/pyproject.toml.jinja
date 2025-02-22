@@ -62,7 +62,7 @@ branch = true
 command_line = '-m pytest' # TODO? '--fail-under'
 data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
 parallel = true
-source = [ 'sources', 'tests' ]
+source = [ 'sources' ]
 [tool.coverage.html]
 directory = '.auxiliary/artifacts/coverage-pytest'
 [tool.coverage.xml]
@@ -290,6 +290,8 @@ ignored-parents = [
   'builtins.TypeError',
   'builtins.ValueError',
   'builtins.type',
+  'typing.Protocol',
+  'typing_extensions.Protocol',
   # --- BEGIN: Injected by Copier ---
   {% if inject_exceptions -%}
   '{{ package_name }}.exceptions.Omnierror',
@@ -345,7 +347,9 @@ disable = [
   'multiple-statements',
   'reimported',
   'too-few-public-methods',
+  'too-many-positional-arguments',  # 'too-many-arguments' is good enough
   'ungrouped-imports',
+  'unused-wildcard-import',
   'use-dict-literal',
   'using-exception-groups-in-unsupported-version',
   'wrong-import-order',
@@ -353,7 +357,7 @@ disable = [
 ]
 # TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
 per-file-ignores = '''
-  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,unexpected-keyword-arg
+  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
   __init__\.py:unused-import
 ''' # Note: Paths are regexes.
 [tool.pylint.refactoring]
@@ -404,6 +408,7 @@ reportMatchNotExhaustive = true
 reportMissingImports = true
 reportMissingTypeStubs = true
 reportMissingTypeArgument = true
+reportPossiblyUnboundVariable = false # Covered by other linters.
 reportPrivateImportUsage = false      # Covered by other linters.
 reportPrivateUsage = false            # Covered by other linters.
 reportSelfClsParameterName = false    # Too opinionated.
@@ -429,8 +434,8 @@ stubPath = 'sources/{{ package_name }}/_typedecls'
 #       attribute on protected modules. Instead, we use Sphinx to run doctests.
 minversion = '8.1'
 addopts = '--capture=no --exitfirst -rfE'
-testpaths = [ 'tests', 'sources' ]
-python_files = [ '*.py' ]
+testpaths = [ 'tests' ]
+python_files = [ 'test_*.py' ]
 python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
 
