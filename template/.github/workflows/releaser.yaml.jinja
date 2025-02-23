@@ -85,10 +85,74 @@ jobs:
           skip-existing: {% raw %}${{ inputs.which-pypi == 'testpypi' }}{% endraw %}
   {%- endif %}
 
+  {% if enable_executables -%}
+  create-executables:
+      needs: [initialize, package]
+      strategy:
+        matrix:
+          include:
+            - os: ubuntu-22.04
+              platform-name: linux-x86_64
+            - os: windows-latest
+              platform-name: windows-x86_64
+            - os: macos-13
+              platform-name: macos-x86_64
+            - os: macos-latest
+              platform-name: macos-arm64
+      runs-on: {% raw %}${{ matrix.os }}{% endraw %}
+      env:
+        _PYI_EXECUTABLE_NAME: {{ distribution_name }}-{% raw %}${{ github.ref_name }}-${{ matrix.platform-name }}{% endraw %}
+      steps:
+        - name: Prepare Python
+          uses: emcd/python-project-common/.github/actions/python-hatch@{{ _commit }}
+          with:
+            python-version: {% raw %}${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}{% endraw %}
+
+        # - name: Install UPX (Linux)  # Pre-installed on GHA Ubuntu runners
+        #   if: {% raw %}${{ runner.os == 'Linux' }}{% endraw %}
+        #   run: sudo apt-get install --yes upx
+
+        - name: Install UPX (macOS)
+          if: {% raw %}${{ runner.os == 'macOS' }}{% endraw %}
+          run: brew install upx
+
+        - name: Install UPX (Windows)
+          if: {% raw %}${{ runner.os == 'Windows' }}{% endraw %}
+          run: choco install upx
+
+        - name: Create Executable
+          run: |
+            hatch --env develop run \
+              pyinstaller \
+                --clean --distpath=.auxiliary/artifacts/pyinstaller \
+                pyinstaller.spec
+          shell: bash
+
+        - name: Validate Executable (Non-Windows)
+          if: {% raw %}${{ runner.os != 'Windows' }}{% endraw %}
+          run: |
+            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
+          shell: bash
+
+        - name: Save Executable
+          uses: actions/upload-artifact@v4
+          with:
+            name: executables--{% raw %}${{ matrix.platform-name }}--${{ github.run_id }}{% endraw %}
+            path: .auxiliary/artifacts/pyinstaller/{{ distribution_name }}-*
+  {%- endif %}
+
   {% if enable_publication -%}
   publish-github:
     if: {% raw %}${{ startsWith(github.ref, 'refs/tags/') }}{% endraw %}
-    needs: [initialize, package, publish-pypi]
+    needs:
+      - initialize
+      - package
+      - publish-pypi
+      # --- BEGIN: Injected by Copier ---
+      {% if enable_executables -%}
+      - create-executables
+      {%- endif %}
+      # --- END: Injected by Copier ---
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -106,25 +170,42 @@ jobs:
           name: python-package-distributions--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
 
+      {% if enable_executables %}
+      - name: Restore Executables
+        uses: actions/download-artifact@v4
+        with:
+          pattern: executables--*--{% raw %}${{ github.run_id }}{% endraw %}
+          path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
+          merge-multiple: true
+      {% endif %}
+
       - name: Generate Integrity Check Values
         run: |
           set -eu -o pipefail
           cd {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
-          sha256sum *.tar.gz *.whl >SHA256SUMS.txt
+          sha256sum {{ distribution_name }}-* >SHA256SUMS.txt
 
       - name: Sign Distributions
         uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
           inputs: >-
             {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/SHA256SUMS.txt
-            {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/*.tar.gz
-            {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/*.whl
+            {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/{{ distribution_name }}-*
 
       - name: Generate Release Notes
         run: |
+          set -eu -o pipefail
           hatch --env develop run \
             towncrier build --draft --version ${GITHUB_REF_NAME} \
-            > release-notes.rst
+            >.auxiliary/artifacts/tc-release-notes.rst
+          {% if enable_executables %}
+          cat \
+            documentation/miscellany/executables.rst \
+            .auxiliary/artifacts/tc-release-notes.rst \
+            >.auxiliary/artifacts/release-notes.rst
+          {% else %}
+          cp .auxiliary/artifacts/tc-release-notes.rst .auxiliary/artifacts/release-notes.rst
+          {% endif %}
 
       - name: Create Release
         env:
@@ -132,7 +213,7 @@ jobs:
         run: |
           gh release create '{% raw %}${{ github.ref_name }}{% endraw %}' \
             --repo '{% raw %}${{ github.repository }}{% endraw %}' \
-            --notes-file release-notes.rst
+            --notes-file .auxiliary/artifacts/release-notes.rst
 
       - name: Publish Artifacts
         env:

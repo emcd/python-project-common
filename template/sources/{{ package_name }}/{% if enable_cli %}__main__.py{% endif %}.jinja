@@ -18,18 +18,11 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
-
-# pylint: disable=unused-import
-# ruff: noqa: F401
+''' Entrypoint. '''
 
 
-from __future__ import annotations
-
-import collections.abc as cabc
-import types
-
-import typing_extensions as typx
+# Note: Use absolute import for PyInstaller happiness.
+from {{ package_name }}.cli import execute
 
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+if '__main__' == __name__: execute( )

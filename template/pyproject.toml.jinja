@@ -1,3 +1,6 @@
+# vim: set filetype=toml fileencoding=utf-8:
+# -*- mode: toml ; coding: utf-8 -*-
+
 [build-system]
 requires = [
   {%- if enable_rust_extension %}
@@ -21,6 +24,11 @@ readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= {{ python_version_min }}'
 dependencies = [
   'typing-extensions',
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_cli -%}
+  'tyro',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers
   'Development Status :: {{ development_status }}',
@@ -41,6 +49,10 @@ keywords = [ ] # TODO: Add keywords.
 [[project.authors]]
 name = '{{ author_name }}'
 email = '{{ author_email }}'
+{%- if enable_cli %}
+[project.scripts]
+{{ distribution_name }} = '{{ package_name }}:main'
+{%- endif %}
 [project.urls]
 'Homepage' = 'https://github.com/{{ gh_owner }}/{{ project_name }}'
 {%- if enable_publication %}
@@ -73,14 +85,31 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
-only-include = [ 'sources/{{ package_name }}' ]
+only-include = [
+  'sources/{{ package_name }}',
+  # --- BEGIN: Injected by Copier ---
+  {% if include_data_resources -%}
+  'data',
+  {%- endif %}
+  # --- END: Injected by Copier ---
+]
 strict-naming = false
 [tool.hatch.build.targets.wheel]
-only-include = [ 'sources/{{ package_name }}' ]
+only-include = [
+  'sources/{{ package_name }}',
+  # --- BEGIN: Injected by Copier ---
+  {% if include_data_resources -%}
+  'data',
+  {%- endif %}
+  # --- END: Injected by Copier ---
+]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/{{ package_name }}' = '{{ package_name }}'
+{%- if include_data_resources %}
+'data' = '{{ package_name }}/data'
 {%- endif %}
+{%- endif %} {# enable_rust_extension #}
 [tool.hatch.envs.default]
 python = '{{ python_version_min }}'
 [tool.hatch.envs.develop]
@@ -90,15 +119,8 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
-  {%- if enable_property_tests %}
-  'hypothesis',
-  {%- endif %}
   'icecream',
-  {%- if enable_rust_extension %}
   'isort',
-  'maturin~=1.7',
-  #'maturin-import-hook',
-  {%- endif %}
   'packaging',
   'pre-commit',
   'pylint',
@@ -113,11 +135,25 @@ dependencies = [
   'towncrier',
   'tryceratops',
   'yapf',
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_executables -%}
+  'pyinstaller',
+  {%- endif %}
+  {% if enable_property_tests -%}
+  'hypothesis',
+  {%- endif %}
+  {% if enable_rust_extension -%}
+  'maturin~=1.7',
+  #'maturin-import-hook',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 post-install-commands = [
-  {%- if enable_rust_extension %}
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_rust_extension -%}
   #'''python -m maturin_import_hook site install''',
   {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
 {%- if enable_property_tests %}
@@ -154,8 +190,15 @@ linters = [
   {%- endif %}
 ]
 packagers = [
-  'hatch build',
-  # TODO? Sign packages.
+  '''hatch build''',
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_executables -%}
+  '''pyinstaller \
+      --clean \
+      --distpath=.auxiliary/artifacts/pyinstaller \
+      pyinstaller.spec''',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 testers = [
   'coverage erase',
