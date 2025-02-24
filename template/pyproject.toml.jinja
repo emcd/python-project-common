@@ -1,3 +1,6 @@
+# vim: set filetype=toml fileencoding=utf-8:
+# -*- mode: toml ; coding: utf-8 -*-
+
 [build-system]
 requires = [
   {%- if enable_rust_extension %}
@@ -21,6 +24,11 @@ readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= {{ python_version_min }}'
 dependencies = [
   'typing-extensions',
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_cli -%}
+  'tyro',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers
   'Development Status :: {{ development_status }}',
@@ -41,6 +49,10 @@ keywords = [ ] # TODO: Add keywords.
 [[project.authors]]
 name = '{{ author_name }}'
 email = '{{ author_email }}'
+{%- if enable_cli %}
+[project.scripts]
+{{ distribution_name }} = '{{ package_name }}:main'
+{%- endif %}
 [project.urls]
 'Homepage' = 'https://github.com/{{ gh_owner }}/{{ project_name }}'
 {%- if enable_publication %}
@@ -62,7 +74,7 @@ branch = true
 command_line = '-m pytest' # TODO? '--fail-under'
 data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
 parallel = true
-source = [ 'sources', 'tests' ]
+source = [ 'sources' ]
 [tool.coverage.html]
 directory = '.auxiliary/artifacts/coverage-pytest'
 [tool.coverage.xml]
@@ -73,14 +85,31 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
-only-include = [ 'sources/{{ package_name }}' ]
+only-include = [
+  'sources/{{ package_name }}',
+  # --- BEGIN: Injected by Copier ---
+  {% if include_data_resources -%}
+  'data',
+  {%- endif %}
+  # --- END: Injected by Copier ---
+]
 strict-naming = false
 [tool.hatch.build.targets.wheel]
-only-include = [ 'sources/{{ package_name }}' ]
+only-include = [
+  'sources/{{ package_name }}',
+  # --- BEGIN: Injected by Copier ---
+  {% if include_data_resources -%}
+  'data',
+  {%- endif %}
+  # --- END: Injected by Copier ---
+]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/{{ package_name }}' = '{{ package_name }}'
+{%- if include_data_resources %}
+'data' = '{{ package_name }}/data'
 {%- endif %}
+{%- endif %} {# enable_rust_extension #}
 [tool.hatch.envs.default]
 python = '{{ python_version_min }}'
 [tool.hatch.envs.develop]
@@ -90,15 +119,8 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
-  {%- if enable_property_tests %}
-  'hypothesis',
-  {%- endif %}
   'icecream',
-  {%- if enable_rust_extension %}
   'isort',
-  'maturin~=1.7',
-  #'maturin-import-hook',
-  {%- endif %}
   'packaging',
   'pre-commit',
   'pylint',
@@ -113,11 +135,25 @@ dependencies = [
   'towncrier',
   'tryceratops',
   'yapf',
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_executables -%}
+  'pyinstaller',
+  {%- endif %}
+  {% if enable_property_tests -%}
+  'hypothesis',
+  {%- endif %}
+  {% if enable_rust_extension -%}
+  'maturin~=1.7',
+  #'maturin-import-hook',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 post-install-commands = [
-  {%- if enable_rust_extension %}
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_rust_extension -%}
   #'''python -m maturin_import_hook site install''',
   {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
 {%- if enable_property_tests %}
@@ -154,8 +190,15 @@ linters = [
   {%- endif %}
 ]
 packagers = [
-  'hatch build',
-  # TODO? Sign packages.
+  '''hatch build''',
+  # --- BEGIN: Injected by Copier ---
+  {% if enable_executables -%}
+  '''pyinstaller \
+      --clean \
+      --distpath=.auxiliary/artifacts/pyinstaller \
+      pyinstaller.spec''',
+  {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 testers = [
   'coverage erase',
@@ -290,6 +333,8 @@ ignored-parents = [
   'builtins.TypeError',
   'builtins.ValueError',
   'builtins.type',
+  'typing.Protocol',
+  'typing_extensions.Protocol',
   # --- BEGIN: Injected by Copier ---
   {% if inject_exceptions -%}
   '{{ package_name }}.exceptions.Omnierror',
@@ -345,7 +390,9 @@ disable = [
   'multiple-statements',
   'reimported',
   'too-few-public-methods',
+  'too-many-positional-arguments',  # 'too-many-arguments' is good enough
   'ungrouped-imports',
+  'unused-wildcard-import',
   'use-dict-literal',
   'using-exception-groups-in-unsupported-version',
   'wrong-import-order',
@@ -353,7 +400,7 @@ disable = [
 ]
 # TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
 per-file-ignores = '''
-  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,unexpected-keyword-arg
+  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
   __init__\.py:unused-import
 ''' # Note: Paths are regexes.
 [tool.pylint.refactoring]
@@ -404,6 +451,7 @@ reportMatchNotExhaustive = true
 reportMissingImports = true
 reportMissingTypeStubs = true
 reportMissingTypeArgument = true
+reportPossiblyUnboundVariable = false # Covered by other linters.
 reportPrivateImportUsage = false      # Covered by other linters.
 reportPrivateUsage = false            # Covered by other linters.
 reportSelfClsParameterName = false    # Too opinionated.
@@ -429,8 +477,8 @@ stubPath = 'sources/{{ package_name }}/_typedecls'
 #       attribute on protected modules. Instead, we use Sphinx to run doctests.
 minversion = '8.1'
 addopts = '--capture=no --exitfirst -rfE'
-testpaths = [ 'tests', 'sources' ]
-python_files = [ '*.py' ]
+testpaths = [ 'tests' ]
+python_files = [ 'test_*.py' ]
 python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
 

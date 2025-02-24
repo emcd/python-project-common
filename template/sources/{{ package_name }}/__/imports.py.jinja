@@ -18,26 +18,23 @@
 #============================================================================#
 
 
-''' {{ description }} '''
+''' Common imports and type aliases used throughout the package. '''
+
+# pylint: disable=unused-import
+# ruff: noqa: F401
 
 
-from . import __
+from __future__ import annotations
+
+import collections.abc as cabc
+import types
+
+import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
-{% if inject_exceptions -%}
-from . import exceptions
+{% if enable_cli -%}
+import tyro
 {%- endif %}
 # --- END: Injected by Copier ---
 
 
-__version__ = '1.0a0'
-
-
-{%- if enable_cli %}
-def main( ):
-    ''' Entrypoint. '''
-    from .cli import execute
-    execute( )
-{%- endif %}
-
-
-# TODO: Reclassify package modules as immutable and concealed.
+ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType

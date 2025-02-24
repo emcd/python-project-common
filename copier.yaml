@@ -128,6 +128,11 @@ extension_name:
         Extension name must contain only lowercase letters, numbers, and underscores
         {% endif %}
 
+include_data_resources:
+    type: bool
+    help: 'Include data directory with package resources?'
+    default: false
+
 enable_property_tests:
     type: bool
     help: 'Enable property-based testing?'
@@ -137,6 +142,17 @@ enable_publication:
     type: bool
     help: 'Enable package and documentation publication?'
     default: false
+
+enable_cli:
+    type: bool
+    help: 'Include command-line interface support?'
+    default: false
+
+enable_executables:
+    type: bool
+    help: 'Generate standalone executables for the CLI?'
+    default: false
+    when: "{{ enable_cli }}"
 
 inject_foundations:
     type: bool
