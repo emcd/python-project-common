@@ -22,7 +22,9 @@
 
 
 from . import __
+# --- BEGIN: Injected by Copier ---
 from . import exceptions
+# --- END: Injected by Copier ---
 
 
 __version__ = '1.7a0'
