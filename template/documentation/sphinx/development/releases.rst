@@ -38,7 +38,7 @@ Initial Release Candidate
 4. Bump alpha to release candidate. Commit.
    ::
 
-        hatch --env develop version rc
+        hatch version rc
 
 5. Tag.
    ::
@@ -52,7 +52,7 @@ Initial Release Candidate
 8. Bump alpha to next minor version on ``master`` branch. Commit.
    ::
 
-        hatch --env develop version minor,alpha
+        hatch version minor,alpha
 
 9. Tag start of development for next release.
     ::
@@ -67,7 +67,7 @@ Release
 2. Bump release candidate to release. Commit.
    ::
 
-        hatch --env develop version release
+        hatch version release
 
 3. Run Towncrier. Commit.
    ::
@@ -103,7 +103,7 @@ Postrelease Patch
 3. Bump release to patch or increment patch number. Commit.
    ::
 
-        hatch --env develop version patch
+        hatch version patch
 
 4. Run Towncrier. Commit.
    ::
