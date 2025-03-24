@@ -1,0 +1,15 @@
+[package]
+name = 'emcd_projects_rust'
+version = '0.1.0'  # Will be updated by build.rs
+edition = '2021'
+publish = false
+
+[lib]
+name = '_extension'  # Importable as emcd_projects._extension
+crate-type = [ 'cdylib' ]
+
+[dependencies]
+pyo3 = { version = '0.20', features = [ 'extension-module' ] }
+
+[build-dependencies]
+regex = '1.11'

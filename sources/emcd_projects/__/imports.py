@@ -31,7 +31,6 @@ import types
 
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
-
 # --- END: Injected by Copier ---
 
 

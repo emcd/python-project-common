@@ -31,7 +31,7 @@ Documentation
   or which attempt to provide function docstrings in the style of Google,
   NumPy, Sphinx, etc..., will be rejected.
 
-
+.. todo:: Rust Documentation
 
 * Use long option names, whenever possible, in command line examples. Readers,
   who are unfamiliar with a command, should not have to look up the meanings of
@@ -51,7 +51,7 @@ Exceptional Conditions
   ``from`` original exception or raise a new exception with original exception
   as the ``__context__``. Or properly handle the exception.
 
-
+.. todo:: Rust Panics
 
 Imports
 ===============================================================================

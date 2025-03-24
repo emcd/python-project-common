@@ -1,4 +1,6 @@
 .env
+*.so
 .*.swp
 __pycache__/
 bugs/
+dist/

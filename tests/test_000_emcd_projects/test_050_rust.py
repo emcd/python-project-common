@@ -18,19 +18,23 @@
 #============================================================================#
 
 
-''' Family of exceptions for package API. '''
+''' Assert basic characteristics of Rust extension module. '''
 
 
-from . import __
+from . import PACKAGE_NAME, cache_import_module
 
 
-class Omniexception( BaseException ):
-    ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment and immutability.
+def test_000_sanity( ):
+    ''' Extension module is sane. '''
+    module = cache_import_module( f"{PACKAGE_NAME}._extension" )
+    assert module.__package__ == PACKAGE_NAME
+    assert module.__name__ == f"{PACKAGE_NAME}._extension"
 
-    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
-        frozenset( ( '__cause__', '__context__', ) ) )
 
-
-class Omnierror( Omniexception, Exception ):
-    ''' Base for error exceptions raised by package API. '''
+def test_010_version_sync( ):
+    ''' Extension module version matches package version. '''
+    package = cache_import_module( PACKAGE_NAME )
+    module = cache_import_module( f"{PACKAGE_NAME}._extension" )
+    assert hasattr( module, '__version__' )
+    assert isinstance( module.__version__, str )
+    assert module.__version__ == package.__version__

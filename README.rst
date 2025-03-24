@@ -17,7 +17,7 @@
    +--------------------------------------------------------------------------+
 
 *******************************************************************************
-                                  emcd-projects
+                                 emcd-projects
 *******************************************************************************
 
 .. image:: https://github.com/emcd/python-project-common/actions/workflows/tester.yaml/badge.svg?branch=master&event=push
@@ -44,6 +44,7 @@ Features
    - Sphinx documentation framework
    - Quality assurance tools configuration
    - Optional Rust extension support via PyO3/Maturin
+   - Optional standalone executable via PyInstaller
    - Property-based testing support (Hypothesis/proptest)
 
 🔄 **Reusable GitHub Workflows**

@@ -112,5 +112,13 @@ jobs:
         id: rust-targets
         run: |
           set -eu
-          echo "targets=[]" >>${GITHUB_OUTPUT}
+          targets="$(jq --compact-output <<EOF
+          {
+            "ubuntu-latest": ["x86_64-unknown-linux-gnu"],
+            "macos-latest": ["x86_64-apple-darwin", "aarch64-apple-darwin"],
+            "windows-latest": ["x86_64-pc-windows-msvc"]
+          }
+          EOF
+          )"
+          echo "targets=${targets}" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
