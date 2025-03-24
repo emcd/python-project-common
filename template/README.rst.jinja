@@ -17,10 +17,11 @@
    +--------------------------------------------------------------------------+
 
 *******************************************************************************
-                                  {{ distribution_name }}
+{% filter center(79) %}{{ distribution_name }}{% endfilter %}
 *******************************************************************************
 
-{% if enable_publication -%}
+{%- if enable_publication %}
+
 .. image:: https://img.shields.io/pypi/v/{{ distribution_name }}
    :alt: Package Version
    :target: https://pypi.org/project/{{ distribution_name }}/
@@ -42,7 +43,8 @@
    :alt: Project License
    :target: https://github.com/{{ gh_owner }}/{{ project_name }}/blob/master/LICENSE.txt
 
-{% if enable_publication -%}
+{%- if enable_publication %}
+
 .. image:: https://img.shields.io/pypi/pyversions/{{ distribution_name }}
    :alt: Python Versions
    :target: https://pypi.org/project/{{ distribution_name }}/
@@ -87,13 +89,15 @@
    :alt: Ruff
    :target: https://github.com/astral-sh/ruff
 
-{% if enable_property_tests -%}
+{%- if enable_property_tests %}
+
 .. image:: https://img.shields.io/badge/hypothesis-tested-brightgreen.svg
    :alt: Hypothesis
    :target: https://hypothesis.readthedocs.io/en/latest/
 {%- endif %}
 
-{% if enable_publication -%}
+{%- if enable_publication %}
+
 .. image:: https://img.shields.io/pypi/implementation/{{ distribution_name }}
    :alt: PyPI - Implementation
    :target: https://pypi.org/project/{{ distribution_name }}/

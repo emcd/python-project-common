@@ -25,7 +25,7 @@ requires-python = '>= {{ python_version_min }}'
 dependencies = [
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
-  {% if enable_cli -%}
+  {%- if enable_cli %}
   'tyro',
   {%- endif %}
   # --- END: Injected by Copier ---
@@ -35,6 +35,7 @@ classifiers = [ # https://pypi.org/classifiers
   #'Intended Audience :: Developers',
   'License :: OSI Approved :: Apache Software License',
   'Programming Language :: Python :: 3 :: Only',
+  # --- BEGIN: Injected by Copier ---
   {%- for version in python_versions %}
   'Programming Language :: Python :: {{ version }}',
   {%- endfor %}
@@ -42,6 +43,7 @@ classifiers = [ # https://pypi.org/classifiers
   {%- if pypy_versions %}
   'Programming Language :: Python :: Implementation :: PyPy',
   {%- endif %}
+  # --- END: Injected by Copier ---
   #'Topic :: Software Development',
   # TODO: Add classifiers as appropriate.
 ]
@@ -88,7 +90,7 @@ directory = '.auxiliary/artifacts/hatch-build'
 only-include = [
   'sources/{{ package_name }}',
   # --- BEGIN: Injected by Copier ---
-  {% if include_data_resources -%}
+  {%- if include_data_resources %}
   'data',
   {%- endif %}
   # --- END: Injected by Copier ---
@@ -98,7 +100,7 @@ strict-naming = false
 only-include = [
   'sources/{{ package_name }}',
   # --- BEGIN: Injected by Copier ---
-  {% if include_data_resources -%}
+  {%- if include_data_resources %}
   'data',
   {%- endif %}
   # --- END: Injected by Copier ---
@@ -106,9 +108,11 @@ only-include = [
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/{{ package_name }}' = '{{ package_name }}'
+# --- BEGIN: Injected by Copier ---
 {%- if include_data_resources %}
 'data' = '{{ package_name }}/data'
 {%- endif %}
+# --- END: Injected by Copier ---
 {%- endif %} {# enable_rust_extension #}
 [tool.hatch.envs.default]
 python = '{{ python_version_min }}'
@@ -136,13 +140,13 @@ dependencies = [
   'tryceratops',
   'yapf',
   # --- BEGIN: Injected by Copier ---
-  {% if enable_executables -%}
+  {%- if enable_executables %}
   'pyinstaller',
   {%- endif %}
-  {% if enable_property_tests -%}
+  {%- if enable_property_tests %}
   'hypothesis',
   {%- endif %}
-  {% if enable_rust_extension -%}
+  {%- if enable_rust_extension %}
   'maturin~=1.7',
   #'maturin-import-hook',
   {%- endif %}
@@ -150,16 +154,18 @@ dependencies = [
 ]
 post-install-commands = [
   # --- BEGIN: Injected by Copier ---
-  {% if enable_rust_extension -%}
+  {%- if enable_rust_extension %}
   #'''python -m maturin_import_hook site install''',
   {%- endif %}
   # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
+PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
+# --- BEGIN: Injected by Copier ---
 {%- if enable_property_tests %}
 HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
 {%- endif %}
-PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
+# --- END: Injected by Copier ---
 [tool.hatch.envs.develop.scripts]
 docsgen = [
   '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
@@ -171,6 +177,7 @@ docsgen = [
 ]
 linters = [
   '''ruff check --quiet sources documentation tests''',
+  # --- BEGIN: Injected by Copier ---
   {%- if enable_rust_extension %}
   # TODO: Use '-C' flag, which is only on nightly, as of 2024-12-11.
   '''cargo check --manifest-path sources/{{ crate_name }}/Cargo.toml''',
@@ -178,21 +185,24 @@ linters = [
      -- --deny warnings --warn clippy::pedantic''',
   # TODO: cargo deny # Not installed with Cargo by default.
   {%- endif %}
+  # --- END: Injected by Copier ---
   '''bandit --configfile pyproject.toml --quiet --recursive sources''',
   '''tryceratops sources''',
   '''pyright sources''',
   '''pylint --recursive yes sources documentation tests''',
   '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
      sources/{{ package_name }}''',
+  # --- BEGIN: Injected by Copier ---
   {%- if enable_rust_extension %}
   '''semgrep --config p/rust --error --quiet --skip-unknown-extensions \
      sources/{{ crate_name }}''',
   {%- endif %}
+  # --- END: Injected by Copier ---
 ]
 packagers = [
   '''hatch build''',
   # --- BEGIN: Injected by Copier ---
-  {% if enable_executables -%}
+  {%- if enable_executables %}
   '''pyinstaller \
       --clean \
       --distpath=.auxiliary/artifacts/pyinstaller \
@@ -259,7 +269,8 @@ split_on_trailing_comma = true
 #supported_extensions = [ 'pxd', 'py', 'pyi', 'pyx' ]
 use_parentheses = true
 
-{% if enable_rust_extension -%}
+{%- if enable_rust_extension %}
+
 [tool.maturin]
 compatibility = 'manylinux2014'
 features = [ 'pyo3/extension-module' ]
@@ -336,7 +347,7 @@ ignored-parents = [
   'typing.Protocol',
   'typing_extensions.Protocol',
   # --- BEGIN: Injected by Copier ---
-  {% if inject_exceptions -%}
+  {%- if inject_exceptions %}
   '{{ package_name }}.exceptions.Omnierror',
   '{{ package_name }}.exceptions.Omniexception',
   {%- endif %}
@@ -357,7 +368,7 @@ overgeneral-exceptions = [
   'builtins.BaseException',
   'builtins.Exception',
   # --- BEGIN: Injected by Copier ---
-  {% if inject_exceptions -%}
+  {%- if inject_exceptions %}
   '{{ package_name }}.exceptions.Omnierror',
   '{{ package_name }}.exceptions.Omniexception',
   {%- endif %}
@@ -400,7 +411,7 @@ disable = [
 ]
 # TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
 per-file-ignores = '''
-  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
+  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,redefined-outer-name,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
   __init__\.py:unused-import
 ''' # Note: Paths are regexes.
 [tool.pylint.refactoring]
@@ -521,6 +532,9 @@ showcontent = true
 directory = 'removal'
 name = 'Deprecations and Removals'
 showcontent = true
+
+[tool.tryceratops]
+exclude = [ 'tests' ]
 
 # https://github.com/google/yapf?tab=readme-ov-file#knobs
 # yapf --style-help
