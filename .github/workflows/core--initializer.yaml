@@ -61,8 +61,6 @@ jobs:
             hatch: "py3.11"
           "3.12":
             hatch: "py3.12"
-          "3.13":
-            hatch: "py3.13"
           "pypy3.10":
             hatch: "pypy3.10"
           EOF
