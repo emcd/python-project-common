@@ -30,7 +30,7 @@ jobs:
       platforms: {% raw %}'${{ needs.initialize.outputs.platforms }}'{% endraw %}
       python-descriptors: {% raw %}'${{ needs.initialize.outputs.python-descriptors }}'{% endraw %}
       python-versions: {% raw %}'${{ needs.initialize.outputs.python-versions }}'{% endraw %}
-      {% if enable_rust_extension -%}
+      {%- if enable_rust_extension %}
       rust-targets: {% raw %}'${{ needs.initialize.outputs.rust-targets }}'{% endraw %}
       {%- endif %}
 
@@ -58,7 +58,8 @@ jobs:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}
 
-  {% if enable_publication -%}
+  {%- if enable_publication %}
+
   publish-pypi:
     if: {% raw %}${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}{% endraw %}
     needs: [initialize, package]
@@ -85,7 +86,8 @@ jobs:
           skip-existing: {% raw %}${{ inputs.which-pypi == 'testpypi' }}{% endraw %}
   {%- endif %}
 
-  {% if enable_executables -%}
+  {%- if enable_executables %}
+
   create-executables:
       needs: [initialize, package]
       strategy:
@@ -141,7 +143,8 @@ jobs:
             path: .auxiliary/artifacts/pyinstaller/{{ distribution_name }}-*
   {%- endif %}
 
-  {% if enable_publication -%}
+  {%- if enable_publication %}
+
   publish-github:
     if: {% raw %}${{ startsWith(github.ref, 'refs/tags/') }}{% endraw %}
     needs:
@@ -149,7 +152,7 @@ jobs:
       - package
       - publish-pypi
       # --- BEGIN: Injected by Copier ---
-      {% if enable_executables -%}
+      {%- if enable_executables %}
       - create-executables
       {%- endif %}
       # --- END: Injected by Copier ---
@@ -170,14 +173,15 @@ jobs:
           name: python-package-distributions--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
 
-      {% if enable_executables %}
+      {%- if enable_executables %}
+
       - name: Restore Executables
         uses: actions/download-artifact@v4
         with:
           pattern: executables--*--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
           merge-multiple: true
-      {% endif %}
+      {%- endif %}
 
       - name: Generate Integrity Check Values
         run: |
@@ -198,14 +202,14 @@ jobs:
           hatch --env develop run \
             towncrier build --draft --version ${GITHUB_REF_NAME} \
             >.auxiliary/artifacts/tc-release-notes.rst
-          {% if enable_executables %}
+          {%- if enable_executables %}
           cat \
-            documentation/miscellany/executables.rst \
+            documentation/executables.rst \
             .auxiliary/artifacts/tc-release-notes.rst \
             >.auxiliary/artifacts/release-notes.rst
-          {% else %}
+          {%- else %}
           cp .auxiliary/artifacts/tc-release-notes.rst .auxiliary/artifacts/release-notes.rst
-          {% endif %}
+          {%- endif %}
 
       - name: Create Release
         env:

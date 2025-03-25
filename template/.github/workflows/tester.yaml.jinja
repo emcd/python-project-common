@@ -20,7 +20,7 @@ jobs:
       platforms: {% raw %}'${{ needs.initialize.outputs.platforms }}'{% endraw %}
       python-descriptors: {% raw %}'${{ needs.initialize.outputs.python-descriptors }}'{% endraw %}
       python-versions: {% raw %}'${{ needs.initialize.outputs.python-versions }}'{% endraw %}
-      {% if enable_rust_extension -%}
+      {%- if enable_rust_extension %}
       rust-targets: {% raw %}'${{ needs.initialize.outputs.rust-targets }}'{% endraw %}
       {%- endif %}
 

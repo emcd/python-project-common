@@ -86,7 +86,7 @@ Release
 7. Clean up news fragments to prevent recycling in future releases. Commit.
    ::
 
-        git rm documentation/towncrier/*.rst
+        git rm .auxiliary/data/towncrier/*.rst
         git commit -m "Clean up news fragments."
 
 8. Push cleanup commit to upstream.
@@ -122,7 +122,7 @@ Postrelease Patch
 8. Clean up news fragments to prevent recycling in future releases. Commit.
    ::
 
-        git rm documentation/towncrier/*.rst
+        git rm .auxiliary/data/towncrier/*.rst
         git commit -m "Clean up news fragments."
 
 9. Push cleanup commit to upstream.
@@ -135,9 +135,10 @@ Changelog Entries
 
 The project uses `Towncrier <https://towncrier.readthedocs.io/en/stable/>`_ to
 manage its changelog. When making changes that should be noted in the
-changelog, add a file ("fragment") to the ``documentation/towncrier`` directory
-with of ``<issue_number>.<type>.rst``, for changes with a Github issue, or
-``+<title>.<type>.rst``, for changes without an associated issue number.
+changelog, add a file ("fragment") to the ``.auxiliary/data/towncrier``
+directory with of ``<issue_number>.<type>.rst``, for changes with a Github
+issue, or ``+<title>.<type>.rst``, for changes without an associated issue
+number.
 
 The entries will be collected and organized when a release is made, as
 described in the release process sections above.
@@ -158,7 +159,7 @@ The file should contain a concise description of the change written in present
 tense. For example:
 
 .. code-block:: rst
-   :caption: documentation/towncrier/+immutable-modules.feature.rst
+   :caption: .auxiliary/data/towncrier/+immutable-modules.feature.rst
 
    Add support for immutable module reclassification.
 
@@ -175,30 +176,30 @@ Examples
 
 Bug Fix:
     .. code-block:: rst
-       :caption: documentation/towncrier/456.bugfix.rst
+       :caption: .auxiliary/data/towncrier/456.bugfix.rst
 
        Fix attribute visibility in immutable modules.
 
 Documentation:
     .. code-block:: rst
-       :caption: documentation/towncrier/457.docs.rst
+       :caption: .auxiliary/data/towncrier/457.docs.rst
 
        Improve release process documentation with Towncrier details.
 
 Feature:
     .. code-block:: rst
-       :caption: documentation/towncrier/458.feature.rst
+       :caption: .auxiliary/data/towncrier/458.feature.rst
 
        Add recursive module reclassification support.
 
 Platform:
     .. code-block:: rst
-       :caption: documentation/towncrier/459.platform.rst
+       :caption: .auxiliary/data/towncrier/459.platform.rst
 
        Add support for Python 3.13.
 
 Removal:
     .. code-block:: rst
-       :caption: documentation/towncrier/460.removal.rst
+       :caption: .auxiliary/data/towncrier/460.removal.rst
 
        Remove deprecated ``make_immutable`` function.

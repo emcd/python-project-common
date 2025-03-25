@@ -169,11 +169,11 @@ HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
 [tool.hatch.envs.develop.scripts]
 docsgen = [
   '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-doctest''',
+     documentation .auxiliary/artifacts/sphinx-doctest''',
   '''sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-linkcheck''',
+     documentation .auxiliary/artifacts/sphinx-linkcheck''',
   '''sphinx-build -a -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-html''',
+     documentation .auxiliary/artifacts/sphinx-html''',
 ]
 linters = [
   '''ruff check --quiet sources documentation tests''',
@@ -508,7 +508,7 @@ ignore = [
 ]
 
 [tool.towncrier]
-directory = 'documentation/towncrier'
+directory = '.auxiliary/data/towncrier'
 filename = 'changelog.rst'
 package = '{{ package_name }}'
 package_dir = 'sources'

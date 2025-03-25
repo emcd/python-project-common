@@ -25,7 +25,7 @@ def _import_version( ):
     from importlib import import_module
     from pathlib import Path
     from sys import path
-    project_location = Path( __file__ ).parent.parent.parent
+    project_location = Path( __file__ ).parent.parent
     path.insert( 0, str( project_location / 'sources' ) )
     module = import_module( '{{ package_name }}' )
     return module.__version__
