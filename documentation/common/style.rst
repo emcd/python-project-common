@@ -52,11 +52,7 @@ Code Style
 * Pull requests, which attempt to enforce the Python ``black`` style or any
   style other than the project code style, will be rejected.
 
-
-{%- if enable_rust_extension %}
-
 .. todo:: Rust Guidance
-{%- endif %}
 
 
 Specific Preferences

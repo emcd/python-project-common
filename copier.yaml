@@ -68,15 +68,15 @@ python_versions:
         {% endif %}
 
 pypy_versions:
+    # Note: 2025-03-24: PyPy 3.11 not supported in Hatch yet.
+    #       Still in beta from upstream.
     type: str
     help: Supported PyPy Python versions
     multiselect: true
     choices:
         - '3.10'
-        - '3.11'
     default:
         - '3.10'
-        - '3.11'
 
 python_version_min:
     type: str

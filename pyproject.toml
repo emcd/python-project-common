@@ -17,7 +17,6 @@ requires-python = '>= 3.10'
 dependencies = [
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
-  
   # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers
@@ -25,12 +24,14 @@ classifiers = [ # https://pypi.org/classifiers
   #'Intended Audience :: Developers',
   'License :: OSI Approved :: Apache Software License',
   'Programming Language :: Python :: 3 :: Only',
+  # --- BEGIN: Injected by Copier ---
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: Implementation :: CPython',
   'Programming Language :: Python :: Implementation :: PyPy',
+  # --- END: Injected by Copier ---
   #'Topic :: Software Development',
   # TODO: Add classifiers as appropriate.
 ]
@@ -68,7 +69,6 @@ directory = '.auxiliary/artifacts/hatch-build'
 only-include = [
   'sources/emcd_projects',
   # --- BEGIN: Injected by Copier ---
-  
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
@@ -76,12 +76,13 @@ strict-naming = false
 only-include = [
   'sources/emcd_projects',
   # --- BEGIN: Injected by Copier ---
-  
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
-'sources/emcd_projects' = 'emcd_projects' 
+'sources/emcd_projects' = 'emcd_projects'
+# --- BEGIN: Injected by Copier ---
+# --- END: Injected by Copier --- 
 [tool.hatch.envs.default]
 python = '3.10'
 [tool.hatch.envs.develop]
@@ -108,40 +109,41 @@ dependencies = [
   'tryceratops',
   'yapf',
   # --- BEGIN: Injected by Copier ---
-  
-  
-  
   # --- END: Injected by Copier ---
 ]
 post-install-commands = [
   # --- BEGIN: Injected by Copier ---
-  
   # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
 PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
+# --- BEGIN: Injected by Copier ---
+# --- END: Injected by Copier ---
 [tool.hatch.envs.develop.scripts]
 docsgen = [
   '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-doctest''',
+     documentation .auxiliary/artifacts/sphinx-doctest''',
   '''sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-linkcheck''',
+     documentation .auxiliary/artifacts/sphinx-linkcheck''',
   '''sphinx-build -a -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-html''',
+     documentation .auxiliary/artifacts/sphinx-html''',
 ]
 linters = [
   '''ruff check --quiet sources documentation tests''',
+  # --- BEGIN: Injected by Copier ---
+  # --- END: Injected by Copier ---
   '''bandit --configfile pyproject.toml --quiet --recursive sources''',
   '''tryceratops sources''',
   '''pyright sources''',
   '''pylint --recursive yes sources documentation tests''',
   '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
      sources/emcd_projects''',
+  # --- BEGIN: Injected by Copier ---
+  # --- END: Injected by Copier ---
 ]
 packagers = [
   '''hatch build''',
   # --- BEGIN: Injected by Copier ---
-  
   # --- END: Injected by Copier ---
 ]
 testers = [
@@ -201,8 +203,6 @@ split_on_trailing_comma = true
 #star_first = false
 #supported_extensions = [ 'pxd', 'py', 'pyi', 'pyx' ]
 use_parentheses = true
-
-
 
 # https://mypy.readthedocs.io/en/stable/config_file.html
 [tool.mypy]
@@ -329,7 +329,7 @@ disable = [
 ]
 # TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
 per-file-ignores = '''
-  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
+  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,redefined-outer-name,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
   __init__\.py:unused-import
 ''' # Note: Paths are regexes.
 [tool.pylint.refactoring]
@@ -426,7 +426,7 @@ ignore = [
 ]
 
 [tool.towncrier]
-directory = 'documentation/towncrier'
+directory = '.auxiliary/data/towncrier'
 filename = 'changelog.rst'
 package = 'emcd_projects'
 package_dir = 'sources'
@@ -450,6 +450,9 @@ showcontent = true
 directory = 'removal'
 name = 'Deprecations and Removals'
 showcontent = true
+
+[tool.tryceratops]
+exclude = [ 'tests' ]
 
 # https://github.com/google/yapf?tab=readme-ov-file#knobs
 # yapf --style-help

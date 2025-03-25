@@ -1,4 +1,4 @@
-.. vim: set fileencoding=utf-8:
+.. vim: set filetype=rst fileencoding=utf-8:
 .. -*- coding: utf-8 -*-
 .. +--------------------------------------------------------------------------+
    |                                                                          |
@@ -17,9 +17,16 @@
    +--------------------------------------------------------------------------+
 
 
+:tocdepth: 3
+
+
 *******************************************************************************
-Project Contacts
+Contribution
 *******************************************************************************
+
+Contribution to this project is welcome! However, it must follow the :doc:`code
+of conduct <common/conduct>` for the project.
+
 
 Ways to Contribute
 ===============================================================================
@@ -30,4 +37,45 @@ Ways to Contribute
 
 * Fork the repository and submit `pull requests
   <https://github.com/emcd/python-project-common/pulls>`_ to improve the
-  library or its documentation.
+  source code or documentation. Pull requests should follow the development
+  guidance and standards below.
+
+
+Development
+===============================================================================
+
+Guidance and Standards
+-------------------------------------------------------------------------------
+
+* Follow the :doc:`development environment preparation and management
+  instructions <common/environment>` to ensure consistency with maintainer
+  development environments and CI workflows.
+
+* Adhere to the :doc:`development practices <common/practices>` and :doc:`code
+  style <common/style>` to improve the probability of pull request acceptance.
+  You may wish to use an LLM to assist with this, if the standards seem too
+  onerous or specific.
+
+* Also consider the :doc:`nomenclature advice <common/nomenclature>` for
+  consistency and to improve the probability of pull request acceptance.
+
+* Prepare changelog fragments according to the :doc:`releases guide
+  <common/releases>` as appropriate.
+
+* Although unncessary for non-maintainer contributions, additional background
+  can be found in the :doc:`maintenance guide <common/maintenance>`.
+
+Resources
+-------------------------------------------------------------------------------
+
+.. toctree::
+   :maxdepth: 2
+
+   devapi
+   common/conduct
+   common/environment
+   common/practices
+   common/style
+   common/nomenclature
+   common/releases
+   common/maintenance
