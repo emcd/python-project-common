@@ -61,6 +61,8 @@ jobs:
             hatch: "py3.11"
           "3.12":
             hatch: "py3.12"
+          "3.13":
+            hatch: "py3.13"
           "pypy3.10":
             hatch: "pypy3.10"
           EOF
@@ -110,13 +112,5 @@ jobs:
         id: rust-targets
         run: |
           set -eu
-          targets="$(jq --compact-output <<EOF
-          {
-            "ubuntu-latest": ["x86_64-unknown-linux-gnu"],
-            "macos-latest": ["x86_64-apple-darwin", "aarch64-apple-darwin"],
-            "windows-latest": ["x86_64-pc-windows-msvc"]
-          }
-          EOF
-          )"
-          echo "targets=${targets}" >>${GITHUB_OUTPUT}
+          echo "targets=[]" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}

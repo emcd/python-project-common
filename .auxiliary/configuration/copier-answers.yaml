@@ -3,15 +3,13 @@ _commit: v1.11
 _src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
-crate_name: emcd_projects_rust
 description: Project management utilities.
 development_status: 3 - Alpha
 distribution_name: emcd-projects
 enable_cli: false
 enable_property_tests: false
 enable_publication: false
-enable_rust_extension: true
-extension_name: _extension
+enable_rust_extension: false
 gh_owner: emcd
 include_data_resources: false
 inject_docstring_utils: false
@@ -27,4 +25,5 @@ python_versions:
 - '3.10'
 - '3.11'
 - '3.12'
+- '3.13'
 year_of_origin: 2024

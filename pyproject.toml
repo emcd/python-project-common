@@ -3,9 +3,9 @@
 
 [build-system]
 requires = [
-  'maturin~=1.7',
+  'hatchling',
 ]
-build-backend = 'maturin'
+build-backend = 'hatchling.build'
 
 [project]
 name = 'emcd-projects'
@@ -28,6 +28,7 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: Implementation :: CPython',
   'Programming Language :: Python :: Implementation :: PyPy',
   # --- END: Injected by Copier ---
@@ -61,7 +62,27 @@ directory = '.auxiliary/artifacts/coverage-pytest'
 [tool.coverage.xml]
 output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 
-# https://hatch.pypa.io/latest/config/metadata/ 
+# https://hatch.pypa.io/latest/config/metadata/
+[tool.hatch.build]
+directory = '.auxiliary/artifacts/hatch-build'
+[tool.hatch.build.targets.sdist]
+only-include = [
+  'sources/emcd_projects',
+  # --- BEGIN: Injected by Copier ---
+  # --- END: Injected by Copier ---
+]
+strict-naming = false
+[tool.hatch.build.targets.wheel]
+only-include = [
+  'sources/emcd_projects',
+  # --- BEGIN: Injected by Copier ---
+  # --- END: Injected by Copier ---
+]
+strict-naming = false
+[tool.hatch.build.targets.wheel.sources]
+'sources/emcd_projects' = 'emcd_projects'
+# --- BEGIN: Injected by Copier ---
+# --- END: Injected by Copier --- 
 [tool.hatch.envs.default]
 python = '3.10'
 [tool.hatch.envs.develop]
@@ -88,13 +109,10 @@ dependencies = [
   'tryceratops',
   'yapf',
   # --- BEGIN: Injected by Copier ---
-  'maturin~=1.7',
-  #'maturin-import-hook',
   # --- END: Injected by Copier ---
 ]
 post-install-commands = [
   # --- BEGIN: Injected by Copier ---
-  #'''python -m maturin_import_hook site install''',
   # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
@@ -104,20 +122,15 @@ PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
 [tool.hatch.envs.develop.scripts]
 docsgen = [
   '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-doctest''',
+     documentation .auxiliary/artifacts/sphinx-doctest''',
   '''sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-linkcheck''',
+     documentation .auxiliary/artifacts/sphinx-linkcheck''',
   '''sphinx-build -a -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-html''',
+     documentation .auxiliary/artifacts/sphinx-html''',
 ]
 linters = [
   '''ruff check --quiet sources documentation tests''',
   # --- BEGIN: Injected by Copier ---
-  # TODO: Use '-C' flag, which is only on nightly, as of 2024-12-11.
-  '''cargo check --manifest-path sources/emcd_projects_rust/Cargo.toml''',
-  '''cargo clippy --manifest-path sources/emcd_projects_rust/Cargo.toml \
-     -- --deny warnings --warn clippy::pedantic''',
-  # TODO: cargo deny # Not installed with Cargo by default.
   # --- END: Injected by Copier ---
   '''bandit --configfile pyproject.toml --quiet --recursive sources''',
   '''tryceratops sources''',
@@ -126,8 +139,6 @@ linters = [
   '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
      sources/emcd_projects''',
   # --- BEGIN: Injected by Copier ---
-  '''semgrep --config p/rust --error --quiet --skip-unknown-extensions \
-     sources/emcd_projects_rust''',
   # --- END: Injected by Copier ---
 ]
 packagers = [
@@ -157,6 +168,7 @@ python = [
     '3.10',
     '3.11',
     '3.12',
+    '3.13',
     'pypy3.10',
 ]
 [tool.hatch.version]
@@ -191,16 +203,6 @@ split_on_trailing_comma = true
 #star_first = false
 #supported_extensions = [ 'pxd', 'py', 'pyi', 'pyx' ]
 use_parentheses = true
-
-[tool.maturin]
-compatibility = 'manylinux2014'
-features = [ 'pyo3/extension-module' ]
-include = [ '.gitignore', 'LICENSE.txt', 'README.rst', 'pyproject.toml' ]
-manifest-path = 'sources/emcd_projects_rust/Cargo.toml'
-module-name = 'emcd_projects._extension'
-python-packages = [ 'emcd_projects' ]
-python-source = 'sources'
-strip = true
 
 # https://mypy.readthedocs.io/en/stable/config_file.html
 [tool.mypy]
@@ -424,7 +426,7 @@ ignore = [
 ]
 
 [tool.towncrier]
-directory = 'documentation/towncrier'
+directory = '.auxiliary/data/towncrier'
 filename = 'changelog.rst'
 package = 'emcd_projects'
 package_dir = 'sources'
