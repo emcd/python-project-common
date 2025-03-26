@@ -22,4 +22,4 @@ Release Notes
 *******************************************************************************
 
 
-.. include:: ../changelog.rst
+.. towncrier release notes start
