@@ -427,7 +427,7 @@ ignore = [
 
 [tool.towncrier]
 directory = '.auxiliary/data/towncrier'
-filename = 'changelog.rst'
+filename = 'documentation/changelog.rst'
 package = 'emcd_projects'
 package_dir = 'sources'
 [[tool.towncrier.type]]
