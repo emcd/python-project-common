@@ -18,16 +18,26 @@
 #============================================================================#
 
 
-''' Project management utilities. '''
+''' Command-line interface. '''
 
+
+from __future__ import annotations
 
 from . import __
-# --- BEGIN: Injected by Copier ---
-from . import exceptions
-# --- END: Injected by Copier ---
 
 
-__version__ = '1.7a0'
+def execute( ) -> None:
+    ''' Entrypoint for CLI execution. '''
+    from asyncio import run
+    config = (
+        __.tyro.conf.HelptextFromCommentsOff,
+    )
+    try: run( __.tyro.cli( _main, config = config )( ) ) # pyright: ignore
+    except SystemExit: raise
+    except BaseException:
+        # TODO: Log exception.
+        raise SystemExit( 1 ) from None
 
 
-# TODO: Reclassify package modules as immutable and concealed.
+async def _main( ) -> None:
+    print( "Hello from emcdproj CLI!" )

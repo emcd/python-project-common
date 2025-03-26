@@ -24,13 +24,13 @@ API
 *******************************************************************************
 
 
-Package ``emcd_projects``
+Package ``emcdproj``
 ===============================================================================
 
 .. todo:: Provide package description.
 
 
-Module ``emcd_projects.exceptions``
+Module ``emcdproj.exceptions``
 -------------------------------------------------------------------------------
 
-.. automodule:: emcd_projects.exceptions
+.. automodule:: emcdproj.exceptions

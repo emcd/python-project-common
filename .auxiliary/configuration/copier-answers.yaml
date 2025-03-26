@@ -6,7 +6,8 @@ author_name: Eric McDonald
 description: Project management utilities.
 development_status: 3 - Alpha
 distribution_name: emcd-projects
-enable_cli: false
+enable_cli: true
+enable_executables: false
 enable_property_tests: false
 enable_publication: false
 enable_rust_extension: false
@@ -16,7 +17,7 @@ inject_docstring_utils: false
 inject_exceptions: true
 inject_foundations: true
 inject_immutables: false
-package_name: emcd_projects
+package_name: emcdproj
 project_name: python-project-common
 pypy_versions:
 - '3.10'

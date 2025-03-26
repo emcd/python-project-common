@@ -30,7 +30,7 @@ import types
 from types import MappingProxyType as DictionaryProxy
 
 
-PACKAGE_NAME = 'emcd_projects'
+PACKAGE_NAME = 'emcdproj'
 PACKAGES_NAMES = ( PACKAGE_NAME, )
 
 

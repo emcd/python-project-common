@@ -17,6 +17,7 @@ requires-python = '>= 3.10'
 dependencies = [
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
+  'tyro',
   # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers
@@ -39,6 +40,8 @@ keywords = [ ] # TODO: Add keywords.
 [[project.authors]]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
+[project.scripts]
+emcd-projects = 'emcdproj:main'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-project-common'
 'Source Code' = 'https://github.com/emcd/python-project-common'
@@ -67,20 +70,20 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
 only-include = [
-  'sources/emcd_projects',
+  'sources/emcdproj',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
 [tool.hatch.build.targets.wheel]
 only-include = [
-  'sources/emcd_projects',
+  'sources/emcdproj',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
-'sources/emcd_projects' = 'emcd_projects'
+'sources/emcdproj' = 'emcdproj'
 # --- BEGIN: Injected by Copier ---
 # --- END: Injected by Copier --- 
 [tool.hatch.envs.default]
@@ -137,7 +140,7 @@ linters = [
   '''pyright sources''',
   '''pylint --recursive yes sources documentation tests''',
   '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
-     sources/emcd_projects''',
+     sources/emcdproj''',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
@@ -172,7 +175,7 @@ python = [
     'pypy3.10',
 ]
 [tool.hatch.version]
-path = 'sources/emcd_projects/__init__.py'
+path = 'sources/emcdproj/__init__.py'
 
 # https://pycqa.github.io/isort/docs/configuration/options.html
 # https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
@@ -189,7 +192,7 @@ honor_noqa = true
 #ignore_whitespace = false
 include_trailing_comma = true
 # known_OTHER: substitute OTHER
-known_first_party = [ 'emcd_projects' ]
+known_first_party = [ 'emcdproj' ]
 #known_third_party = [ ]
 #line_length = 79
 #lines_after_imports = -1 # automatic
@@ -269,8 +272,8 @@ ignored-parents = [
   'typing.Protocol',
   'typing_extensions.Protocol',
   # --- BEGIN: Injected by Copier ---
-  'emcd_projects.exceptions.Omnierror',
-  'emcd_projects.exceptions.Omniexception',
+  'emcdproj.exceptions.Omnierror',
+  'emcdproj.exceptions.Omniexception',
   # --- END: Injected by Copier ---
 ]
 max-args = 5
@@ -288,8 +291,8 @@ overgeneral-exceptions = [
   'builtins.BaseException',
   'builtins.Exception',
   # --- BEGIN: Injected by Copier ---
-  'emcd_projects.exceptions.Omnierror',
-  'emcd_projects.exceptions.Omniexception',
+  'emcdproj.exceptions.Omnierror',
+  'emcdproj.exceptions.Omniexception',
   # --- END: Injected by Copier ---
 ]
 [tool.pylint.format]
@@ -399,7 +402,7 @@ reportUnusedExpression = true
 reportUnusedImport = false            # Covered by other linters.
 reportUnusedVariable = false          # Covered by other linters.
 #strict = [ 'sources' ]
-stubPath = 'sources/emcd_projects/_typedecls'
+stubPath = 'sources/emcdproj/_typedecls'
 
 [tool.pytest.ini_options]
 # Note: Cannot run doctests from Pytest, because Pytest tries to update '_'
@@ -428,7 +431,7 @@ ignore = [
 [tool.towncrier]
 directory = '.auxiliary/data/towncrier'
 filename = 'documentation/changelog.rst'
-package = 'emcd_projects'
+package = 'emcdproj'
 package_dir = 'sources'
 [[tool.towncrier.type]]
 directory = 'bugfix'
