@@ -42,14 +42,17 @@ import typing_extensions as typx
 import tyro
 # --- END: Injected by Copier ---
 
+from absence import Absential, absent, is_absent
 from frigid.qaliases import (
     ImmutableDataclass,
     ImmutableProtocolDataclass,
 )
+from platformdirs import PlatformDirs
 
 
 ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
 
 
+package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
 simple_tyro_class = tyro.conf.configure( )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

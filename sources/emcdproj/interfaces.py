@@ -34,9 +34,8 @@ class CliCommand( # pylint: disable=invalid-metaclass
     ''' CLI command. '''
 
     @__.abc.abstractmethod
-    async def __call__( self ) -> None:
+    async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command with global state. '''
-        # TODO: Pass global state.
         raise NotImplementedError
 
     # TODO: provide_configuration_edits

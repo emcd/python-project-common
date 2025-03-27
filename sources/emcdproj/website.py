@@ -18,7 +18,7 @@
 #============================================================================#
 
 
-''' Website update utilities. '''
+''' Static website maintenance utilities for projects. '''
 # TODO: Fix Pyright suppressions.
 
 
@@ -30,21 +30,57 @@ from . import __
 from . import interfaces as _interfaces
 
 
-class Command(
+class CommandDispatcher(
     _interfaces.CliCommand,
     decorators = ( __.standard_tyro_class, ),
 ):
-    ''' Manages static website for project. '''
+    ''' Dispatches commands for static website maintenance. '''
 
-    async def __call__( self )-> None:
-    # async def __call__( self, auxdata: __.Globals ) -> None:
-        ''' Dispatches subcommand to manage static website. '''
-        # TODO: Pass global state.
+    command: __.typx.Union[
+        __.typx.Annotated[
+            SurveyCommand,
+            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            UpdateCommand,
+            __.tyro.conf.subcommand( 'update', prefix_name = False ),
+        ],
+    ]
+
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        await self.command( auxdata = auxdata )
+
+
+class SurveyCommand(
+    _interfaces.CliCommand,
+    decorators = ( __.standard_tyro_class, ),
+):
+    ''' Surveys release versions published in static website. '''
+
+    async def __call__( self, auxdata: __.Globals ) -> None:
         # TODO: Implement.
+        pass
 
 
-class Paths( __.typx.NamedTuple ):
-    ''' Paths used in website generation. '''
+class UpdateCommand(
+    _interfaces.CliCommand,
+    decorators = ( __.standard_tyro_class, ),
+):
+    ''' Updates static website for particular release version. '''
+
+    version: __.typx.Annotated[
+        str,
+        __.typx.Doc( ''' Release version to update. ''' ),
+        __.tyro.conf.Positional,
+    ]
+
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        update( auxdata, self.version )
+
+
+class Locations( metaclass = __.ImmutableDataclass ):
+    ''' Locations associated with website maintenance. '''
+
     project: __.Path
     auxiliary: __.Path
     publications: __.Path
@@ -52,47 +88,83 @@ class Paths( __.typx.NamedTuple ):
     artifacts: __.Path
     website: __.Path
     coverage: __.Path
-    index: __.Path # pyright: ignore
+    index: __.Path
     versions: __.Path
     templates: __.Path
 
+    @classmethod
+    def from_project_anchor(
+        selfclass,
+        auxdata: __.Globals,
+        anchor: __.Absential[ __.Path ] = __.absent,
+    ) -> __.typx.Self:
+        ''' Produces locations from project anchor, if provided.
 
-def discover_paths( ) -> Paths:
-    ''' Discovers paths needed for website generation.
+            If project anchor is not given, then attempt to discover it.
+        '''
+        if __.is_absent( anchor ):
+            # TODO: Discover missing anchor via directory traversal,
+            #       seeking VCS markers.
+            project = __.Path( ).resolve( strict = True )
+        else: project = anchor.resolve( strict = True )
+        auxiliary = project / '.auxiliary'
+        publications = auxiliary / 'publications'
+        templates = auxdata.distribution.provide_data_location( 'templates' )
+        return selfclass(
+            project = project,
+            auxiliary = auxiliary,
+            publications = publications,
+            archive = publications / 'website.tar.xz',
+            artifacts = auxiliary / 'artifacts',
+            website = auxiliary / 'artifacts/website',
+            coverage = auxiliary / 'artifacts/website/coverage.svg',
+            index = auxiliary / 'artifacts/website/index.html',
+            versions = auxiliary / 'artifacts/website/versions.json',
+            templates = templates )
 
-        Returns paths to project directories and files used in the website
-        generation process, including locations for artifacts, templates,
-        and publication outputs.
+
+
+def update( # pylint: disable=too-many-locals
+    auxdata: __.Globals, version: str
+) -> None:
+    ''' Updates the project website with the latest documentation and coverage.
+
+        Processes the specified version, copies documentation artifacts,
+        updates version information, and generates coverage badges.
     '''
-    # TODO: Add error handling for scenarios where expected directories
-    #       cannot be accessed due to permission issues.
-    project = __.Path( ).resolve( )  # TODO: Discover.
-    auxiliary = project / '.auxiliary'
-    publications = auxiliary / 'publications'
-    # Updated template path to use package-relative location
-    templates = __.Path( __file__ ).parent / 'data/templates'
-    return Paths(
-        project = project,
-        auxiliary = auxiliary,
-        publications = publications,
-        archive = publications / 'website.tar.xz',
-        artifacts = auxiliary / 'artifacts',
-        website = auxiliary / 'artifacts/website',
-        coverage = auxiliary / 'artifacts/website/coverage.svg',
-        index = auxiliary / 'artifacts/website/index.html',
-        versions = auxiliary / 'artifacts/website/versions.json',
-        templates = templates,
-    )
+    # TODO: Add checks for empty artifact directories.
+    # TODO: Validate version string format.
+    from tarfile import open as tarfile_open
+    locations = Locations.from_project_anchor( auxdata )
+    locations.publications.mkdir( exist_ok = True, parents = True )
+    if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
+    locations.website.mkdir( exist_ok = True, parents = True )
+    if locations.archive.is_file( ):
+        with tarfile_open( locations.archive, 'r:xz' ) as archive:
+            archive.extractall( path = locations.website )
+    available_species = _update_available_species( locations, version )
+    j2context = _jinja2.Environment(
+        loader = _jinja2.FileSystemLoader( locations.templates ),
+        autoescape = True )
+    index_data = _update_versions_json( locations, version, available_species )
+    _update_index_html( locations, j2context, index_data )
+    if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
+        _update_coverage_badge( locations, j2context )
+    ( locations.website / '.nojekyll' ).touch( )
+    from .filesystem import chdir
+    with chdir( locations.website ):
+        with tarfile_open( locations.archive, 'w:xz' ) as archive:
+            archive.add( '.' )
 
 
-def extract_coverage( paths: Paths ) -> int:
+def _extract_coverage( locations: Locations ) -> int:
     ''' Extracts coverage percentage from coverage report.
 
         Reads the coverage XML report and calculates the overall line coverage
         percentage, rounded down to the nearest integer.
     '''
     # TODO: Add validation that the XML file exists and has expected format.
-    path = paths.artifacts / 'coverage-pytest/coverage.xml'
+    path = locations.artifacts / 'coverage-pytest/coverage.xml'
     from xml.etree import ElementTree  # nosec
     # nosemgrep
     root = ElementTree.parse( path ).getroot( )  # nosec
@@ -100,8 +172,22 @@ def extract_coverage( paths: Paths ) -> int:
     return __.math.floor( coverage * 100 )
 
 
-def update_coverage_badge( # pylint: disable=too-many-locals
-    paths: Paths, env: _jinja2.Environment
+def _update_available_species(
+    locations: Locations, version: str
+) -> tuple[ str, ... ]:
+    available_species: list[ str ] = [ ]
+    for species in ( 'coverage-pytest', 'sphinx-html' ):
+        origin = locations.artifacts / species
+        if not origin.is_dir( ): continue
+        destination = locations.website / version / species
+        if destination.is_dir( ): __.shutil.rmtree( destination )
+        __.shutil.copytree( origin, destination )
+        available_species.append( species )
+    return tuple( available_species )
+
+
+def _update_coverage_badge( # pylint: disable=too-many-locals
+    locations: Locations, env: _jinja2.Environment
 ) -> None:
     ''' Updates coverage badge SVG.
 
@@ -112,7 +198,7 @@ def update_coverage_badge( # pylint: disable=too-many-locals
         - green: >= 80%
     '''
     # TODO: Add error handling for template rendering failures.
-    coverage = extract_coverage( paths )
+    coverage = _extract_coverage( locations )
     # pylint: disable=magic-value-comparison
     color = (
         'red' if coverage < 50 else (
@@ -123,21 +209,19 @@ def update_coverage_badge( # pylint: disable=too-many-locals
     label_width = len( label_text ) * 6 + 10
     value_width = len( value_text ) * 6 + 15
     total_width = label_width + value_width
-
     template = env.get_template( 'coverage.svg.jinja' )
-    with paths.coverage.open( 'w' ) as file:
+    with locations.coverage.open( 'w' ) as file:
         file.write( template.render(
             color = color,
             total_width = total_width,
             label_text = label_text,
             value_text = value_text,
             label_width = label_width,
-            value_width = value_width,
-        ) )
+            value_width = value_width ) )
 
 
-def update_index_html(
-    paths: Paths,
+def _update_index_html(
+    locations: Locations,
     env: _jinja2.Environment,
     data: dict[ __.typx.Any, __.typx.Any ],
 ) -> None:
@@ -146,20 +230,16 @@ def update_index_html(
         Generates the main index page showing all available versions and their
         associated documentation and coverage reports.
     '''
-    # TODO: Add validation that the template exists before attempting to use it.
+    # TODO: Add validation that template exists before attempting to use it.
     template = env.get_template( 'website.html.jinja' )
-    with paths.index.open( 'w' ) as file:
+    with locations.index.open( 'w' ) as file:
         file.write( template.render( **data ) )
 
 
-def update_versions_json(
-    paths: Paths,
-    version: __.typx.Annotated[
-        str, __.typx.Doc( "Version string being published" ) ],
-    species: __.typx.Annotated[
-        list[ str ],
-        __.typx.Doc( "List of artifact types available for this version" ),
-    ]
+def _update_versions_json(
+    locations: Locations,
+    version: str,
+    species: tuple[ str, ... ],
 ) -> dict[ __.typx.Any, __.typx.Any ]:
     ''' Updates versions.json with new version information.
 
@@ -169,16 +249,12 @@ def update_versions_json(
     '''
     # TODO: Add validation of version string format.
     # TODO: Consider file locking for concurrent update protection.
-
-    # Import at function level to maintain clean module namespace
     from packaging.version import Version
-
-    if not paths.versions.is_file( ):
+    if not locations.versions.is_file( ):
         data: dict[ __.typx.Any, __.typx.Any ] = { 'versions': { } }
-        with paths.versions.open( 'w' ) as file:
+        with locations.versions.open( 'w' ) as file:
             __.json.dump( data, file, indent = 4 )
-
-    with paths.versions.open( 'r+' ) as file:
+    with locations.versions.open( 'r+' ) as file:
         data = __.json.load( file )
         versions = data[ 'versions' ]
         versions[ version ] = species
@@ -191,60 +267,4 @@ def update_versions_json(
         file.seek( 0 )
         __.json.dump( data, file, indent = 4 )
         file.truncate( )
-
     return data
-
-
-def update_website( # pylint: disable=too-many-locals
-    version: __.typx.Annotated[
-        str, __.typx.Doc( "Version string being published" ) ]
-) -> None:
-    ''' Updates the project website with the latest documentation and coverage.
-
-        Processes the specified version, copies documentation artifacts,
-        updates version information, and generates coverage badges.
-    '''
-    # TODO: Add checks for empty artifact directories.
-    # TODO: Validate version string format.
-
-    paths = discover_paths( )
-    paths.publications.mkdir( exist_ok = True, parents = True )
-    if paths.website.is_dir( ):
-        __.shutil.rmtree( paths.website )
-    paths.website.mkdir( exist_ok = True, parents = True )
-
-    if paths.archive.is_file( ):
-        from tarfile import open as tarfile_open
-        with tarfile_open( paths.archive, 'r:xz' ) as archive:
-            archive.extractall( path = paths.website )
-
-    available_species: list[ str ] = [ ]
-    # Create/update destination if origin exists.
-    for species in ( 'coverage-pytest', 'sphinx-html' ):
-        origin_path = paths.artifacts / species
-        if not origin_path.is_dir( ):
-            continue
-        destination_path = paths.website / version / species
-        if destination_path.is_dir( ):
-            __.shutil.rmtree( destination_path )
-        __.shutil.copytree( origin_path, destination_path )
-        available_species.append( species )
-
-    env = _jinja2.Environment(
-        loader = _jinja2.FileSystemLoader( paths.templates ),
-        autoescape = True,
-    )
-
-    index_data = update_versions_json( paths, version, available_species )
-    update_index_html( paths, env, index_data )
-
-    if ( paths.artifacts / 'coverage-pytest' ).is_dir( ):
-        update_coverage_badge( paths, env )
-
-    ( paths.website / '.nojekyll' ).touch( )
-
-    from .filesystem import chdir
-    with chdir( paths.website ):
-        from tarfile import open as tarfile_open
-        with tarfile_open( paths.archive, 'w:xz' ) as archive:
-            archive.add( '.' )

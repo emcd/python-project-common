@@ -34,10 +34,7 @@ class VersionCommand(
 ):
     ''' Prints version information. '''
 
-    async def __call__( self ) -> None:
-    # async def __call__( self, auxdata: __.Globals ) -> None:
-        ''' Executes command to print version information. '''
-        # TODO: Pass global state.
+    async def __call__( self, auxdata: __.Globals ) -> None:
         from . import __version__ # pylint: disable=cyclic-import
         print( f"{__package__} {__version__}" )
         raise SystemExit( 0 )
@@ -49,36 +46,44 @@ class Cli(
 ):
     ''' Various utilities for projects by Github user '@emcd'. '''
 
-    # application: __.ApplicationInformation
+    application: __.ApplicationInformation
     # configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
     # inscription: __.InscriptionControl = (
     #     __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
     command: __.typx.Union[
         __.typx.Annotated[
-            _website.Command,
-            __.tyro.conf.subcommand(
-                'website', prefix_name = False ),
+            _website.CommandDispatcher,
+            __.tyro.conf.subcommand( 'website', prefix_name = False ),
         ],
         __.typx.Annotated[
             VersionCommand,
-            __.tyro.conf.subcommand(
-                'version', prefix_name = False ),
+            __.tyro.conf.subcommand( 'version', prefix_name = False ),
         ],
     ]
 
     async def __call__( self ):
         ''' Invokes command after library preparation. '''
-        # pylint: disable=unused-variable
-        # nomargs = self.prepare_invocation_args( )
-        async with __.ctxl.AsyncExitStack( ) as exits: # noqa: F841
-            # auxdata = await _prepare( exits = exits, **nomargs )
-            await self.command( )
-            # await self.command( auxdata = auxdata )
+        nomargs = self.prepare_invocation_args( )
+        async with __.ctxl.AsyncExitStack( ) as exits:
+            auxdata = await _prepare( exits = exits, **nomargs )
+            await self.command( auxdata = auxdata )
             # await self.command( auxdata = auxdata, display = self.display )
-        # pylint: enable=unused-variable
 
-    # TODO: prepare_invocation_args
+    def prepare_invocation_args(
+        self,
+    ) -> __.cabc.Mapping[ str, __.typx.Any ]:
+        ''' Prepares arguments for initial configuration. '''
+        # configedits: __.DictionaryEdits = (
+        #     self.command.provide_configuration_edits( ) )
+        args: dict[ str, __.typx.Any ] = dict(
+            application = self.application,
+            # configedits = configedits,
+            # environment = True,
+            # inscription = self.inscription,
+        )
+        # if self.configfile: args[ 'configfile' ] = self.configfile
+        return args
 
 
 def execute( ) -> None:
@@ -92,3 +97,22 @@ def execute( ) -> None:
     except BaseException:
         # TODO: Log exception.
         raise SystemExit( 1 ) from None
+
+
+async def _prepare(
+    application: __.ApplicationInformation,
+    # configedits: __.DictionaryEdits,
+    # environment: bool,
+    exits: __.ctxl.AsyncExitStack,
+    # inscription: __.InscriptionControl,
+) -> __.Globals:
+    ''' Configures logging based on verbosity. '''
+    auxdata = await __.prepare(
+        application = application,
+        # configedits = configedits,
+        # environment = environment,
+        exits = exits,
+        # inscription = inscription )
+        )
+    # _prepare_scribes( application, inscription )
+    return auxdata

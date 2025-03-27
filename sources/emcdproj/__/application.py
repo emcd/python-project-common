@@ -18,16 +18,33 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Information about application. '''
 
 
-# Expose everything from internal modules.
-from .imports import *
-from .application import Information as ApplicationInformation
-from .distribution import Information as DistributionInformation
-from .imports import *
-from .preparation import *
-from .state import Globals
+from . import imports as __
 
 
-__all__ = ( )
+class Information( metaclass = __.ImmutableDataclass ):
+    ''' Information about an application. '''
+
+    name: __.typx.Annotated[
+        str,
+        __.typx.Doc( "For derivation of platform directories." ),
+    ] = __.package_name
+    publisher: __.typx.Annotated[
+        __.typx.Optional[ str ],
+        __.typx.Doc( "For derivation of platform directories." ),
+        __.tyro.conf.Suppress,
+    ] = None
+    version: __.typx.Annotated[
+        __.typx.Optional[ str ],
+        __.typx.Doc( "For derivation of platform directories." ),
+        __.tyro.conf.Suppress,
+    ] = None
+
+    def produce_platform_directories( self ) -> __.PlatformDirs:
+        ''' Produces platform directories object for application. '''
+        arguments = dict( appname = self.name, ensure_exists = True )
+        if self.publisher: arguments[ 'appauthor' ] = self.publisher
+        if self.version: arguments[ 'version' ] = self.version
+        return __.PlatformDirs( **arguments ) # type: ignore
