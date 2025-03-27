@@ -24,6 +24,61 @@
 from __future__ import annotations
 
 from . import __
+from . import interfaces as _interfaces
+from . import website as _website
+
+
+class VersionCommand(
+    _interfaces.CliCommand,
+    decorators = ( __.standard_tyro_class, ),
+):
+    ''' Prints version information. '''
+
+    async def __call__( self ) -> None:
+    # async def __call__( self, auxdata: __.Globals ) -> None:
+        ''' Executes command to print version information. '''
+        # TODO: Pass global state.
+        from . import __version__ # pylint: disable=cyclic-import
+        print( f"{__package__} {__version__}" )
+        raise SystemExit( 0 )
+
+
+class Cli(
+    metaclass = __.ImmutableDataclass,
+    decorators = ( __.simple_tyro_class, ),
+):
+    ''' Various utilities for projects by Github user '@emcd'. '''
+
+    # application: __.ApplicationInformation
+    # configfile: __.typx.Optional[ str ] = None
+    # display: ConsoleDisplay
+    # inscription: __.InscriptionControl = (
+    #     __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
+    command: __.typx.Union[
+        __.typx.Annotated[
+            _website.Command,
+            __.tyro.conf.subcommand(
+                'website', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            VersionCommand,
+            __.tyro.conf.subcommand(
+                'version', prefix_name = False ),
+        ],
+    ]
+
+    async def __call__( self ):
+        ''' Invokes command after library preparation. '''
+        # pylint: disable=unused-variable
+        # nomargs = self.prepare_invocation_args( )
+        async with __.ctxl.AsyncExitStack( ) as exits: # noqa: F841
+            # auxdata = await _prepare( exits = exits, **nomargs )
+            await self.command( )
+            # await self.command( auxdata = auxdata )
+            # await self.command( auxdata = auxdata, display = self.display )
+        # pylint: enable=unused-variable
+
+    # TODO: prepare_invocation_args
 
 
 def execute( ) -> None:
@@ -32,12 +87,8 @@ def execute( ) -> None:
     config = (
         __.tyro.conf.HelptextFromCommentsOff,
     )
-    try: run( __.tyro.cli( _main, config = config )( ) ) # pyright: ignore
+    try: run( __.tyro.cli( Cli, config = config )( ) )
     except SystemExit: raise
     except BaseException:
         # TODO: Log exception.
         raise SystemExit( 1 ) from None
-
-
-async def _main( ) -> None:
-    print( "Hello from emcdproj CLI!" )

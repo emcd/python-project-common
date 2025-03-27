@@ -18,38 +18,25 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
-
-# pylint: disable=unused-import
-# ruff: noqa: F401
+''' Abstract bases and interfaces. '''
 
 
 from __future__ import annotations
 
-import abc
-import collections.abc as cabc
-import contextlib as ctxl
-import json
-import math
-import os
-import shutil
-import types
-
-from pathlib import Path
-
-import typing_extensions as typx
-# --- BEGIN: Injected by Copier ---
-import tyro
-# --- END: Injected by Copier ---
-
-from frigid.qaliases import (
-    ImmutableDataclass,
-    ImmutableProtocolDataclass,
-)
+from . import __
 
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+class CliCommand( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableProtocolDataclass,
+    decorators = ( __.typx.runtime_checkable, ),
+):
+    ''' CLI command. '''
 
+    @__.abc.abstractmethod
+    async def __call__( self ) -> None:
+        ''' Executes command with global state. '''
+        # TODO: Pass global state.
+        raise NotImplementedError
 
-simple_tyro_class = tyro.conf.configure( )
-standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )
+    # TODO: provide_configuration_edits

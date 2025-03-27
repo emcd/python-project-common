@@ -18,38 +18,22 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
-
-# pylint: disable=unused-import
-# ruff: noqa: F401
+''' Filesystem operations and utilities. '''
 
 
 from __future__ import annotations
 
-import abc
-import collections.abc as cabc
-import contextlib as ctxl
-import json
-import math
-import os
-import shutil
-import types
-
-from pathlib import Path
-
-import typing_extensions as typx
-# --- BEGIN: Injected by Copier ---
-import tyro
-# --- END: Injected by Copier ---
-
-from frigid.qaliases import (
-    ImmutableDataclass,
-    ImmutableProtocolDataclass,
-)
+from . import __
 
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+@__.ctxl.contextmanager
+def chdir( directory: __.Path ) -> __.cabc.Iterator[ __.Path ]:
+    ''' Temporarily changes working directory.
 
-
-simple_tyro_class = tyro.conf.configure( )
-standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )
+        Not thread-safe or async-safe.
+    '''
+    # TODO: Python 3.11: contextlib.chdir
+    original = __.os.getcwd( )
+    __.os.chdir( directory )
+    try: yield directory
+    finally: __.os.chdir( original )
