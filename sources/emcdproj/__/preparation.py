@@ -27,7 +27,6 @@ from . import application as _application
 # from . import dictedits as _dictedits
 from . import distribution as _distribution
 # from . import environment as _environment
-# from . import inscription as _inscription
 from . import state as _state
 
 
@@ -37,7 +36,6 @@ async def prepare( # pylint: disable=too-many-arguments,too-many-locals
     # configedits: _dictedits.Edits = ( ),
     # configfile: __.Absential[ __.Path ] = __.absent,
     # environment: bool = False,
-    # inscription: __.Absential[ _inscription.Control ] = __.absent,
 ) -> _state.Globals:
     ''' Prepares globals DTO for use with library functions.
 
@@ -67,10 +65,6 @@ async def prepare( # pylint: disable=too-many-arguments,too-many-locals
         distribution = distribution,
         exits = exits )
     # if environment: await _environment.update( auxdata )
-    # if __.is_absent( inscription ):
-    #     inscription_: _inscription.Control = _inscription.Control( )
-    # else: inscription_ = inscription
-    # _inscription.prepare( control = inscription_ )
     # _inscribe_preparation_report( auxdata )
     return auxdata
 

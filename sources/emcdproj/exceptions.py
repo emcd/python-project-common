@@ -45,7 +45,7 @@ class DataAwol( Omnierror, AssertionError ):
 
     def __init__( self, source: str, label: str ):
         super( ).__init__(
-            "Necessary data with label '{label}' is missing from {source}." )
+            f"Necessary data with label '{label}' is missing from {source}." )
 
 
 class FileDataAwol( DataAwol ):
@@ -59,11 +59,11 @@ class FileAwol( Omnierror, AssertionError ):
     ''' Unexpected file absence. '''
 
     def __init__( self, file: str | __.Path ):
-        super( ).__init__( "Necessary file is missing at '{file}'." )
+        super( ).__init__( f"Necessary file is missing at '{file}'." )
 
 
 class FileEmpty( Omnierror, AssertionError ):
     ''' Unexpectedly empty file. '''
 
     def __init__( self, file: str| __.Path ):
-        super( ).__init__( "Unexpectedly empty file at '{file}'." )
+        super( ).__init__( f"Unexpectedly empty file at '{file}'." )

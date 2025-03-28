@@ -27,5 +27,5 @@ Internal Development Interface
 Module ``emcdproj.__``
 -------------------------------------------------------------------------------
 
-.. automodule:: emcdproj.__
-   :ignore-module-all: true
+.. .. automodule:: emcdproj.__
+..    :ignore-module-all: true

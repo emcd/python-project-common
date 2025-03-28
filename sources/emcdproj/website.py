@@ -48,6 +48,7 @@ class CommandDispatcher(
     ]
 
     async def __call__( self, auxdata: __.Globals ) -> None:
+        ictr( 1 )( self.command )
         await self.command( auxdata = auxdata )
 
 
@@ -130,6 +131,7 @@ def update( auxdata: __.Globals, version: str ) -> None:
         Processes the specified version, copies documentation artifacts,
         updates version information, and generates coverage badges.
     '''
+    ictr( 2 )( version )
     # TODO: Validate version string format.
     from tarfile import open as tarfile_open
     locations = Locations.from_project_anchor( auxdata )

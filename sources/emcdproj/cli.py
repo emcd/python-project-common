@@ -49,8 +49,6 @@ class Cli(
     application: __.ApplicationInformation
     # configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
-    # inscription: __.InscriptionControl = (
-    #     __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
     command: __.typx.Union[
         __.typx.Annotated[
             _website.CommandDispatcher,
@@ -67,6 +65,7 @@ class Cli(
         nomargs = self.prepare_invocation_args( )
         async with __.ctxl.AsyncExitStack( ) as exits:
             auxdata = await _prepare( exits = exits, **nomargs )
+            ictr( 0 )( self.command )
             await self.command( auxdata = auxdata )
             # await self.command( auxdata = auxdata, display = self.display )
 
@@ -80,7 +79,6 @@ class Cli(
             application = self.application,
             # configedits = configedits,
             # environment = True,
-            # inscription = self.inscription,
         )
         # if self.configfile: args[ 'configfile' ] = self.configfile
         return args
@@ -104,15 +102,14 @@ async def _prepare(
     # configedits: __.DictionaryEdits,
     # environment: bool,
     exits: __.ctxl.AsyncExitStack,
-    # inscription: __.InscriptionControl,
 ) -> __.Globals:
     ''' Configures logging based on verbosity. '''
+    import ictruck
+    # TODO: Finetune Icecream truck installation from CLI arguments.
+    ictruck.install( trace_levels = 9 )
     auxdata = await __.prepare(
         application = application,
         # configedits = configedits,
         # environment = environment,
-        exits = exits,
-        # inscription = inscription )
-        )
-    # _prepare_scribes( application, inscription )
+        exits = exits )
     return auxdata

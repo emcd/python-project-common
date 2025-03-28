@@ -20,10 +20,11 @@ dependencies = [
   'defusedxml',
   'frigid',
   'icecream-truck',
-  'importlib-metadata',
-  'importlib-resources',
+  'importlib-metadata', # TODO: Drop once we have separate appcore package.
+  'importlib-resources', # TODO: Drop once we have separate appcore package.
   'packaging',
-  'platformdirs',
+  'platformdirs', # TODO: Drop once we have separate appcore package.
+  'tomli', # TODO: Drop once we have separate appcore package.
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
   'tyro',
@@ -376,7 +377,7 @@ missing-member-max-choices = 2
 #mixin-class-rgx = '.*[Mm]ixin'
 #signature-mutators = [ ]
 [tool.pylint.variables]
-additional-builtins = [ 'ic' ]
+additional-builtins = [ 'ictr' ]
 callbacks = [ ]
 dummy-variables-rgx = '''_$'''
 ignored-argument-names = '''_.*'''
@@ -423,7 +424,7 @@ python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
 
 [tool.ruff]
-builtins = [ 'ic' ]
+builtins = [ 'ictr' ]
 cache-dir = '.auxiliary/caches/ruff'
 [tool.ruff.lint]
 ignore = [
