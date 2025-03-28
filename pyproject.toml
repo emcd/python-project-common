@@ -50,7 +50,7 @@ keywords = [ 'maintenance', 'project', 'template' ]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
 [project.scripts]
-emcd-projects = 'emcdproj:main'
+emcdproj = 'emcdproj:main'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-project-common'
 'Source Code' = 'https://github.com/emcd/python-project-common'
