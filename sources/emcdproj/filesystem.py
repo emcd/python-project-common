@@ -18,20 +18,22 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
-
-# pylint: disable=unused-import
-# ruff: noqa: F401
+''' Filesystem operations and utilities. '''
 
 
 from __future__ import annotations
 
-import collections.abc as cabc
-import types
-
-import typing_extensions as typx
-# --- BEGIN: Injected by Copier ---
-# --- END: Injected by Copier ---
+from . import __
 
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+@__.ctxl.contextmanager
+def chdir( directory: __.Path ) -> __.cabc.Iterator[ __.Path ]:
+    ''' Temporarily changes working directory.
+
+        Not thread-safe or async-safe.
+    '''
+    # TODO: Python 3.11: contextlib.chdir
+    original = __.os.getcwd( )
+    __.os.chdir( directory )
+    try: yield directory
+    finally: __.os.chdir( original )

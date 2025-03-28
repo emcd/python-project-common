@@ -18,11 +18,24 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Abstract bases and interfaces. '''
 
 
-# Expose everything from internal modules.
-from .imports import *
+from __future__ import annotations
+
+from . import __
 
 
-__all__ = ( )
+class CliCommand( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableProtocolDataclass,
+    decorators = ( __.typx.runtime_checkable, ),
+):
+    ''' CLI command. '''
+
+    @__.abc.abstractmethod
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        ''' Executes command with global state. '''
+        raise NotImplementedError
+
+    # TODO: provide_configuration_edits

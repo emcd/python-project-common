@@ -56,8 +56,7 @@ jobs:
           git fetch origin publication:publication || true
           git checkout publication -- "${tarball}" || true
           version="$(hatch --env develop version 2>/dev/null)"
-          hatch --env develop run python \
-            "${{ steps.common-repo.outputs.path }}/executables/update-website.py" "${version}"
+          hatch --env develop run python -m emcdproj website update "${version}"
           git add "${tarball}"
           # Commit to publication branch without checkout.
           # https://stackoverflow.com/a/66850396/14833542

@@ -15,13 +15,24 @@ license = 'Apache-2.0'
 readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
+  'Jinja2',
+  'absence',
+  'defusedxml',
+  'frigid',
+  'icecream-truck',
+  'importlib-metadata', # TODO: Drop once we have separate appcore package.
+  'importlib-resources', # TODO: Drop once we have separate appcore package.
+  'packaging',
+  'platformdirs', # TODO: Drop once we have separate appcore package.
+  'tomli', # TODO: Drop once we have separate appcore package.
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
+  'tyro',
   # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers
   'Development Status :: 3 - Alpha',
-  #'Intended Audience :: Developers',
+  'Intended Audience :: Developers',
   'License :: OSI Approved :: Apache Software License',
   'Programming Language :: Python :: 3 :: Only',
   # --- BEGIN: Injected by Copier ---
@@ -32,13 +43,14 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: Implementation :: CPython',
   'Programming Language :: Python :: Implementation :: PyPy',
   # --- END: Injected by Copier ---
-  #'Topic :: Software Development',
-  # TODO: Add classifiers as appropriate.
+  'Topic :: Software Development',
 ]
-keywords = [ ] # TODO: Add keywords.
+keywords = [ 'maintenance', 'project', 'template' ]
 [[project.authors]]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
+[project.scripts]
+emcd-projects = 'emcdproj:main'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-project-common'
 'Source Code' = 'https://github.com/emcd/python-project-common'
@@ -67,22 +79,22 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
 only-include = [
-  'sources/emcd_projects',
+  'sources/emcdproj',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
 [tool.hatch.build.targets.wheel]
 only-include = [
-  'sources/emcd_projects',
+  'sources/emcdproj',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
-'sources/emcd_projects' = 'emcd_projects'
+'sources/emcdproj' = 'emcdproj'
 # --- BEGIN: Injected by Copier ---
-# --- END: Injected by Copier --- 
+# --- END: Injected by Copier ---
 [tool.hatch.envs.default]
 python = '3.10'
 [tool.hatch.envs.develop]
@@ -137,7 +149,7 @@ linters = [
   '''pyright sources''',
   '''pylint --recursive yes sources documentation tests''',
   '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
-     sources/emcd_projects''',
+     sources/emcdproj''',
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
@@ -172,7 +184,7 @@ python = [
     'pypy3.10',
 ]
 [tool.hatch.version]
-path = 'sources/emcd_projects/__init__.py'
+path = 'sources/emcdproj/__init__.py'
 
 # https://pycqa.github.io/isort/docs/configuration/options.html
 # https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
@@ -189,7 +201,7 @@ honor_noqa = true
 #ignore_whitespace = false
 include_trailing_comma = true
 # known_OTHER: substitute OTHER
-known_first_party = [ 'emcd_projects' ]
+known_first_party = [ 'emcdproj' ]
 #known_third_party = [ ]
 #line_length = 79
 #lines_after_imports = -1 # automatic
@@ -269,8 +281,8 @@ ignored-parents = [
   'typing.Protocol',
   'typing_extensions.Protocol',
   # --- BEGIN: Injected by Copier ---
-  'emcd_projects.exceptions.Omnierror',
-  'emcd_projects.exceptions.Omniexception',
+  'emcdproj.exceptions.Omnierror',
+  'emcdproj.exceptions.Omniexception',
   # --- END: Injected by Copier ---
 ]
 max-args = 5
@@ -288,8 +300,8 @@ overgeneral-exceptions = [
   'builtins.BaseException',
   'builtins.Exception',
   # --- BEGIN: Injected by Copier ---
-  'emcd_projects.exceptions.Omnierror',
-  'emcd_projects.exceptions.Omniexception',
+  'emcdproj.exceptions.Omnierror',
+  'emcdproj.exceptions.Omniexception',
   # --- END: Injected by Copier ---
 ]
 [tool.pylint.format]
@@ -365,7 +377,7 @@ missing-member-max-choices = 2
 #mixin-class-rgx = '.*[Mm]ixin'
 #signature-mutators = [ ]
 [tool.pylint.variables]
-additional-builtins = [ 'ic' ]
+additional-builtins = [ 'ictr' ]
 callbacks = [ ]
 dummy-variables-rgx = '''_$'''
 ignored-argument-names = '''_.*'''
@@ -399,7 +411,7 @@ reportUnusedExpression = true
 reportUnusedImport = false            # Covered by other linters.
 reportUnusedVariable = false          # Covered by other linters.
 #strict = [ 'sources' ]
-stubPath = 'sources/emcd_projects/_typedecls'
+stubPath = 'sources/emcdproj/_typedecls'
 
 [tool.pytest.ini_options]
 # Note: Cannot run doctests from Pytest, because Pytest tries to update '_'
@@ -412,7 +424,7 @@ python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
 
 [tool.ruff]
-builtins = [ 'ic' ]
+builtins = [ 'ictr' ]
 cache-dir = '.auxiliary/caches/ruff'
 [tool.ruff.lint]
 ignore = [
@@ -427,8 +439,8 @@ ignore = [
 
 [tool.towncrier]
 directory = '.auxiliary/data/towncrier'
-filename = 'changelog.rst'
-package = 'emcd_projects'
+filename = 'documentation/changelog.rst'
+package = 'emcdproj'
 package_dir = 'sources'
 [[tool.towncrier.type]]
 directory = 'bugfix'

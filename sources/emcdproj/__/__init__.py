@@ -18,19 +18,16 @@
 #============================================================================#
 
 
-''' Family of exceptions for package API. '''
+''' Common constants, imports, and utilities. '''
 
 
-from . import __
+# Expose everything from internal modules.
+from .imports import *
+from .application import Information as ApplicationInformation
+from .distribution import Information as DistributionInformation
+from .imports import *
+from .preparation import *
+from .state import Globals
 
 
-class Omniexception( BaseException ):
-    ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment and immutability.
-
-    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
-        frozenset( ( '__cause__', '__context__', ) ) )
-
-
-class Omnierror( Omniexception, Exception ):
-    ''' Base for error exceptions raised by package API. '''
+__all__ = ( )

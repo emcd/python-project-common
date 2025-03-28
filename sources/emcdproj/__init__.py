@@ -27,7 +27,13 @@ from . import exceptions
 # --- END: Injected by Copier ---
 
 
-__version__ = '1.7a0'
+__version__ = '1.14a0'
+
+
+def main( ):
+    ''' Entrypoint. '''
+    from .cli import execute
+    execute( )
 
 
 # TODO: Reclassify package modules as immutable and concealed.

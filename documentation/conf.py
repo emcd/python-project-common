@@ -27,7 +27,7 @@ def _import_version( ):
     from sys import path
     project_location = Path( __file__ ).parent.parent
     path.insert( 0, str( project_location / 'sources' ) )
-    module = import_module( 'emcd_projects' )
+    module = import_module( 'emcdproj' )
     return module.__version__
 
 
@@ -94,7 +94,7 @@ linkcheck_ignore = [
     r'https://github\.com/emcd/python-project-common',
     r'https://github\.com/emcd/python-project-common/.*',
     # Package does not exist during initial development.
-    r'https://pypi.org/project/emcd_projects/',
+    r'https://pypi.org/project/emcdproj/',
 ]
 
 # -- Options for HTML output -------------------------------------------------
