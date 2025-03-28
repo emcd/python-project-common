@@ -24,9 +24,13 @@
 from . import __
 
 
-class Omniexception( BaseException ):
+class Omniexception(
+    BaseException,
+    metaclass = __.ImmutableClass,
+    decorators = ( __.immutable, ),
+):
     ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment and immutability.
+    # TODO: Class and instance attribute concealment.
 
     _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
         frozenset( ( '__cause__', '__context__', ) ) )
@@ -34,3 +38,32 @@ class Omniexception( BaseException ):
 
 class Omnierror( Omniexception, Exception ):
     ''' Base for error exceptions raised by package API. '''
+
+
+class DataAwol( Omnierror, AssertionError ):
+    ''' Unexpected data absence. '''
+
+    def __init__( self, source: str, label: str ):
+        super( ).__init__(
+            "Necessary data with label '{label}' is missing from {source}." )
+
+
+class FileDataAwol( DataAwol ):
+    ''' Unexpected data absence from file. '''
+
+    def __init__( self, file: str | __.Path, label: str ):
+        super( ).__init__( source = f"file '{file}'", label = label )
+
+
+class FileAwol( Omnierror, AssertionError ):
+    ''' Unexpected file absence. '''
+
+    def __init__( self, file: str | __.Path ):
+        super( ).__init__( "Necessary file is missing at '{file}'." )
+
+
+class FileEmpty( Omnierror, AssertionError ):
+    ''' Unexpectedly empty file. '''
+
+    def __init__( self, file: str| __.Path ):
+        super( ).__init__( "Unexpectedly empty file at '{file}'." )

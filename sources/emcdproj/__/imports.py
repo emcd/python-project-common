@@ -44,8 +44,10 @@ import tyro
 
 from absence import Absential, absent, is_absent
 from frigid.qaliases import (
+    ImmutableClass,
     ImmutableDataclass,
     ImmutableProtocolDataclass,
+    immutable,
 )
 from platformdirs import PlatformDirs
 

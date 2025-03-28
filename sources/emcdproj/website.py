@@ -19,7 +19,6 @@
 
 
 ''' Static website maintenance utilities for projects. '''
-# TODO: Fix Pyright suppressions.
 
 
 from __future__ import annotations
@@ -27,6 +26,7 @@ from __future__ import annotations
 import jinja2 as _jinja2
 
 from . import __
+from . import exceptions as _exceptions
 from . import interfaces as _interfaces
 
 
@@ -124,15 +124,12 @@ class Locations( metaclass = __.ImmutableDataclass ):
 
 
 
-def update( # pylint: disable=too-many-locals
-    auxdata: __.Globals, version: str
-) -> None:
+def update( auxdata: __.Globals, version: str ) -> None:
     ''' Updates the project website with the latest documentation and coverage.
 
         Processes the specified version, copies documentation artifacts,
         updates version information, and generates coverage badges.
     '''
-    # TODO: Add checks for empty artifact directories.
     # TODO: Validate version string format.
     from tarfile import open as tarfile_open
     locations = Locations.from_project_anchor( auxdata )
@@ -163,13 +160,14 @@ def _extract_coverage( locations: Locations ) -> int:
         Reads the coverage XML report and calculates the overall line coverage
         percentage, rounded down to the nearest integer.
     '''
-    # TODO: Add validation that the XML file exists and has expected format.
-    path = locations.artifacts / 'coverage-pytest/coverage.xml'
-    from xml.etree import ElementTree  # nosec
-    # nosemgrep
-    root = ElementTree.parse( path ).getroot( )  # nosec
-    coverage = float( root.get( 'line-rate' ) ) # pyright: ignore
-    return __.math.floor( coverage * 100 )
+    location = locations.artifacts / 'coverage-pytest/coverage.xml'
+    if not location.exists( ): raise _exceptions.FileAwol( location )
+    from defusedxml import ElementTree
+    root = ElementTree.parse( location ).getroot( ) # pyright: ignore
+    if root is None: raise _exceptions.FileEmpty( location )
+    line_rate = root.get( 'line-rate' )
+    if not line_rate: raise _exceptions.FileDataAwol( location, 'line-rate' )
+    return __.math.floor( float( line_rate ) * 100 )
 
 
 def _update_available_species(
@@ -187,7 +185,7 @@ def _update_available_species(
 
 
 def _update_coverage_badge( # pylint: disable=too-many-locals
-    locations: Locations, env: _jinja2.Environment
+    locations: Locations, j2context: _jinja2.Environment
 ) -> None:
     ''' Updates coverage badge SVG.
 
@@ -197,7 +195,6 @@ def _update_coverage_badge( # pylint: disable=too-many-locals
         - yellow: 50-79%
         - green: >= 80%
     '''
-    # TODO: Add error handling for template rendering failures.
     coverage = _extract_coverage( locations )
     # pylint: disable=magic-value-comparison
     color = (
@@ -209,7 +206,8 @@ def _update_coverage_badge( # pylint: disable=too-many-locals
     label_width = len( label_text ) * 6 + 10
     value_width = len( value_text ) * 6 + 15
     total_width = label_width + value_width
-    template = env.get_template( 'coverage.svg.jinja' )
+    template = j2context.get_template( 'coverage.svg.jinja' )
+    # TODO: Add error handling for template rendering failures.
     with locations.coverage.open( 'w' ) as file:
         file.write( template.render(
             color = color,
@@ -222,7 +220,7 @@ def _update_coverage_badge( # pylint: disable=too-many-locals
 
 def _update_index_html(
     locations: Locations,
-    env: _jinja2.Environment,
+    j2context: _jinja2.Environment,
     data: dict[ __.typx.Any, __.typx.Any ],
 ) -> None:
     ''' Updates index.html with version information.
@@ -230,8 +228,8 @@ def _update_index_html(
         Generates the main index page showing all available versions and their
         associated documentation and coverage reports.
     '''
-    # TODO: Add validation that template exists before attempting to use it.
-    template = env.get_template( 'website.html.jinja' )
+    template = j2context.get_template( 'website.html.jinja' )
+    # TODO: Add error handling for template rendering failures.
     with locations.index.open( 'w' ) as file:
         file.write( template.render( **data ) )
 
