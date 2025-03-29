@@ -19,6 +19,8 @@
 
 
 ''' Static website maintenance utilities for projects. '''
+# TODO: Support separate section for current documentation: stable, latest.
+# TODO? Separate coverage SVG files for each release.
 
 
 from __future__ import annotations

@@ -108,10 +108,12 @@ dependencies = [
   'isort',
   'packaging',
   'pre-commit',
+  'pyfakefs',
   'pylint',
   'pylint-per-file-ignores',
   'pyright',
   'pytest',
+  'pytest-asyncio',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
