@@ -19,6 +19,8 @@
 
 
 ''' Static website maintenance utilities for projects. '''
+# TODO: Support separate section for current documentation: stable, latest.
+# TODO? Separate coverage SVG files for each release.
 
 
 from __future__ import annotations
@@ -125,8 +127,12 @@ class Locations( metaclass = __.ImmutableDataclass ):
 
 
 
-def update( auxdata: __.Globals, version: str ) -> None:
-    ''' Updates the project website with the latest documentation and coverage.
+def update(
+    auxdata: __.Globals,
+    version: str, *,
+    project_anchor: __.Absential[ __.Path ] = __.absent
+) -> None:
+    ''' Updates project website with latest documentation and coverage.
 
         Processes the specified version, copies documentation artifacts,
         updates version information, and generates coverage badges.
@@ -134,7 +140,7 @@ def update( auxdata: __.Globals, version: str ) -> None:
     ictr( 2 )( version )
     # TODO: Validate version string format.
     from tarfile import open as tarfile_open
-    locations = Locations.from_project_anchor( auxdata )
+    locations = Locations.from_project_anchor( auxdata, project_anchor )
     locations.publications.mkdir( exist_ok = True, parents = True )
     if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
     locations.website.mkdir( exist_ok = True, parents = True )
@@ -166,9 +172,12 @@ def _extract_coverage( locations: Locations ) -> int:
     if not location.exists( ): raise _exceptions.FileAwol( location )
     from defusedxml import ElementTree
     root = ElementTree.parse( location ).getroot( ) # pyright: ignore
-    if root is None: raise _exceptions.FileEmpty( location )
+    if root is None:
+        raise _exceptions.FileEmpty( location ) # pragma: no cover
     line_rate = root.get( 'line-rate' )
-    if not line_rate: raise _exceptions.FileDataAwol( location, 'line-rate' )
+    if not line_rate:
+        raise _exceptions.FileDataAwol(
+            location, 'line-rate' ) # pragma: no cover
     return __.math.floor( float( line_rate ) * 100 )
 
 

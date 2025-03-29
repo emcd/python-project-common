@@ -108,10 +108,12 @@ dependencies = [
   'isort',
   'packaging',
   'pre-commit',
+  'pyfakefs',
   'pylint',
   'pylint-per-file-ignores',
   'pyright',
   'pytest',
+  'pytest-asyncio',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
@@ -386,6 +388,7 @@ redefining-builtins-modules = [ 'builtins', 'io' ]
 # https://microsoft.github.io/pyright/#/configuration
 [tool.pyright]
 include = [ 'sources' ]
+ignore = [ 'tests' ]
 reportConstantRedefinition = true
 reportInvalidTypeVarUse = true
 reportMatchNotExhaustive = true
