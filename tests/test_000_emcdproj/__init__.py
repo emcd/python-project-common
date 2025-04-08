@@ -95,7 +95,7 @@ class Pathetic:
 
     def normalize(
         self,
-        path: Path,
+        path: Path, # TODO: bytes | str | os.PathLike
         case_function: Absential[ cabc.Callable[ [ str ], str ] ] = absent,
         unicode_nf: Absential[ typx.Literal[ 'NFC', 'NFD' ] ] = absent,
     ) -> PurePosixPath:
@@ -105,7 +105,7 @@ class Pathetic:
         '''
         parts = path.parts
         if path.drive:
-            parts = ( self._windows_roots_map[ path.root ], *parts[ 1 : ] )
+            parts = ( self._windows_roots_map[ path.anchor ], *parts[ 1 : ] )
         if not is_absent( unicode_nf ):
             parts = tuple( map(
                 lambda s: unicodedata.normalize( unicode_nf, s ), parts ) )
