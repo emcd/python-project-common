@@ -24,11 +24,19 @@
 '''
 
 
-import contextlib as ctxl
-import types
+import collections.abc as   cabc
+import contextlib as        ctxl
+import dataclasses as       dcls
+import                      os
+import                      types
+import                      unicodedata
+
+from pathlib import Path, PurePosixPath
+
 import typing_extensions as typx
 
-from pathlib import Path
+from absence import Absential, absent, is_absent
+
 
 
 PACKAGE_NAME = 'emcdproj'
@@ -63,6 +71,47 @@ def create_test_files(
     finally:
         for filepath in reversed( created ):
             if filepath.exists( ): filepath.unlink( )
+
+
+@dcls.dataclass
+class Pathetic:
+    ''' Handles cross-platform path nativization and normalization. '''
+
+    _windows_roots_map: cabc.Mapping[ str, str ] = (
+        dcls.field( default_factory = lambda: { 'C:\\': '/' } ) )
+
+    def compare(
+        self,
+        path1: bytes | str | os.PathLike,
+        path2: bytes | str | os.PathLike,
+    ) -> bool:
+        ''' Compares two paths, normalizing across platforms. '''
+        # TODO? Nativize paths and then compare.
+        p1 = Path( path1 ) if isinstance( path1, ( bytes, str ) ) else path1
+        p2 = Path( path2 ) if isinstance( path2, ( bytes, str ) ) else path2
+        return self.normalize( p1 ) == self.normalize( p2 )
+
+    # TODO: nativize
+
+    def normalize(
+        self,
+        path: Path,
+        case_function: Absential[ cabc.Callable[ [ str ], str ] ] = absent,
+        unicode_nf: Absential[ typx.Literal[ 'NFC', 'NFD' ] ] = absent,
+    ) -> PurePosixPath:
+        ''' Normalizes path into a pure POSIX path.
+
+            Windows drive letters and UNC shares are remapped, as necessary.
+        '''
+        parts = path.parts
+        if path.drive:
+            parts = ( self._windows_roots_map[ path.root ], *parts[ 1 : ] )
+        if not is_absent( unicode_nf ):
+            parts = tuple( map(
+                lambda s: unicodedata.normalize( unicode_nf, s ), parts ) )
+        if not is_absent( case_function ):
+            parts = tuple( map( case_function, parts ) )
+        return PurePosixPath( *parts )
 
 
 def _discover_module_names( package_name: str ) -> tuple[ str, ... ]:

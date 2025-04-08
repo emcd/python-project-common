@@ -32,7 +32,7 @@ import pytest
 
 from platformdirs import PlatformDirs
 
-from . import PACKAGE_NAME, cache_import_module, create_test_files
+from . import PACKAGE_NAME, Pathetic, cache_import_module, create_test_files
 
 
 ictruck.register_module( PACKAGE_NAME )
@@ -142,23 +142,27 @@ def locations_tmpdir( auxdata_tmpdir, website, provide_tempdir ):
 
 def test_000_locations_attributes( locations ):
     ''' Locations class has expected attributes with injected anchor. '''
-    assert locations.project == Path( '/project' )
-    assert locations.auxiliary == Path( '/project/.auxiliary' )
-    assert locations.publications == Path(
-        '/project/.auxiliary/publications' )
-    assert locations.archive == Path(
-        '/project/.auxiliary/publications/website.tar.xz' )
-    assert locations.artifacts == Path(
-        '/project/.auxiliary/artifacts' )
-    assert locations.website == Path(
-        '/project/.auxiliary/artifacts/website' )
-    assert locations.coverage == Path(
+    pathetic = Pathetic( )
+    assert pathetic.compare( locations.project, '/project' )
+    assert pathetic.compare( locations.auxiliary, '/project/.auxiliary' )
+    assert pathetic.compare(
+        locations.publications, '/project/.auxiliary/publications' )
+    assert pathetic.compare(
+        locations.archive, '/project/.auxiliary/publications/website.tar.xz' )
+    assert pathetic.compare(
+        locations.artifacts, '/project/.auxiliary/artifacts' )
+    assert pathetic.compare(
+        locations.website, '/project/.auxiliary/artifacts/website' )
+    assert pathetic.compare(
+        locations.coverage,
         '/project/.auxiliary/artifacts/website/coverage.svg' )
-    assert locations.index == Path(
+    assert pathetic.compare(
+        locations.index,
         '/project/.auxiliary/artifacts/website/index.html' )
-    assert locations.versions == Path(
+    assert pathetic.compare(
+        locations.versions,
         '/project/.auxiliary/artifacts/website/versions.json' )
-    assert locations.templates == Path( '/package/data/templates' )
+    assert pathetic.compare( locations.templates, '/package/data/templates' )
 
 
 def test_010_extract_coverage( locations, website, fs ):
@@ -185,7 +189,7 @@ def test_030_update_available_species( locations, website, fs ):
         locations.artifacts / 'coverage-pytest/test.txt', contents = 'test' )
     species = website._update_available_species( locations, 'v1.0' )
     assert 'coverage-pytest' in species
-    assert fs.exists( locations.website / 'v1.0/coverage-pytest/test.txt' )
+    assert ( locations.website / 'v1.0/coverage-pytest/test.txt' ).exists( )
 
 
 def test_040_update_coverage_badge( locations, website, fs ):
@@ -203,7 +207,7 @@ def test_040_update_coverage_badge( locations, website, fs ):
         loader = jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
     website._update_coverage_badge( locations, j2context )
-    assert fs.exists( locations.coverage )
+    assert locations.coverage.exists( )
     assert locations.coverage.read_text( ) == 'green'
 
 
@@ -219,7 +223,7 @@ def test_050_update_index_html( locations, website, fs ):
         autoescape = True )
     data = { 'latest_version': 'v1.0' }
     website._update_index_html( locations, j2context, data )
-    assert fs.exists( locations.index )
+    assert locations.index.exists( )
     assert locations.index.read_text( ) == 'v1.0'
 
 
@@ -228,7 +232,7 @@ def test_060_update_versions_json( locations, website, fs ):
     fs.create_dir( locations.website )
     species = ( 'coverage-pytest', )
     data = website._update_versions_json( locations, 'v1.0', species )
-    assert fs.exists( locations.versions )
+    assert locations.versions.exists( )
     assert data[ 'latest_version' ] == 'v1.0'
     assert data[ 'versions' ][ 'v1.0' ] == species
 
