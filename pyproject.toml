@@ -12,7 +12,7 @@ name = 'emcd-projects'
 description = 'Project management utilities.'
 dynamic = [ 'version' ]
 license = 'Apache-2.0'
-readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
+readme = { 'file' = 'sources/emcdproj/README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
   'Jinja2',
@@ -50,9 +50,11 @@ keywords = [ 'maintenance', 'project', 'template' ]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
 [project.scripts]
-emcd-projects = 'emcdproj:main'
+emcdproj = 'emcdproj:main'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-project-common'
+'Documentation' = 'https://emcd.github.io/python-project-common'
+'Download' = 'https://pypi.org/project/emcd-projects/#files'
 'Source Code' = 'https://github.com/emcd/python-project-common'
 'Issue Tracker' = 'https://github.com/emcd/python-project-common/issues'
 
@@ -81,6 +83,7 @@ directory = '.auxiliary/artifacts/hatch-build'
 only-include = [
   'sources/emcdproj',
   # --- BEGIN: Injected by Copier ---
+  'data',
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
@@ -88,12 +91,14 @@ strict-naming = false
 only-include = [
   'sources/emcdproj',
   # --- BEGIN: Injected by Copier ---
+  'data',
   # --- END: Injected by Copier ---
 ]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/emcdproj' = 'emcdproj'
 # --- BEGIN: Injected by Copier ---
+'data' = 'emcdproj/data'
 # --- END: Injected by Copier ---
 [tool.hatch.envs.default]
 python = '3.10'
@@ -108,10 +113,12 @@ dependencies = [
   'isort',
   'packaging',
   'pre-commit',
+  'pyfakefs',
   'pylint',
   'pylint-per-file-ignores',
   'pyright',
   'pytest',
+  'pytest-asyncio',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
@@ -386,6 +393,7 @@ redefining-builtins-modules = [ 'builtins', 'io' ]
 # https://microsoft.github.io/pyright/#/configuration
 [tool.pyright]
 include = [ 'sources' ]
+ignore = [ 'tests' ]
 reportConstantRedefinition = true
 reportInvalidTypeVarUse = true
 reportMatchNotExhaustive = true
