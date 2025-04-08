@@ -54,3 +54,90 @@ jobs:
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  publish-pypi:
+    if: ${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}
+    needs: [initialize, package]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.which-pypi || 'pypi' }}
+      url: ${{ fromJSON(needs.initialize.outputs.pypi-package-urls)[inputs.which-pypi || 'pypi'] }}emcdproj
+    permissions:
+      id-token: write  # Only needed for PyPI trusted publishing
+    steps:
+
+      - name: Restore Distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions--${{ github.run_id }}
+          path: ${{ env.DISTRIBUTIONS_PATH }}
+
+      - name: Publish Distributions
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ${{ env.DISTRIBUTIONS_PATH }}
+          repository-url: ${{ fromJSON(needs.initialize.outputs.pypi-api-urls)[inputs.which-pypi || 'pypi'] }}
+          print-hash: true
+          skip-existing: ${{ inputs.which-pypi == 'testpypi' }}
+
+  publish-github:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs:
+      - initialize
+      - package
+      - publish-pypi
+      # --- BEGIN: Injected by Copier ---
+      # --- END: Injected by Copier ---
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@v1.13
+        with:
+          python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
+
+      - name: Restore Distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions--${{ github.run_id }}
+          path: ${{ env.DISTRIBUTIONS_PATH }}
+
+      - name: Generate Integrity Check Values
+        run: |
+          set -eu -o pipefail
+          cd ${{ env.DISTRIBUTIONS_PATH }}
+          sha256sum emcd-projects-* >SHA256SUMS.txt
+
+      - name: Sign Distributions
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        with:
+          inputs: >-
+            ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
+            ${{ env.DISTRIBUTIONS_PATH }}/emcd-projects-*
+
+      - name: Generate Release Notes
+        run: |
+          set -eu -o pipefail
+          hatch --env develop run \
+            towncrier build --draft --version ${GITHUB_REF_NAME} \
+            >.auxiliary/artifacts/tc-release-notes.rst
+          cp .auxiliary/artifacts/tc-release-notes.rst .auxiliary/artifacts/release-notes.rst
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ github.ref_name }}' \
+            --repo '${{ github.repository }}' \
+            --notes-file .auxiliary/artifacts/release-notes.rst
+
+      - name: Publish Artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload '${{ github.ref_name }}' \
+            ${{ env.DISTRIBUTIONS_PATH }}/** \
+            --repo '${{ github.repository }}'

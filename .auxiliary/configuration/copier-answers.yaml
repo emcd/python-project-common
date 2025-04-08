@@ -9,10 +9,10 @@ distribution_name: emcd-projects
 enable_cli: true
 enable_executables: false
 enable_property_tests: false
-enable_publication: false
+enable_publication: true
 enable_rust_extension: false
 gh_owner: emcd
-include_data_resources: false
+include_data_resources: true
 inject_docstring_utils: false
 inject_exceptions: true
 inject_foundations: true

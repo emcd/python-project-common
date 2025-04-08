@@ -20,6 +20,14 @@
                                  emcd-projects
 *******************************************************************************
 
+.. image:: https://img.shields.io/pypi/v/emcd-projects
+   :alt: Package Version
+   :target: https://pypi.org/project/emcd-projects/
+
+.. image:: https://img.shields.io/pypi/status/emcd-projects
+   :alt: PyPI - Status
+   :target: https://pypi.org/project/emcd-projects/
+
 .. image:: https://github.com/emcd/python-project-common/actions/workflows/tester.yaml/badge.svg?branch=master&event=push
    :alt: Tests Status
    :target: https://github.com/emcd/python-project-common/actions/workflows/tester.yaml
@@ -32,26 +40,34 @@
    :alt: Project License
    :target: https://github.com/emcd/python-project-common/blob/master/LICENSE.txt
 
-🛠️A collection of reusable GitHub Actions workflows and a Copier template for
+.. image:: https://img.shields.io/pypi/pyversions/emcd-projects
+   :alt: Python Versions
+   :target: https://pypi.org/project/emcd-projects/
+
+🛠️ A collection of reusable GitHub Actions workflows and Copier template for
 Python projects. Provides standardized CI/CD pipelines and project structure
 with optional Rust extension support.
 
 Features
 ===============================================================================
 
-📦 **Project Template**
-   - Modern Python packaging setup using Hatch
-   - Sphinx documentation framework
-   - Quality assurance tools configuration
-   - Optional Rust extension support via PyO3/Maturin
-   - Optional standalone executable via PyInstaller
-   - Property-based testing support (Hypothesis/proptest)
+🖨️ **Project Template**
+   - Python environment management and packaging via Hatch.
+   - Sphinx documentation framework.
+   - Quality assurance tools configuration.
+   - Optional Rust extension support via PyO3/Maturin.
+   - Optional standalone executable via PyInstaller.
+   - Property-based testing support (Hypothesis/proptest).
 
 🔄 **Reusable GitHub Workflows**
-   - Testing across multiple Python versions and platforms
-   - Documentation generation and publication
-   - Package building and publication
-   - Code quality reporting
+   - Testing across multiple Python versions and platforms.
+   - Documentation generation and publication.
+   - Package building and publication.
+   - Code quality reporting.
+
+📦 **Project Maintenance Utilities**
+   - Maintain static site for project documentation and coverage reports. No
+     need to hook up ReadTheDocs, Codecov, etc....
 
 `More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
 ===============================================================================
@@ -87,3 +103,11 @@ Features
 .. image:: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
    :alt: Ruff
    :target: https://github.com/astral-sh/ruff
+
+.. image:: https://img.shields.io/pypi/implementation/emcd-projects
+   :alt: PyPI - Implementation
+   :target: https://pypi.org/project/emcd-projects/
+
+.. image:: https://img.shields.io/pypi/wheel/emcd-projects
+   :alt: PyPI - Wheel
+   :target: https://pypi.org/project/emcd-projects/
