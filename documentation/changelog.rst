@@ -21,8 +21,16 @@
 Release Notes
 *******************************************************************************
 
-
 .. towncrier release notes start
+
+Emcdproj 1.14 (2025-04-08)
+==========================
+
+Features
+--------
+
+- Ability to update static website with documentation and code coverage report
+  for particular package version.
 
 
 Copier Template 1.13 (2025-03-26)
