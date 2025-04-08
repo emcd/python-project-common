@@ -166,41 +166,82 @@ Docstrings
 Imports
 -------------------------------------------------------------------------------
 
-Prefer function-level imports over module-level imports to prevent module
-namespace pollution and make functions more relocatable::
+The project has an internals subpackage, `__`, which contains all common
+third-party imports. If your desired import is in this subpackage, then you can
+import this subpackage near the top of the module under development; e.g.::
+
+    from . import __
+
+If the internals subpackage does not have your desired import, consider whether
+it is a common third-party import, which is likely to be used in other modules
+in the future, or whether it is something specialized. If it is a common
+third-party import, then add it to the imports in the internals subpackage,
+using an abbreviated alias if the name is long. (E.g., ``cabc`` as an alias for
+``collections.abc``.)
+
+If your desired import is specialized for the current module, then consider how
+widely it will be used within the module. If only one or two functions will
+need it and they are not performance-critical, then consider importing from
+within the function bodies. (Function-level imports reduce module namespace
+pollution and make functions more relocatable since their requisite imports
+will move with them.) Otherwise, import at the top of the module, aliasing the
+import so that it is private and will not pollute the public API of the module.
+
+Example of function-level imports::
 
     def process_data( raw_data: bytes ) -> dict:
-        from collections import defaultdict
-        from itertools import groupby
+        from tomli_w import dumps
         from .utils import decode_packet
         # Function implementation...
 
-When imports must appear at the module level, follow the grouping conventions
-from :pep:`8`::
+Example of private module-level import aliases::
 
-    from __future__ import annotations
+    import aiofiles as _aiofiles
 
-    import collections.abc as cabc
-    import types
-    from dataclasses import dataclass
-    from typing import Optional
+    from . import exceptions as _exceptions
 
-    import typing_extensions as typx
-    from third_party import ThirdPartyClass
+.. note::
 
-    from .submodule import LocalClass
+   The above advice does *not* apply to modules in a test suite. As test
+   modules are not intended to expose public APIs, feel free to follow the
+   common practice of placing public imports at the tops of those modules.
 
-For multi-line imports, use parentheses with hanging indent. Add a trailing
-comma to force one-per-line format for very long import lists::
+Follow the import grouping conventions from :pep:`8`::
+
+    # __future__ from imports
+
+    # standard library imports
+
+    # standard library from imports
+
+    # third-party imports
+
+    # third-party from imports
+
+    # first-party relative imports
+
+    # first-party relative from imports
+
+For import sequences, which will not fit on one line, use parentheses with
+hanging indent::
 
     from third_party.submodule import (
         FirstClass, SecondClass, ThirdClass )
+
+For import sequences, which will not fit on two lines, list them one per line
+with a trailing comma after each one and the closing parentheses dedented on a
+separate line::
 
     from third_party.other import (
         ALongClassName,
         AnotherLongClassName,
         YetAnotherLongClassName,
     )
+
+Imports within a sequence should be sorted lexicographically with uppercase
+letters coming before lowercase ones (i.e., classes and type aliases before
+functions). Import aliases are relevant to this ordering rather than the
+imports which they alias.
 
 
 Line Continuation
@@ -319,17 +360,18 @@ and *not* this::
 Automation
 ===============================================================================
 
-The project includes configurations for ``isort`` and ``yapf`` in
-``pyproject.toml``. While these tools help maintain consistent formatting,
-they do not perfectly match all style guidelines. In cases where automatic
-formatting produces suboptimal results, manual formatting according to this
-guide takes precedence.
+Current, there are no tools which can automatically enforce compliance with the
+above style guidance. However, if you politely ask an LLM, which is good at
+instruction following, to make your code conform to the guidance, results will
+generally be good. If you are familiar with ``isort`` and ``yapf``, you can
+also look :doc:`approximate formatter configurations <python-autoformat>` for
+these tools.
 
 Cases where manual intervention may be needed:
 
-* Complex function definitions with mixed positional and nominative arguments
-* Multi-line method chains
-* Nested data structures with mixed single-line and multi-line sections
+* Multi-line chains of method invocations. (Fluent programming.)
+* Function declarations with mixed positional and nominative arguments.
+* Nested data structures with mixed single-line and multi-line sections.
 
 When in doubt, optimize for readability while staying within the general
 principles outlined in this guide.

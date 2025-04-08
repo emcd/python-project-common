@@ -20,7 +20,6 @@
 
 ''' Common imports and type aliases used throughout the package. '''
 
-# pylint: disable=unused-import
 # ruff: noqa: F401
 
 

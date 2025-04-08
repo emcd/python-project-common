@@ -24,6 +24,7 @@
 from platform import python_implementation
 
 import pytest
+import typing_extensions as typx
 
 from . import PACKAGE_NAME, cache_import_module
 
@@ -78,7 +79,7 @@ def test_210_immutable_class_visibility( class_name ):
     factory = getattr( module, class_name )
 
     class Example( metaclass = factory ):
-        _class_behaviors_ = { 'foobar' }
+        _class_behaviors_: typx.ClassVar[ set[ str ] ] = { 'foobar' }
         _class_attribute_visibility_includes_ = frozenset( ( '_visible', ) )
         public = 42
         _hidden = 24
@@ -161,8 +162,6 @@ def test_222_immutable_class_replacement_super_property( ):
     with pytest.raises( AttributeError ):
         Example.field1 = 'changed'
 
-
-# pylint: disable=no-member
 
 def test_300_module_reclassification_by_name( ):
     ''' Module reclassification works with module name. '''
@@ -286,8 +285,6 @@ def test_306_module_attribute_operations( ):
     assert "Cannot assign attribute 'existing'" in str( exc_info.value )
     assert test_module.__name__ in str( exc_info.value )
     assert 42 == test_module.existing
-
-# pylint: enable=no-member
 
 
 def test_400_immutable_object_init( ):
