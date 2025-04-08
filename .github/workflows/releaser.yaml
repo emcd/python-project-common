@@ -109,14 +109,14 @@ jobs:
         run: |
           set -eu -o pipefail
           cd ${{ env.DISTRIBUTIONS_PATH }}
-          sha256sum emcd-projects-* >SHA256SUMS.txt
+          sha256sum emcd_projects-* >SHA256SUMS.txt
 
       - name: Sign Distributions
         uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
           inputs: >-
             ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
-            ${{ env.DISTRIBUTIONS_PATH }}/emcd-projects-*
+            ${{ env.DISTRIBUTIONS_PATH }}/emcd_projects-*
 
       - name: Generate Release Notes
         run: |
