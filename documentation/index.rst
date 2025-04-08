@@ -17,7 +17,7 @@
    +--------------------------------------------------------------------------+
 
 
-.. include:: ../README.rst
+.. include:: ../sources/emcdproj/README.rst
 
 
 Table of Contents

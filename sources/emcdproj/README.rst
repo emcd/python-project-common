@@ -44,29 +44,18 @@
    :alt: Python Versions
    :target: https://pypi.org/project/emcd-projects/
 
-🛠️ A collection of reusable GitHub Actions workflows, Copier template for
-Python projects, and Python package for project management.
+🛠️ Administration utilities for managing projects built from the
+`emcd/python-project-common <https://github.com/emcd/python-project-common>`_
+Copier template.
 
 Features
 ===============================================================================
 
-🖨️ **Project Template**
-   - Python environment management and packaging via Hatch.
-   - Sphinx documentation framework.
-   - Quality assurance tools configuration.
-   - Optional Rust extension support via PyO3/Maturin.
-   - Optional standalone executable via PyInstaller.
-   - Property-based testing support (Hypothesis/proptest).
-
-🔄 **Reusable GitHub Workflows**
-   - Testing across multiple Python versions and platforms.
-   - Documentation generation and publication.
-   - Package building and publication.
-   - Code quality reporting.
-
-📦 **Project Maintenance Package**
-   - Maintains static site with versioned documentation and coverage reports.
-     No need to hook up ReadTheDocs, Codecov, etc....
+🌐 **Static Website Maintenance**
+   - Generates badges/shields based on test coverage.
+   - Maintains index of versioned documentation and coverage reports.
+   - No need for Codecov, ReadTheDocs, etc...; static site can be hosted
+     anywhere which can deploy from a Git repo branch (GitHub Pages, etc...).
 
 `More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
 ===============================================================================
@@ -86,14 +75,6 @@ Features
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit
    :alt: pre-commit
    :target: https://github.com/pre-commit/pre-commit
-
-.. image:: https://img.shields.io/badge/security-bandit-yellow.svg
-   :alt: Bandit
-   :target: https://github.com/PyCQA/bandit
-
-.. image:: https://img.shields.io/badge/linting-pylint-yellowgreen
-   :alt: Pylint
-   :target: https://github.com/pylint-dev/pylint
 
 .. image:: https://microsoft.github.io/pyright/img/pyright_badge.svg
    :alt: Pyright
