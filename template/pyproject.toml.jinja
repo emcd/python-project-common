@@ -366,22 +366,22 @@ filename = 'documentation/changelog.rst'
 package = '{{ package_name }}'
 package_dir = 'sources'
 [[tool.towncrier.type]]
-directory = 'bugfix'
-name = 'Bugfixes'
+# features and other improvements
+directory = 'enhance'
+name = 'Enhancements'
 showcontent = true
 [[tool.towncrier.type]]
-directory = 'docs'
-name = 'Documentation Improvements'
+# deprecations and other notices
+directory = 'notify'
+name = 'Notices'
 showcontent = true
 [[tool.towncrier.type]]
-directory = 'feature'
-name = 'Features'
+# removals of feature or platform support
+directory = 'remove'
+name = 'Removals'
 showcontent = true
 [[tool.towncrier.type]]
-directory = 'platform'
-name = 'Supported Platforms'
-showcontent = true
-[[tool.towncrier.type]]
-directory = 'removal'
-name = 'Deprecations and Removals'
+# bug fixes
+directory = 'repair'
+name = 'Repairs'
 showcontent = true
