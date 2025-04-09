@@ -40,14 +40,14 @@ repos:
     name: 'Check: Debug Statements (Python)'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.7.2
+  rev: v0.11.4
   hooks:
   - id: ruff
     name: 'Lint: Ruff'
     fail_fast: true
 
 - repo: https://github.com/PyCQA/bandit
-  rev: 1.7.10
+  rev: 1.8.3
   hooks:
   - id: bandit
     name: 'Lint: Bandit'

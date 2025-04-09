@@ -146,11 +146,11 @@ described in the release process sections above.
 Available Types
 -------------------------------------------------------------------------------
 
-* ``bugfix``: For bug fixes
-* ``docs``: For documentation improvements
-* ``feature``: For new features
-* ``platform``: For changes to supported platforms
-* ``removal``: For deprecations and removals
+* ``enhance``: features and other improvements (documentation, platform
+  support, etc...)
+* ``notify``: deprecations and other notices
+* ``remove``: removals of feature or platform support
+* ``repair``: bug fixes
 
 Format
 -------------------------------------------------------------------------------
@@ -159,47 +159,63 @@ The file should contain a concise description of the change written in present
 tense. For example:
 
 .. code-block:: rst
-   :caption: .auxiliary/data/towncrier/+immutable-modules.feature.rst
+   :caption: .auxiliary/data/towncrier/+immutable-modules.enhance.rst
 
    Add support for immutable module reclassification.
 
 The description should:
 
-* Start with a capital letter
-* End with a period
-* Use present tense (e.g., "Add", "Fix", "Update")
-* Focus on the what and why, not the how
-* Be understandable by users, not just developers
+* Start with a capital letter.
+* End with a period.
+* For multi-component or multi-faceted projects, a topic followed by colon may
+  be used to introduce the content. (E.g., "Github Actions: ", "Copier
+  Template: ").
+* Use present tense verbs in the imperative/subjunctive mood (e.g., "Add",
+  "Fix", "Update") or simple noun phrases (e.g., "Support for <x>") in the
+  introductory sentence.
+* If explanatory content is necessary, then it may be provided in the
+  indicative mood using whatever verb tense is most natural to provide
+  historical context or other rationale.
+* Focus on the what and why, not the how.
+* Be understandable by users, not just developers.
+* Acknowledge contributors.
 
 Examples
 -------------------------------------------------------------------------------
 
-Bug Fix:
+Enhance:
     .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/456.bugfix.rst
-
-       Fix attribute visibility in immutable modules.
-
-Documentation:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/457.docs.rst
+       :caption: .auxiliary/data/towncrier/457.enhance.rst
 
        Improve release process documentation with Towncrier details.
 
-Feature:
+Enhance:
     .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/458.feature.rst
+       :caption: .auxiliary/data/towncrier/458.enhance.rst
 
        Add recursive module reclassification support.
 
-Platform:
+Enhance:
     .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/459.platform.rst
+       :caption: .auxiliary/data/towncrier/459.enhance.rst
 
-       Add support for Python 3.13.
+       Support for Python 3.13.
 
-Removal:
+Notice:
     .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/460.removal.rst
+       :caption: .auxiliary/data/towncrier/+exceptions.notify.rst
+
+       Deprecate ``OvergeneralException``. Package now raises more specific
+       exceptions.
+
+Remove:
+    .. code-block:: rst
+       :caption: .auxiliary/data/towncrier/460.remove.rst
 
        Remove deprecated ``make_immutable`` function.
+
+Repair:
+    .. code-block:: rst
+       :caption: .auxiliary/data/towncrier/456.repair.rst
+
+       Fix attribute visibility in immutable modules.

@@ -20,7 +20,6 @@
 
 ''' Docstring utilities. '''
 
-# pylint: disable=unused-wildcard-import,wildcard-import
 # ruff: noqa: F403,F405
 
 
