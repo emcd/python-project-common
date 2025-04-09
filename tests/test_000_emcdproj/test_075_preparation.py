@@ -20,8 +20,6 @@
 
 ''' Tests for preparation module. '''
 
-# pylint: disable=redefined-outer-name
-
 import contextlib as ctxl
 
 from pathlib import Path
@@ -53,7 +51,7 @@ from . import PACKAGE_NAME, cache_import_module
 @pytest.fixture
 def provide_test_platform_dirs( provide_tempdir ):
     ''' Provides PlatformDirs with user_config_path in test directory. '''
-    class PatchedPlatformDirs( PlatformDirs ): # pylint: disable=too-many-ancestors
+    class PatchedPlatformDirs( PlatformDirs ):
         __slots__ = ( '_test_config_path', )
 
         def __init__( self, appname: str, ensure_exists: bool = False ):
@@ -99,7 +97,7 @@ async def test_010_basic_preparation( provide_exits ):
 
 
 # @pytest.mark.asyncio
-# async def test_020_environment_loading( # pylint: disable=too-many-locals
+# async def test_020_environment_loading(
 #     provide_tempdir, provide_tempenv, provide_exits
 # ):
 #     ''' Preparation loads environment variables when requested. '''
@@ -172,7 +170,9 @@ async def test_010_basic_preparation( provide_exits ):
 
 
 # @pytest.mark.asyncio
-# async def test_070_concurrent_initialization( provide_tempdir, provide_exits ):
+# async def test_070_concurrent_initialization(
+#     provide_tempdir, provide_exits
+# ):
 #     ''' Preparation supports concurrent initialization. '''
 #     import asyncio
 #     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )

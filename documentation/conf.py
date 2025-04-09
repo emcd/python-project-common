@@ -7,15 +7,13 @@
         https://jareddillard.com/blog/common-ways-to-customize-sphinx-themes.html
 '''
 
-# mypy: ignore-errors
-# pylint: disable=consider-using-namedtuple-or-dataclass
 # ruff: noqa: E402,F401
 
 
 def _calculate_copyright_notice( ):
-    from datetime import datetime as DateTime
+    from datetime import datetime as DateTime, timezone as TimeZone
     first_year = 2024
-    now_year = DateTime.utcnow( ).year
+    now_year = DateTime.now( TimeZone.utc ).year
     if first_year < now_year: year_range = f"{first_year}-{now_year}"
     else: year_range = str( first_year )
     return f"{year_range}, Eric McDonald"
@@ -36,7 +34,7 @@ def _import_version( ):
 
 project = 'python-project-common'
 author = 'Eric McDonald'
-copyright = ( # pylint: disable=redefined-builtin
+copyright = ( # noqa: A001
     _calculate_copyright_notice( ) )
 release = version = _import_version( )
 

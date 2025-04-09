@@ -1,5 +1,5 @@
-.. vim: set fileencoding=utf-8:
-.. -*- coding: utf-8 -*-
+.. vim: set filetype=rst fileencoding=utf-8:
+.. -*- mode: rst ; coding: utf-8 -*-
 .. +--------------------------------------------------------------------------+
    |                                                                          |
    | Licensed under the Apache License, Version 2.0 (the "License");          |
@@ -25,7 +25,7 @@ Internal Development Interface
 *******************************************************************************
 
 
-Package ``emdproj.__``
+Package ``emcdproj.__``
 ===============================================================================
 
 

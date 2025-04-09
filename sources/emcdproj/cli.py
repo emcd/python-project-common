@@ -35,7 +35,7 @@ class VersionCommand(
     ''' Prints version information. '''
 
     async def __call__( self, auxdata: __.Globals ) -> None:
-        from . import __version__ # pylint: disable=cyclic-import
+        from . import __version__
         print( f"{__package__} {__version__}" )
         raise SystemExit( 0 )
 
@@ -107,9 +107,8 @@ async def _prepare(
     import ictruck
     # TODO: Finetune Icecream truck installation from CLI arguments.
     ictruck.install( trace_levels = 9 )
-    auxdata = await __.prepare(
+    return await __.prepare(
         application = application,
         # configedits = configedits,
         # environment = environment,
         exits = exits )
-    return auxdata

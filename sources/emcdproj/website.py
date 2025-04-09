@@ -146,7 +146,7 @@ def update(
     locations.website.mkdir( exist_ok = True, parents = True )
     if locations.archive.is_file( ):
         with tarfile_open( locations.archive, 'r:xz' ) as archive:
-            archive.extractall( path = locations.website )
+            archive.extractall( path = locations.website ) # noqa: S202
     available_species = _update_available_species( locations, version )
     j2context = _jinja2.Environment(
         loader = _jinja2.FileSystemLoader( locations.templates ),
@@ -157,7 +157,7 @@ def update(
         _update_coverage_badge( locations, j2context )
     ( locations.website / '.nojekyll' ).touch( )
     from .filesystem import chdir
-    with chdir( locations.website ):
+    with chdir( locations.website ): # noqa: SIM117
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
 
@@ -195,7 +195,7 @@ def _update_available_species(
     return tuple( available_species )
 
 
-def _update_coverage_badge( # pylint: disable=too-many-locals
+def _update_coverage_badge(
     locations: Locations, j2context: _jinja2.Environment
 ) -> None:
     ''' Updates coverage badge SVG.
@@ -207,11 +207,9 @@ def _update_coverage_badge( # pylint: disable=too-many-locals
         - green: >= 80%
     '''
     coverage = _extract_coverage( locations )
-    # pylint: disable=magic-value-comparison
     color = (
-        'red' if coverage < 50 else (
-            'yellow' if coverage < 80 else 'green' ) )
-    # pylint: enable=magic-value-comparison
+        'red' if coverage < 50 else ( # noqa: PLR2004
+            'yellow' if coverage < 80 else 'green' ) ) # noqa: PLR2004
     label_text = 'coverage'
     value_text = f"{coverage}%"
     label_width = len( label_text ) * 6 + 10
