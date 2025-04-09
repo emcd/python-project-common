@@ -27,7 +27,26 @@ API
 Package ``emcdproj``
 ===============================================================================
 
-.. todo:: Provide package description.
+Utilities for managing projects generated from the `emcd/python-project-common
+<https://github.com/emcd/python-project-common>`_ Copier template.
+
+
+Module ``emcdproj.website``
+-------------------------------------------------------------------------------
+
+.. automodule:: emcdproj.website
+
+
+Module ``emcdproj.filesystem``
+-------------------------------------------------------------------------------
+
+.. automodule:: emcdproj.filesystem
+
+
+Module ``emcdproj.interfaces``
+-------------------------------------------------------------------------------
+
+.. automodule:: emcdproj.interfaces
 
 
 Module ``emcdproj.exceptions``

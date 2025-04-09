@@ -20,12 +20,17 @@
 :tocdepth: 3
 
 
+*******************************************************************************
 Internal Development Interface
+*******************************************************************************
+
+
+Package ``emdproj.__``
 ===============================================================================
 
 
-Module ``emcdproj.__``
+Module ``emcdproj.__.imports``
 -------------------------------------------------------------------------------
 
-.. .. automodule:: emcdproj.__
-..    :ignore-module-all: true
+.. automodule:: emcdproj.__.imports
+   :exclude-members: immutable

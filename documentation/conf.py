@@ -79,8 +79,21 @@ nitpick_ignore = [
       "v, remove specified key and return the corresponding value." ),
     # Type annotation weirdnesses.
     ( 'py:class', "Doc" ),
+    ( 'py:class', "Positional" ),
+    ( 'py:class', "absence.objects.AbsentSingleton" ),
+    ( 'py:class', "emcdproj.__.state.Globals" ),
+    ( 'py:class', "frigid.classes.Class" ),
+    ( 'py:class', "frigid.classes.Dataclass" ),
+    ( 'py:class', "frigid.classes.ProtocolDataclass" ),
+    ( 'py:class', "platformdirs.unix.Unix" ),
     ( 'py:class', "types.Annotated" ),
     ( 'py:class', "typing_extensions.Any" ),
+    ( 'py:class', "typing_extensions.Self" ),
+    ( 'py:class', "typing_extensions.TypeIs" ),
+    ( 'py:class', "tyro.conf._markers.CallableType" ),
+]
+nitpick_ignore_regex = [
+    ( 'py:class', r'''.*\.Annotated\[.*?\]''' ),
 ]
 
 # -- Options for linkcheck builder -------------------------------------------
