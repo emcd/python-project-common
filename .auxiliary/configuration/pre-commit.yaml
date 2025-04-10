@@ -46,16 +46,6 @@ repos:
     name: 'Lint: Ruff'
     fail_fast: true
 
-- repo: https://github.com/semgrep/semgrep
-  rev: 'v1.89.0'
-  hooks:
-  - id: semgrep
-    name: 'Lint: Semgrep (Python)'
-    # https://semgrep.dev/explore
-    args: [ '--config', 'p/python', '--error', '--skip-unknown-extensions' ]
-    stages: [ 'pre-push' ]
-    fail_fast: true
-
 - repo: local
   hooks:
 
