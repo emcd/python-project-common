@@ -26,7 +26,7 @@ from __future__ import annotations
 from . import __
 
 
-class CliCommand( # pylint: disable=invalid-metaclass
+class CliCommand(
     __.typx.Protocol,
     metaclass = __.ImmutableProtocolDataclass,
     decorators = ( __.typx.runtime_checkable, ),

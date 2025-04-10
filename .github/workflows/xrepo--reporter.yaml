@@ -29,10 +29,9 @@ jobs:
         run: |
           set -eu
           hatch --env develop run coverage combine
-          # Note: Ignore errors because of mismatched source paths in combined coverage.
-          hatch --env develop run coverage report --ignore-errors
-          hatch --env develop run coverage html --ignore-errors
-          hatch --env develop run coverage xml --ignore-errors
+          hatch --env develop run coverage report
+          hatch --env develop run coverage html
+          hatch --env develop run coverage xml
         shell: bash
 
       - name: Preserve Coverage Reports

@@ -20,8 +20,6 @@
 
 ''' Tests for website maintenance utilities. '''
 
-# pylint: disable=no-self-use
-
 
 from contextlib import AsyncExitStack
 from pathlib import Path
@@ -148,7 +146,8 @@ def locations_tmpdir( auxdata_tmpdir, website, provide_tempdir ):
 #     assert pathetic.compare(
 #         locations.publications, '/project/.auxiliary/publications' )
 #     assert pathetic.compare(
-#         locations.archive, '/project/.auxiliary/publications/website.tar.xz' )
+#         locations.archive,
+#         '/project/.auxiliary/publications/website.tar.xz' )
 #     assert pathetic.compare(
 #         locations.artifacts, '/project/.auxiliary/artifacts' )
 #     assert pathetic.compare(

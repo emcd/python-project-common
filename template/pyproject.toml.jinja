@@ -68,6 +68,12 @@ email = '{{ author_email }}'
 year-of-origin = {{ year_of_origin }}
 
 # https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.paths]
+gha-runners = [
+  '/home/runner/work/{{ project_name }}/{{ project_name }}/',
+  '/Users/runner/work/{{ project_name }}/{{ project_name }}/',
+  'D:\a\{{ project_name }}\{{ project_name }}\',
+]
 [tool.coverage.run]
 branch = true
 command_line = '-m pytest' # TODO? '--fail-under'
@@ -126,7 +132,6 @@ dependencies = [
   'pyright',
   'pytest',
   'ruff',
-  'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
   'sphinx-copybutton',
   'sphinx-inline-tabs',
@@ -179,14 +184,6 @@ linters = [
   {%- endif %}
   # --- END: Injected by Copier ---
   '''pyright sources''',
-  '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
-     sources/{{ package_name }}''',
-  # --- BEGIN: Injected by Copier ---
-  {%- if enable_rust_extension %}
-  '''semgrep --config p/rust --error --quiet --skip-unknown-extensions \
-     sources/{{ crate_name }}''',
-  {%- endif %}
-  # --- END: Injected by Copier ---
 ]
 packagers = [
   '''hatch build''',

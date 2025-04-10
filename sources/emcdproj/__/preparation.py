@@ -30,9 +30,10 @@ from . import distribution as _distribution
 from . import state as _state
 
 
-async def prepare( # pylint: disable=too-many-arguments,too-many-locals
+async def prepare(
     exits: __.ctxl.AsyncExitStack,
-    application: _application.Information = _application.Information( ),
+    application: _application.Information = (
+        _application.Information( ) ), # noqa: B008
     # configedits: _dictedits.Edits = ( ),
     # configfile: __.Absential[ __.Path ] = __.absent,
     # environment: bool = False,
@@ -66,7 +67,7 @@ async def prepare( # pylint: disable=too-many-arguments,too-many-locals
         exits = exits )
     # if environment: await _environment.update( auxdata )
     # _inscribe_preparation_report( auxdata )
-    return auxdata
+    return auxdata # noqa: RET504
 
 
 # def _inscribe_preparation_report( auxdata: _state.Globals ):
