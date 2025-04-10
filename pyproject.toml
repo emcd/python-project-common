@@ -62,6 +62,12 @@ emcdproj = 'emcdproj:main'
 year-of-origin = 2024
 
 # https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.paths]
+gha-runners = [
+  '/home/runner/work/python-project-common/python-project-common/',
+  '/Users/runner/work/python-project-common/python-project-common/',
+  'D:\a\python-project-common\python-project-common\',
+]
 [tool.coverage.run]
 branch = true
 command_line = '-m pytest' # TODO? '--fail-under'

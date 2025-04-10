@@ -68,6 +68,12 @@ email = '{{ author_email }}'
 year-of-origin = {{ year_of_origin }}
 
 # https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.paths]
+gha-runners = [
+  '/home/runner/work/{{ project_name }}/{{ project_name }}/',
+  '/Users/runner/work/{{ project_name }}/{{ project_name }}/',
+  'D:\a\{{ project_name }}\{{ project_name }}\',
+]
 [tool.coverage.run]
 branch = true
 command_line = '-m pytest' # TODO? '--fail-under'
