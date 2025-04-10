@@ -126,7 +126,6 @@ dependencies = [
   'pyright',
   'pytest',
   'ruff',
-  'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
   'sphinx-copybutton',
   'sphinx-inline-tabs',
@@ -179,14 +178,6 @@ linters = [
   {%- endif %}
   # --- END: Injected by Copier ---
   '''pyright sources''',
-  '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
-     sources/{{ package_name }}''',
-  # --- BEGIN: Injected by Copier ---
-  {%- if enable_rust_extension %}
-  '''semgrep --config p/rust --error --quiet --skip-unknown-extensions \
-     sources/{{ crate_name }}''',
-  {%- endif %}
-  # --- END: Injected by Copier ---
 ]
 packagers = [
   '''hatch build''',
