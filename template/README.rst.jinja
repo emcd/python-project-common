@@ -98,3 +98,51 @@
    :alt: PyPI - Wheel
    :target: https://pypi.org/project/{{ distribution_name }}/
 {%- endif %}
+
+
+Other Projects by This Author 🌟
+===============================================================================
+
+{%- set my_projects_json %}
+{%- raw %}
+{
+    "python-absence": {
+        "pypi_name": "absence",
+        "blurb": "🕳️ A Python library package which provides a **sentinel for absent values** - a falsey, immutable singleton that represents the absence of a value in contexts where ``None`` or ``False`` may be valid values."
+    },
+    "python-accretive": {
+        "pypi_name": "accretive",
+        "blurb": "🌌 A Python library package which provides **accretive data structures** - collections which can grow but never shrink."
+    },
+    "python-falsifier": {
+        "pypi_name": "falsifier",
+        "blurb": "🎭 A very simple Python library package which provides a **base class for falsey objects** - objects that evaluate to ``False`` in boolean contexts."
+    },
+    "python-frigid": {
+        "pypi_name": "frigid",
+        "blurb": "🔒 A Python library package which provides **immutable data structures** - collections which cannot be modified after creation."
+    },
+    "python-icecream-truck": {
+        "pypi_name": "icecream-truck",
+        "blurb": "🍦 **Flavorful Debugging** - A Python library which enhances the powerful and well-known ``icecream`` package with flavored traces, configuration hierarchies, customized outputs, ready-made recipes, and more."
+    },
+    "python-mimeogram": {
+        "pypi_name": "mimeogram",
+        "blurb": "📨 A command-line tool for **exchanging collections of files with Large Language Models** - bundle multiple files into a single clipboard-ready document while preserving directory structure and metadata... good for code reviews, project sharing, and LLM interactions."
+    }
+}
+{%- endraw %}
+{%- endset %}
+{%- set my_projects = my_projects_json | from_json %}
+
+{% for repo_name, info in my_projects.items() if repo_name != project_name %}
+* `{{ repo_name }} <https://github.com/{{ gh_owner }}/{{ repo_name }}>`_
+    {%- if 'pypi_name' in info %}
+    - PyPI: `{{ info.pypi_name }} <https://pypi.org/project/{{ info.pypi_name }}/>`_
+    {%- endif %}
+    {%- if 'crate_name' in info %}
+    - Crates.io: `{{ info.crate_name }} <https://crates.io/crates/{{ info.crate_name }}>`_
+    {%- endif %}
+
+    {{ info.blurb }}
+{%- endfor %}
