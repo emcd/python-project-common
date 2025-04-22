@@ -26,6 +26,46 @@ from __future__ import annotations
 from . import __
 
 
+class DisplayStreams( __.enum.Enum ): # TODO: Python 3.11: StrEnum
+    # TODO: Protected class attributes.
+    ''' Stream upon which to place output. '''
+
+    Stderr =    'stderr'
+    Stdout =    'stdout'
+
+
+class ConsoleDisplay(
+    metaclass = __.ImmutableDataclass,
+):
+    silence: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg(
+            aliases = ( '--quiet', '--silent', ), prefix_name = False ),
+    ] = False
+    file: __.typx.Annotated[
+        __.typx.Optional[ __.Path ],
+        __.tyro.conf.arg(
+            name = 'console-capture-file', prefix_name = False ),
+    ] = None
+    stream: __.typx.Annotated[
+        DisplayStreams,
+        __.tyro.conf.arg( name = 'console-stream', prefix_name = False ),
+    ] = DisplayStreams.Stderr
+
+    async def provide_stream( self ) -> __.io.TextIOWrapper:
+        ''' Provides output stream for display. '''
+        # TODO: register file stream as a process-lifetime exit
+        if self.file: return open( self.file, 'w' )
+        # TODO: async context manager for async file streams
+        # TODO: return async stream - need async printers
+        # TODO: handle non-TextIOWrapper streams
+        match self.stream:
+            case DisplayStreams.Stdout:
+                return __.sys.stdout # pyright: ignore[reportReturnType]
+            case DisplayStreams.Stderr:
+                return __.sys.stderr # pyright: ignore[reportReturnType]
+
+
 class CliCommand(
     __.typx.Protocol,
     metaclass = __.ImmutableProtocolDataclass,
@@ -34,7 +74,9 @@ class CliCommand(
     ''' CLI command. '''
 
     @__.abc.abstractmethod
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.Globals, display: ConsoleDisplay
+    ) -> None:
         ''' Executes command with global state. '''
         raise NotImplementedError
 

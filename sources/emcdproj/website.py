@@ -33,8 +33,7 @@ from . import interfaces as _interfaces
 
 
 class CommandDispatcher(
-    _interfaces.CliCommand,
-    decorators = ( __.standard_tyro_class, ),
+    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
 ):
     ''' Dispatches commands for static website maintenance. '''
 
@@ -49,25 +48,27 @@ class CommandDispatcher(
         ],
     ]
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
         ictr( 1 )( self.command )
-        await self.command( auxdata = auxdata )
+        await self.command( auxdata = auxdata, display = display )
 
 
 class SurveyCommand(
-    _interfaces.CliCommand,
-    decorators = ( __.standard_tyro_class, ),
+    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
 ):
     ''' Surveys release versions published in static website. '''
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
         # TODO: Implement.
         pass
 
 
 class UpdateCommand(
-    _interfaces.CliCommand,
-    decorators = ( __.standard_tyro_class, ),
+    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
 ):
     ''' Updates static website for particular release version. '''
 
@@ -77,7 +78,9 @@ class UpdateCommand(
         __.tyro.conf.Positional,
     ]
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
         update( auxdata, self.version )
 
 

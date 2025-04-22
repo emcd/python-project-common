@@ -1,0 +1,4 @@
+project_name: python-test-defaults
+distribution_name: emcdproj-defaults
+package_name: defaults
+description: 'All configuration options are defaults.'

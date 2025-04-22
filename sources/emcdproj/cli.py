@@ -25,6 +25,7 @@ from __future__ import annotations
 
 from . import __
 from . import interfaces as _interfaces
+from . import template as _template
 from . import website as _website
 
 
@@ -34,7 +35,9 @@ class VersionCommand(
 ):
     ''' Prints version information. '''
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
         from . import __version__
         print( f"{__package__} {__version__}" )
         raise SystemExit( 0 )
@@ -48,8 +51,12 @@ class Cli(
 
     application: __.ApplicationInformation
     # configfile: __.typx.Optional[ str ] = None
-    # display: ConsoleDisplay
+    display: _interfaces.ConsoleDisplay
     command: __.typx.Union[
+        __.typx.Annotated[
+            _template.CommandDispatcher,
+            __.tyro.conf.subcommand( 'template', prefix_name = False ),
+        ],
         __.typx.Annotated[
             _website.CommandDispatcher,
             __.tyro.conf.subcommand( 'website', prefix_name = False ),
@@ -66,8 +73,8 @@ class Cli(
         async with __.ctxl.AsyncExitStack( ) as exits:
             auxdata = await _prepare( exits = exits, **nomargs )
             ictr( 0 )( self.command )
-            await self.command( auxdata = auxdata )
-            # await self.command( auxdata = auxdata, display = self.display )
+            # await self.command( auxdata = auxdata )
+            await self.command( auxdata = auxdata, display = self.display )
 
     def prepare_invocation_args(
         self,
