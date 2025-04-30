@@ -33,9 +33,6 @@ jobs:
           python-version: '${{ fromJSON(inputs.python-versions)[0] }}'
 
       - name: Lint
-        # TODO: Only exclude Semgrep on Windows.
-        #       https://github.com/returntocorp/semgrep/issues/1330
-        if: ${{ 'Windows' != runner.os }}
         run: |
           hatch --env develop run linters
 
