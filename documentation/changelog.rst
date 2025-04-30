@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.17 (2025-04-30)
+==========================
+
+Enhancements
+------------
+
+- New CLI subcommand 'template' to validate changes to Copier template with some
+  preset. Currently available presets are 'default' and 'maximum'.
+
+
 emcd-projects 1.15 (2025-04-08)
 ===============================
 
