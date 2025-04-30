@@ -42,7 +42,7 @@ class CommandDispatcher(
         ],
         __.typx.Annotated[
             ValidateCommand,
-            __.tyro.conf.subcommand( 'update', prefix_name = False ),
+            __.tyro.conf.subcommand( 'validate', prefix_name = False ),
         ],
     ]
 
