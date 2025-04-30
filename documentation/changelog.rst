@@ -23,6 +23,17 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.17.1 (2025-04-30)
+============================
+
+Repairs
+-------
+
+- Ensure that long Hatch commands are specified inside of double-quoted TOML
+  strings so that line continuation backslashes are processed rather than treated
+  as literals. Fixes issue on Window.
+
+
 Emcdproj 1.17 (2025-04-30)
 ==========================
 
