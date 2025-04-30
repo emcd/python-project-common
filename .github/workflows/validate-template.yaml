@@ -1,17 +1,18 @@
 name: copier
 
 on:
+  pull_request:
+    branches: ['*']
+    paths:
+      - 'template/**'
+      - 'copier.yaml'
   push:
     branches:
       - master
     paths:
       - 'template/**'
       - 'copier.yaml'
-  pull_request:
-    branches: ['*']
-    paths:
-      - 'template/**'
-      - 'copier.yaml'
+  workflow_dispatch: {}
 
 jobs:
 
