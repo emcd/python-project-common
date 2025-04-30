@@ -1,0 +1,41 @@
+name: copier
+
+on:
+  pull_request:
+    branches: ['*']
+    paths:
+      - 'template/**'
+      - 'copier.yaml'
+  push:
+    branches:
+      - master
+    paths:
+      - 'template/**'
+      - 'copier.yaml'
+  workflow_dispatch: {}
+
+jobs:
+
+  initialize:
+    uses: ./.github/workflows/core--initializer.yaml
+
+  validate_template:
+    needs: [initialize]
+    name: Validate Copier template (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        variant: ['default', 'maximum']
+
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
+
+      - name: Install Copier
+        run: pip install copier
+
+      - name: Validate Variant
+        run: hatch run emcdproj template validate ${{ matrix.variant }}

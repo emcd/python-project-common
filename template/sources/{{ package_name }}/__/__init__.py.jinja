@@ -21,7 +21,6 @@
 ''' Common constants, imports, and utilities. '''
 
 
-# Expose everything from internal modules.
 {%- if inject_docstring_utils %}
 from .docstrings import *  # Managed by Copier.
 {%- endif %}
@@ -29,6 +28,3 @@ from .docstrings import *  # Managed by Copier.
 from .immutables import *  # Managed by Copier.
 {%- endif %}
 from .imports import *
-
-
-__all__ = ( )

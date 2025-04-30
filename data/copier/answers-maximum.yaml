@@ -1,0 +1,14 @@
+project_name: python-test-maximum
+distribution_name: emcdproj-maximum
+package_name: maximum
+description: 'All configuration options set.'
+enable_rust_extension: true
+include_data_resources: true
+enable_property_tests: true
+enable_publication: true
+enable_cli: true
+enable_executables: true
+inject_foundations: true
+inject_exceptions: true
+inject_immutables: true
+inject_docstring_utils: true
