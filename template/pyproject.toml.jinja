@@ -194,12 +194,15 @@ packagers = [
   {%- endif %}
   # --- END: Injected by Copier ---
 ]
-testers = [
+testers-no-reports = [
   'coverage erase',
   'coverage run',
   '''coverage run -m sphinx.cmd.build \
      -E -b doctest -d .auxiliary/caches/sphinx \
      documentation .auxiliary/artifacts/sphinx-doctest''',
+]
+testers = [
+  'testers-no-reports',
   'coverage combine',
   'coverage report --skip-covered',
   'coverage html',

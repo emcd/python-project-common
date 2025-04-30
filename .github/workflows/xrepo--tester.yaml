@@ -67,7 +67,7 @@ jobs:
           set -eu
           v=${{ fromJSON(inputs.python-descriptors)[ matrix.python-version ].hatch }}
           hatch --env "qa.${v}" run coverage --version
-          hatch --env "qa.${v}" run coverage run
+          hatch --env "qa.${v}" run testers-no-reports
         shell: bash
 
       # TODO: Optional Rust testing.
