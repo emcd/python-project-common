@@ -93,6 +93,8 @@ linkcheck_ignore = [
     r'https://github\.com/{{ gh_owner }}/{{ project_name }}/.*',
     # Package does not exist during initial development.
     r'https://pypi.org/project/{{ package_name }}/',
+    # Github aggressively rate-limits access to certain blobs.
+    r'https://github\.com/emcd/python-project-common/blob/.*'
 ]
 
 # -- Options for HTML output -------------------------------------------------
