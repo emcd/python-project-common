@@ -29,7 +29,7 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Create CLAUDE.md Symlink
+      - name: Create CLAUDE.md symlink
         run: |
           if [ -f ".auxiliary/configuration/conventions.md" ]; then
             ln -sf .auxiliary/configuration/conventions.md CLAUDE.md
@@ -40,23 +40,23 @@ jobs:
           fi
         shell: bash
 
-      - name: Execute Claude Code
+      - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           trigger_phrase: "/claude"
           timeout_minutes: 20
-          allowed_tools:
-            - "Bash(hatch --env develop run linters)"
-            - "Bash(hatch --env develop run testers)"
-            - "Bash(hatch --env develop run docsgen)"
-            - "Bash(hatch --env develop run packagers)"
-            - "Bash(hatch run python:*)"
-            - "Bash(git status)"
-            - "Bash(git add:*)"
-            - "Bash(git commit:*)"
-            - "Bash(python:*)"
-            - "Bash(pip:*)"
-            - "Edit(**)"
-            - "Write(**)"
+          allowed_tools: |
+            Bash(hatch --env develop run linters)
+            Bash(hatch --env develop run testers)
+            Bash(hatch --env develop run docsgen)
+            Bash(hatch --env develop run packagers)
+            Bash(hatch run python:*)
+            Bash(git status)
+            Bash(git add:*)
+            Bash(git commit:*)
+            Bash(python:*)
+            Bash(pip:*)
+            Edit(**)
+            Write(**)
