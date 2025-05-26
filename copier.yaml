@@ -167,18 +167,6 @@ inject_exceptions:
     when: "{{ inject_foundations }}"
     default: false
 
-inject_immutables:
-    type: bool
-    help: 'Include support for immutables with concealment?'
-    when: "{{ inject_foundations }}"
-    default: false
-
-inject_docstring_utils:
-    type: bool
-    help: 'Include utilities for docstring generation?'
-    when: "{{ inject_foundations }}"
-    default: false
-
 gh_owner:
     type: str
     help: Github repository owner

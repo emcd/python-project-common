@@ -10,5 +10,3 @@ enable_cli: true
 enable_executables: true
 inject_foundations: true
 inject_exceptions: true
-inject_immutables: true
-inject_docstring_utils: true
