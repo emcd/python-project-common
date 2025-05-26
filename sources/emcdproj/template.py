@@ -33,7 +33,7 @@ from . import interfaces as _interfaces
 class CommandDispatcher(
     _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
 ):
-    ''' Dispatches commands for static website maintenance. '''
+    ''' Dispatches commands for Copier template maintenance. '''
 
     command: __.typx.Union[
         __.typx.Annotated[
