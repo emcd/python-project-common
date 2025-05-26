@@ -35,6 +35,7 @@ import                      math
 import                      os
 import                      shutil
 import                      sys
+import                      tempfile
 import                      types
 
 from pathlib import Path

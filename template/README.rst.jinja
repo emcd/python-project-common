@@ -136,13 +136,7 @@ Other Projects by This Author 🌟
 {%- set my_projects = my_projects_json | from_json %}
 
 {% for repo_name, info in my_projects.items() if repo_name != project_name %}
-* `{{ repo_name }} <https://github.com/{{ gh_owner }}/{{ repo_name }}>`_
-    {%- if 'pypi_name' in info %}
-    - PyPI: `{{ info.pypi_name }} <https://pypi.org/project/{{ info.pypi_name }}/>`_
-    {%- endif %}
-    {%- if 'crate_name' in info %}
-    - Crates.io: `{{ info.crate_name }} <https://crates.io/crates/{{ info.crate_name }}>`_
-    {%- endif %}
+* `{{ repo_name }} <https://github.com/{{ gh_owner }}/{{ repo_name }}>`_ {% if 'pypi_name' in info %}(`{{ info.pypi_name }} <https://pypi.org/project/{{ info.pypi_name }}/>`_ on PyPI){% endif %} {% if 'crate_name' in info %}(`{{ info.crate_name }} <https://crates.io/crates/{{ info.crate_name }}/>`_ on Crates.io){% endif %}
 
-    {{ info.blurb }}
+  {{ info.blurb }}
 {%- endfor %}
