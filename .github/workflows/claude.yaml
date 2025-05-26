@@ -11,6 +11,7 @@ on:
     types: [submitted]
 
 jobs:
+
   claude:
     if: |
       (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/claude')) ||
@@ -24,9 +25,14 @@ jobs:
       issues: read
       id-token: write
     steps:
+
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
       - name: Prepare Python and Hatch
         uses: ./.github/actions/python-hatch
         with:
+          needs-clone: false
           python-version: '3.10'
 
       - name: Create CLAUDE.md symlink
