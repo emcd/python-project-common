@@ -92,6 +92,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+      attestations: write
     steps:
 
       - name: Prepare Python
@@ -111,10 +112,10 @@ jobs:
           cd ${{ env.DISTRIBUTIONS_PATH }}
           sha256sum emcd_projects-* >SHA256SUMS.txt
 
-      - name: Sign Distributions
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v2
         with:
-          inputs: >-
+          subject-path: |
             ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
             ${{ env.DISTRIBUTIONS_PATH }}/emcd_projects-*
 
