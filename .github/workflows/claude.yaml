@@ -1,4 +1,4 @@
-name: Claude Code
+name: claude
 
 on:
   issue_comment:
@@ -24,18 +24,14 @@ jobs:
       pull-requests: read
       issues: read
       id-token: write
+
     steps:
-
-      - name: Clone Repository
-        uses: actions/checkout@v4
-
       - name: Prepare Python and Hatch
         uses: ./.github/actions/python-hatch
         with:
-          needs-clone: false
           python-version: '3.10'
 
-      - name: Create CLAUDE.md symlink
+      - name: Create CLAUDE.md Symlink
         run: |
           if [ -f ".auxiliary/configuration/conventions.md" ]; then
             ln -sf .auxiliary/configuration/conventions.md CLAUDE.md
@@ -46,19 +42,15 @@ jobs:
           fi
         shell: bash
 
-      - name: Run Claude Code
+      - name: Execute Claude Code
         id: claude
         uses: anthropics/claude-code-action@beta
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           trigger_phrase: "/claude"
           timeout_minutes: 20
-          allowed_tools: |
-            Bash(hatch --env develop run linters)
-            Bash(hatch --env develop run testers)
-            Bash(hatch --env develop run docsgen)
-            Bash(hatch --env develop run packagers)
-            Bash(hatch run python:*)
+          allowed_tools: >-
+            Bash(hatch:*)
             Bash(git status)
             Bash(git add:*)
             Bash(git commit:*)
