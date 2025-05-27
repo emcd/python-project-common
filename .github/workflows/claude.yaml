@@ -69,5 +69,5 @@ jobs:
             Bash(hatch:*)
             Bash(pip:*)
             Bash(python:*)
-            Edit(**)
-            Write(**)
+            Edit
+            Write
