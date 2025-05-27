@@ -27,7 +27,7 @@ from . import exceptions
 # --- END: Injected by Copier ---
 
 
-__version__ = '1.17.1'
+__version__ = '1.18rc0'
 
 
 def main( ):

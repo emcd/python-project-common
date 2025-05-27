@@ -18,31 +18,15 @@
 #============================================================================#
 
 
-''' Docstring utilities. '''
-
-# ruff: noqa: F403,F405
+''' Common names and type aliases. '''
 
 
-from __future__ import annotations
-
-from . import doctab
-from .imports import *
+from . import imports as __
 
 
-class Docstring( str ):
-    ''' Dedicated docstring container. '''
+ComparisonResult: __.typx.TypeAlias = bool | __.types.NotImplementedType
+NominativeArguments: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
+PositionalArguments: __.typx.TypeAlias = __.cabc.Sequence[ __.typx.Any ]
 
 
-def generate_docstring(
-    *fragment_ids: type | Docstring | str,
-    table: cabc.Mapping[ str, str ] = doctab.TABLE,
-) -> str:
-    ''' Sews together docstring fragments into clean docstring. '''
-    from inspect import cleandoc, getdoc, isclass
-    fragments: list[ str ] = [ ]
-    for fragment_id in fragment_ids:
-        if isclass( fragment_id ): fragment = getdoc( fragment_id ) or ''
-        elif isinstance( fragment_id, Docstring ): fragment = fragment_id
-        else: fragment = table[ fragment_id ]
-        fragments.append( cleandoc( fragment ) )
-    return '\n\n'.join( fragments )
+package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]

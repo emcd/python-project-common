@@ -1,0 +1,58 @@
+name: Reusable Claude Agent
+
+on:
+  workflow_call:
+    inputs:
+      allowed-tools:
+        description: 'Space-separated list of allowed tools for Claude.'
+        required: true
+        type: string
+      python-version:
+        required: true
+        type: string
+      timeout-minutes:
+        description: 'Timeout for Claude execution.'
+        default: 20
+        required: false
+        type: number
+    secrets:
+      anthropic-api-key:
+        description: 'Anthropic API key for Claude access.'
+        required: true
+
+jobs:
+
+  claude:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+    steps:
+
+      - name: Prepare Python and Hatch
+        uses: emcd/python-project-common/.github/actions/python-hatch@master
+        with:
+          python-version: '${{ inputs.python-version }}'
+
+      - name: Create CLAUDE.md Symlink
+        run: |
+          set -eu
+          if [ -f ".auxiliary/configuration/conventions.md" ]; then
+            ln -sf .auxiliary/configuration/conventions.md CLAUDE.md
+            echo "::notice::Created symlink: CLAUDE.md -> .auxiliary/configuration/conventions.md"
+          else
+            echo "::error file=.auxiliary/configuration/conventions.md::Required conventions file not found"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Execute Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@beta
+        with:
+          allowed_tools: ${{ inputs.allowed-tools }}
+          anthropic_api_key: ${{ secrets.anthropic-api-key }}
+          timeout_minutes: ${{ inputs.timeout-minutes }}
+          trigger_phrase: "/claude"

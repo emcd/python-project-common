@@ -24,7 +24,6 @@
 from __future__ import annotations
 
 import subprocess as _subprocess
-import tempfile as _tempfile
 
 from . import __
 from . import interfaces as _interfaces
@@ -33,7 +32,7 @@ from . import interfaces as _interfaces
 class CommandDispatcher(
     _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
 ):
-    ''' Dispatches commands for static website maintenance. '''
+    ''' Dispatches commands for Copier template maintenance. '''
 
     command: __.typx.Union[
         __.typx.Annotated[
@@ -76,13 +75,18 @@ class ValidateCommand(
         __.typx.Doc( ''' Configuration variant to validate. ''' ),
         __.tyro.conf.Positional,
     ]
+    preserve: __.typx.Annotated[
+        bool,
+        __.typx.Doc( ''' Preserve generated project for inspection? ''' ),
+    ] = False
 
     async def __call__(
         self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
     ) -> None:
         ''' Copies new project from template for configuration variant. '''
         # TODO: Validate variant argument.
-        validate_variant( auxdata, self.variant )
+        validate_variant(
+            auxdata, self.variant, preserve = self.preserve )
 
 
 def copy_template( answers_file: __.Path, projectdir: __.Path ) -> None:
@@ -103,7 +107,9 @@ def survey_variants( auxdata: __.Globals ) -> __.cabc.Sequence[ str ]:
         if fsent.is_file( ) )
 
 
-def validate_variant( auxdata: __.Globals, variant: str ) -> None:
+def validate_variant(
+    auxdata: __.Globals, variant: str, preserve: bool
+) -> None:
     ''' Validates configuration variant. '''
     answers_file = (
         auxdata.distribution.provide_data_location(
@@ -111,8 +117,8 @@ def validate_variant( auxdata: __.Globals, variant: str ) -> None:
     if not answers_file.is_file( ):
         # TODO: Raise error.
         return
-    with _tempfile.TemporaryDirectory( ) as tmpdir:
-        projectdir = __.Path( tmpdir ) / variant
+    with _manage_temporary_directory( preserve = preserve ) as tmpdir:
+        projectdir = tmpdir / variant
         copy_template( answers_file, projectdir )
         validate_variant_project( projectdir )
 
@@ -125,3 +131,14 @@ def validate_variant_project( projectdir: __.Path ) -> None:
             '--upgrade', 'pip', 'build' ),
         (   'hatch', '--env', 'develop', 'run', 'make-all' ),
     ): _subprocess.run( command, cwd = str( projectdir ), check = True ) # noqa: S603
+
+
+@__.ctxl.contextmanager
+def _manage_temporary_directory(
+    preserve: bool
+) -> __.cabc.Iterator[ __.Path ]:
+    # TODO: Python 3.12: Replace with tempfile.TemporaryDirectory,
+    #                    ( delete = not preserve )
+    location = __.Path( __.tempfile.mkdtemp( ) )
+    yield location
+    if not preserve: __.shutil.rmtree( location )

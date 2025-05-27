@@ -1,0 +1,73 @@
+name: claude
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+  issues:
+    types: [opened, assigned]
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+
+  claude:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/claude')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '/claude')) ||
+      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '/claude')) ||
+      (github.event_name == 'issues' && (contains(github.event.issue.body, '/claude') || contains(github.event.issue.title, '/claude')))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Python and Hatch
+        uses: ./.github/actions/python-hatch
+        with:
+          needs-clone: false
+          python-version: '3.10'
+
+      - name: Create CLAUDE.md Symlink
+        run: |
+          if [ -f ".auxiliary/configuration/conventions.md" ]; then
+            ln -sf .auxiliary/configuration/conventions.md CLAUDE.md
+            echo "::notice::Created symlink: CLAUDE.md -> .auxiliary/configuration/conventions.md"
+          else
+            echo "::error file=.auxiliary/configuration/conventions.md::Required conventions file not found"
+            exit 1
+          fi
+        shell: bash
+
+      - name: Execute Claude Code
+        id: claude
+        uses: anthropics/claude-code-action@beta
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          trigger_phrase: "/claude"
+          timeout_minutes: 20
+          allowed_tools: >-
+            Bash(git add:*)
+            Bash(git branch:*)
+            Bash(git checkout:*)
+            Bash(git diff:*)
+            Bash(git log:*)
+            Bash(git ls-files:*)
+            Bash(git remote:*)
+            Bash(git reset:*)
+            Bash(git rev-parse:*)
+            Bash(git rm:*)
+            Bash(git status)
+            Bash(hatch:*)
+            Bash(pip:*)
+            Bash(python:*)
+            Edit
+            Write
