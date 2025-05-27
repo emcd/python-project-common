@@ -55,11 +55,19 @@ jobs:
           trigger_phrase: "/claude"
           timeout_minutes: 20
           allowed_tools: >-
-            Bash(hatch:*)
-            Bash(git status)
             Bash(git add:*)
-            Bash(git commit:*)
-            Bash(python:*)
+            Bash(git branch:*)
+            Bash(git checkout:*)
+            Bash(git diff:*)
+            Bash(git log:*)
+            Bash(git ls-files:*)
+            Bash(git remote:*)
+            Bash(git reset:*)
+            Bash(git rev-parse:*)
+            Bash(git rm:*)
+            Bash(git status)
+            Bash(hatch:*)
             Bash(pip:*)
+            Bash(python:*)
             Edit(**)
             Write(**)
