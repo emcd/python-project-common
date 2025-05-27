@@ -26,9 +26,14 @@ jobs:
       id-token: write
 
     steps:
+
+      - name: Clone Repository
+        uses: actions/checkout@v4
+
       - name: Prepare Python and Hatch
         uses: ./.github/actions/python-hatch
         with:
+          needs-clone: false
           python-version: '3.10'
 
       - name: Create CLAUDE.md Symlink
