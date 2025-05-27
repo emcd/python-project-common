@@ -23,6 +23,23 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.18 (2025-05-27)
+==========================
+
+Enhancements
+------------
+
+- Add '--preserve' flag to 'template validate' subcommand. Prevents cleanup of
+  temporary directory allocated for Copier template validation which allows
+  inspection of generated files.
+
+
+Repairs
+-------
+
+- Fix description of 'template' subcommand.
+
+
 Emcdproj 1.17 (2025-04-30)
 ==========================
 
