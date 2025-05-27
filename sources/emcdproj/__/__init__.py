@@ -24,5 +24,6 @@
 from .application import Information as ApplicationInformation
 from .distribution import Information as DistributionInformation
 from .imports import *
+from .nomina import *
 from .preparation import *
 from .state import Globals

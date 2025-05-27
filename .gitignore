@@ -1,6 +1,9 @@
 .env
 *.so
 .*.swp
+AGENTS.md
+CLAUDE.md
+CONVENTIONS.md
 __pycache__/
 bugs/
 dist/

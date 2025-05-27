@@ -1,5 +1,5 @@
-.. vim: set fileencoding=utf-8:
-.. -*- coding: utf-8 -*-
+.. vim: set filetype=rst fileencoding=utf-8:
+.. -*- mode: rst ; coding: utf-8 -*-
 .. +--------------------------------------------------------------------------+
    |                                                                          |
    | Licensed under the Apache License, Version 2.0 (the "License");          |
@@ -16,7 +16,8 @@
    |                                                                          |
    +--------------------------------------------------------------------------+
 
-:tocdepth: 4
+
+:tocdepth: 3
 
 
 *******************************************************************************
@@ -27,14 +28,20 @@ API
 Package ``emcdproj``
 ===============================================================================
 
-Utilities for managing projects generated from the `emcd/python-project-common
-<https://github.com/emcd/python-project-common>`_ Copier template.
+.. automodule:: emcdproj
+   :no-members:
 
 
 Module ``emcdproj.website``
 -------------------------------------------------------------------------------
 
 .. automodule:: emcdproj.website
+
+
+Module ``emcdproj.template``
+-------------------------------------------------------------------------------
+
+.. automodule:: emcdproj.template
 
 
 Module ``emcdproj.filesystem``

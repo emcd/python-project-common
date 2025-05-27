@@ -18,34 +18,15 @@
 #============================================================================#
 
 
-''' Information about application. '''
+''' Common names and type aliases. '''
 
 
 from . import imports as __
-from . import nomina as _nomina
 
 
-class Information( metaclass = __.ImmutableDataclass ):
-    ''' Information about an application. '''
+ComparisonResult: __.typx.TypeAlias = bool | __.types.NotImplementedType
+NominativeArguments: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
+PositionalArguments: __.typx.TypeAlias = __.cabc.Sequence[ __.typx.Any ]
 
-    name: __.typx.Annotated[
-        str,
-        __.typx.Doc( "For derivation of platform directories." ),
-    ] = _nomina.package_name
-    publisher: __.typx.Annotated[
-        __.typx.Optional[ str ],
-        __.typx.Doc( "For derivation of platform directories." ),
-        __.tyro.conf.Suppress,
-    ] = None
-    version: __.typx.Annotated[
-        __.typx.Optional[ str ],
-        __.typx.Doc( "For derivation of platform directories." ),
-        __.tyro.conf.Suppress,
-    ] = None
 
-    def produce_platform_directories( self ) -> __.PlatformDirs:
-        ''' Produces platform directories object for application. '''
-        arguments = dict( appname = self.name, ensure_exists = True )
-        if self.publisher: arguments[ 'appauthor' ] = self.publisher
-        if self.version: arguments[ 'version' ] = self.version
-        return __.PlatformDirs( **arguments ) # type: ignore
+package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]

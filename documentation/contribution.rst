@@ -79,6 +79,20 @@ Artificial Intelligence
   project. These files are ignored by Git as we do not wish to pollute the
   root of the project with them in the upstream repository.
 
+Artificial Intelligence
+-------------------------------------------------------------------------------
+
+* Contributions, which are co-authored by large language models (LLMs), are
+  welcome, provided that they adhere to the project guidance and standards
+  above and are, otherwise, of good quality.
+
+* A more compact representation of the above guidance and standards, plus some
+  other advice for these models, can be found in
+  ``.auxiliary/configuration/conventions.md``. You may link to this file from a
+  ``AGENTS.md``, ``CLAUDE.md``, ``CONVENTIONS.md`` file in the root of the
+  project. These files are ignored by Git as we do not wish to pollute the
+  root of the project with them in the upstream repository.
+
 Resources
 -------------------------------------------------------------------------------
 
