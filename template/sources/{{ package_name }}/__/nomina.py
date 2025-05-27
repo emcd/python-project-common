@@ -18,19 +18,15 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
-
-# ruff: noqa: F401
+''' Common names and type aliases. '''
 
 
-from __future__ import annotations
+from . import imports as __
 
-import collections.abc as cabc
-import types
 
-import typing_extensions as typx
-# --- BEGIN: Injected by Copier ---
-{%- if enable_cli %}
-import tyro
-{%- endif %}
-# --- END: Injected by Copier ---
+ComparisonResult: __.typx.TypeAlias = bool | __.types.NotImplementedType
+NominativeArguments: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
+PositionalArguments: __.typx.TypeAlias = __.cabc.Sequence[ __.typx.Any ]
+
+
+package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
