@@ -28,6 +28,9 @@ Internal Development Interface
 Package ``emcdproj.__``
 ===============================================================================
 
+.. automodule:: emcdproj.__
+   :no-members:
+
 
 Module ``emcdproj.__.imports``
 -------------------------------------------------------------------------------

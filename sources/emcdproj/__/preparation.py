@@ -27,6 +27,7 @@ from . import application as _application
 # from . import dictedits as _dictedits
 from . import distribution as _distribution
 # from . import environment as _environment
+from . import nomina as _nomina
 from . import state as _state
 
 
@@ -51,7 +52,7 @@ async def prepare(
     directories = application.produce_platform_directories( )
     distribution = (
         await _distribution.Information.prepare(
-            package = __.package_name, exits = exits ) )
+            package = _nomina.package_name, exits = exits ) )
     # configuration = (
     #     await _configuration.acquire(
     #         application_name = application.name,

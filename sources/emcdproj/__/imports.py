@@ -55,9 +55,5 @@ from frigid.qaliases import (
 from platformdirs import PlatformDirs
 
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
-
-
-package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
 simple_tyro_class = tyro.conf.configure( )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )
