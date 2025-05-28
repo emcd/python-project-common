@@ -29,7 +29,6 @@ Package ``emcdproj``
 ===============================================================================
 
 .. automodule:: emcdproj
-   :no-members:
 
 
 Module ``emcdproj.website``
