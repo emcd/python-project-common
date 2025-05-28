@@ -146,7 +146,6 @@ jobs:
   {%- if enable_publication %}
 
   publish-github:
-    if: {% raw %}${{ startsWith(github.ref, 'refs/tags/') }}{% endraw %}
     needs:
       - initialize
       - package
@@ -189,10 +188,10 @@ jobs:
           cd {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
           sha256sum {{ distribution_name }}-* >SHA256SUMS.txt
 
-      - name: Sign Distributions
-        uses: sigstore/gh-action-sigstore-python@v3.0.0
+      - name: Attest Build Provenance
+        uses: actions/attest-build-provenance@v2
         with:
-          inputs: >-
+          subject-path: |
             {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/SHA256SUMS.txt
             {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/{{ distribution_name }}-*
 
@@ -212,6 +211,7 @@ jobs:
           {%- endif %}
 
       - name: Create Release
+        if: {% raw %}${{ startsWith(github.ref, 'refs/tags/') }}{% endraw %}
         env:
           GITHUB_TOKEN: {% raw %}${{ github.token }}{% endraw %}
         run: |
@@ -220,6 +220,7 @@ jobs:
             --notes-file .auxiliary/artifacts/release-notes.rst
 
       - name: Publish Artifacts
+        if: {% raw %}${{ startsWith(github.ref, 'refs/tags/') }}{% endraw %}
         env:
           GITHUB_TOKEN: {% raw %}${{ github.token }}{% endraw %}
         run: |
