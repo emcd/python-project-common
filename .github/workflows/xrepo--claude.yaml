@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: read
-      issues: read
       id-token: write
+      issues: read
+      pull-requests: read
     steps:
 
       - name: Prepare Python and Hatch
