@@ -22,6 +22,11 @@ jobs:
       (github.event_name == 'pull_request_review' && contains(github.event.review.body, '/claude')) ||
       (github.event_name == 'issues' && (contains(github.event.issue.body, '/claude') || contains(github.event.issue.title, '/claude')))
     needs: [initialize]
+    permissions:
+      contents: read
+      id-token: write
+      issues: read
+      pull-requests: read
     uses: emcd/python-project-common/.github/workflows/xrepo--claude.yaml@{{ _commit }}
     with:
       allowed-tools: >-
