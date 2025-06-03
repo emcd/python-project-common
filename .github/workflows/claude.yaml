@@ -27,7 +27,7 @@ jobs:
       id-token: write
       issues: read
       pull-requests: read
-    uses: emcd/python-project-common/.github/workflows/xrepo--claude.yaml@v1.19.2
+    uses: emcd/python-project-common/.github/workflows/xrepo--claude.yaml@v1.20
     with:
       allowed-tools: >-
         Bash(git add:*)
