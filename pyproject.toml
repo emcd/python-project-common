@@ -16,9 +16,9 @@ readme = { 'file' = 'sources/emcdproj/README.rst', 'content-type' = 'text/x-rst'
 requires-python = '>= 3.10'
 dependencies = [
   'Jinja2',
-  'absence',
+  'absence~=1.1',
   'defusedxml',
-  'frigid',
+  'frigid~=3.0',
   'icecream-truck',
   'importlib-metadata', # TODO: Drop once we have separate appcore package.
   'importlib-resources', # TODO: Drop once we have separate appcore package.
