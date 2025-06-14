@@ -36,9 +36,9 @@ jobs:
           hatch --env develop run docsgen
         shell: bash
 
-      - name: Acquire Common Repository Location
-        uses: emcd/python-project-common/.github/actions/repo-path@master
-        id: common-repo
+      - name: Install Website Utility
+        run: |
+          pipx install emcd-projects
 
       # TODO: Sign commit with GPG key or use Github API.
       #       If Github API, need to upload tarball to LFS endpoint first.
@@ -56,7 +56,7 @@ jobs:
           git fetch origin publication:publication || true
           git checkout publication -- "${tarball}" || true
           version="$(hatch --env develop version 2>/dev/null)"
-          hatch --env develop run python -m emcdproj website update "${version}"
+          emcdproj website update "${version}"
           git add "${tarball}"
           # Commit to publication branch without checkout.
           # https://stackoverflow.com/a/66850396/14833542
