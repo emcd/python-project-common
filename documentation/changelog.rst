@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.22 (2025-06-14)
+==========================
+
+Enhancements
+------------
+
+- Lock dependencies ahead of breaking changes.
+
+
 Emcdproj 1.18 (2025-05-27)
 ==========================
 
