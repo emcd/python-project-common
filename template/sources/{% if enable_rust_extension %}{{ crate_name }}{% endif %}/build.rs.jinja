@@ -42,7 +42,7 @@ fn main() {
 
     let mut init_content = String::new();
     File::open(&init_path)
-        .unwrap_or_else(|_| panic!("Failed to open __init__.py at {init_path:?}"))
+        .unwrap_or_else(|_| panic!("Failed to open __init__.py at {}", init_path.display()))
         .read_to_string(&mut init_content)
         .expect("Failed to read __init__.py");
 
