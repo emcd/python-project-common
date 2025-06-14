@@ -66,6 +66,7 @@ year-of-origin = 2024
 gha-runners = [
   '/home/runner/work/python-project-common/python-project-common/',
   '/Users/runner/work/python-project-common/python-project-common/',
+  'C:\a\python-project-common\python-project-common\',
   'D:\a\python-project-common\python-project-common\',
 ]
 [tool.coverage.run]
