@@ -12,6 +12,17 @@ jobs:
   initialize:
     uses: ./.github/workflows/core--initializer.yaml
 
+  # Verify that we can install and use 'emcdproj' via Pipx.
+  pipx-emcdproj:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Pipx Install
+        run: pipx install emcd-projects
+
+      - name: Verify
+        run: emcdproj --help
+
   test:
     needs: [initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@gha-1
