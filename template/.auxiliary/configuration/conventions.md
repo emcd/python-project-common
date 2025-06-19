@@ -1,5 +1,16 @@
 # General Advice
 
+### Context
+
+- Be sure the look at any README files in the directories which contain the
+  code or data that you intend to manipulate. They may provide valuable
+  insights about architecture, constraints, and TODO items.
+- At the start of a new session, read any files under `.auxiliary/notes`.
+- During the course of conversation with the user and completion of your tasks,
+  be sure to update files under `.auxiliary/notes`, removing completed tasks
+  and adding emergent items. (This will help ensure smooth transition between
+  sessions.)
+
 ### Design
 
 - Make classes lightweight. Prefer module-level functions over class methods.
