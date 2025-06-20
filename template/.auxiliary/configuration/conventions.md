@@ -10,6 +10,9 @@
   be sure to update files under `.auxiliary/notes`, removing completed tasks
   and adding emergent items. (This will help ensure smooth transition between
   sessions.)
+- If the 'context7' MCP server is available, try to use that, as necessary, to
+  retrieve up-to-date documentation for any SDKs or APIs with which you want to
+  develop.
 
 ### Design
 
@@ -59,6 +62,11 @@
 # Per-Language Advice
 
 ## Rust
+
+### Edits
+
+- If the 'rust-analyzer' MCP server is available, prefer to use its tools for
+  code edits, renames, and finding references.
 
 ### Quality Assurance
 
