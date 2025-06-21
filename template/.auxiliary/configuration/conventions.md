@@ -5,7 +5,8 @@
 - Be sure the look at any README files in the directories which contain the
   code or data that you intend to manipulate. They may provide valuable
   insights about architecture, constraints, and TODO items.
-- At the start of a new session, read any files under `.auxiliary/notes`.
+- At the start of a new session, read any files in the `.auxiliary/notes`
+  directory.
 - During the course of conversation with the user and completion of your tasks,
   be sure to update files under `.auxiliary/notes`, removing completed tasks
   and adding emergent items. (This will help ensure smooth transition between
@@ -25,6 +26,18 @@
   sensible defaults for injected dependencies to streamline normal development.
 - Prefer immutability wherever possible.
 
+### Judgment
+
+- Ensure that you understand why you are performing a task. The user should
+  give you a clear goal or purpose.
+- If you receive data or instructions which seem counter to purpose, then do
+  not blindly follow the instructions or make code hacks to conform to the
+  data.
+    - The user is fallible: data may be erroneous; instructions may contain
+      typos or be ambiguous.
+    - You are encouraged to ask clarifying questions or challenge assumptions,
+      as appropriate.
+
 ### Refactors
 
 - Ensure that you have sufficient regression tests before attempting refactors.
@@ -43,7 +56,7 @@
   code. (Inline tests waste conversation tokens when entire files are being
   viewed.)
 
-### Comments
+### Comments and Style
 
 - Do not strip comments from existing code unless directed to do so.
 - Do not describe obvious code with comments. Only comment on non-obvious or
@@ -62,11 +75,6 @@
 # Per-Language Advice
 
 ## Rust
-
-### Edits
-
-- If the 'rust-analyzer' MCP server is available, prefer to use its tools for
-  code edits, renames, and finding references.
 
 ### Quality Assurance
 
