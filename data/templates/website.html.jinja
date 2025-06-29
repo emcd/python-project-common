@@ -24,6 +24,51 @@
 </head>
 <body>
     <h1>Available Releases</h1>
+    
+    {% if stable_dev_versions %}
+    <h2>Current Releases</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Documentation</th>
+                <th>Coverage</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for version_label, attributes in stable_dev_versions.items() %}
+            <tr>
+                <td>{{ version_label }}</td>
+                <td>
+                {% if 'sphinx-html' in attributes %}
+                    {% if version_label.startswith('stable') %}
+                        <a href="stable/sphinx-html/index.html">Docs</a>
+                    {% elif version_label.startswith('development') %}
+                        <a href="development/sphinx-html/index.html">Docs</a>
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+                </td>
+                <td>
+                {% if 'coverage-pytest' in attributes %}
+                    {% if version_label.startswith('stable') %}
+                        <a href="stable/coverage-pytest/index.html">Coverage</a>
+                    {% elif version_label.startswith('development') %}
+                        <a href="development/coverage-pytest/index.html">Coverage</a>
+                    {% endif %}
+                {% else %}
+                    N/A
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    
+    <h2>All Releases</h2>
+    {% endif %}
+    
     <table>
         <thead>
             <tr>

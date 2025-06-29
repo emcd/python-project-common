@@ -1,9 +1,12 @@
 .env
+.gemini
+.mcp.json
 *.so
 .*.swp
 AGENTS.md
 CLAUDE.md
 CONVENTIONS.md
+GEMINI.md
 __pycache__/
 bugs/
 dist/
