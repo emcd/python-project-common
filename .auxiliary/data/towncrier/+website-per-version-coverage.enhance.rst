@@ -1,1 +1,0 @@
-Website: Generate coverage badges in each version subdirectory.
