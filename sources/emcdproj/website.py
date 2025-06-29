@@ -60,11 +60,15 @@ class SurveyCommand(
 ):
     ''' Surveys release versions published in static website. '''
 
+    use_extant: __.typx.Annotated[
+        bool,
+        __.typx.Doc( ''' Fetch publication branch and use tarball. ''' ),
+    ] = False
+
     async def __call__(
         self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
     ) -> None:
-        # TODO: Implement.
-        pass
+        survey( auxdata, use_extant = self.use_extant )
 
 
 class UpdateCommand(
@@ -77,11 +81,24 @@ class UpdateCommand(
         __.typx.Doc( ''' Release version to update. ''' ),
         __.tyro.conf.Positional,
     ]
+    
+    use_extant: __.typx.Annotated[
+        bool,
+        __.typx.Doc( ''' Fetch publication branch and use tarball. ''' ),
+    ] = False
+    
+    production: __.typx.Annotated[
+        bool,
+        __.typx.Doc( ''' Update publication branch with new tarball. ''' ),
+    ] = False
 
     async def __call__(
         self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
     ) -> None:
-        update( auxdata, self.version )
+        update( 
+            auxdata, self.version,
+            use_extant = self.use_extant,
+            production = self.production )
 
 
 class Locations( metaclass = __.ImmutableDataclass ):
@@ -129,11 +146,57 @@ class Locations( metaclass = __.ImmutableDataclass ):
             templates = templates )
 
 
+def survey(
+    auxdata: __.Globals, *,
+    project_anchor: __.Absential[ __.Path ] = __.absent,
+    use_extant: bool = False
+) -> None:
+    ''' Surveys release versions published in static website.
+    
+        Lists all versions from the versions manifest, showing their
+        available documentation types and highlighting the latest version.
+    '''
+    locations = Locations.from_project_anchor( auxdata, project_anchor )
+    
+    # Handle --use-extant flag: fetch publication branch and checkout tarball
+    if use_extant:
+        _fetch_publication_branch_and_tarball( locations )
+        # Extract the fetched tarball to view published versions
+        if locations.archive.is_file( ):
+            from tarfile import open as tarfile_open
+            if locations.website.is_dir( ):
+                __.shutil.rmtree( locations.website )
+            locations.website.mkdir( exist_ok = True, parents = True )
+            with tarfile_open( locations.archive, 'r:xz' ) as archive:
+                archive.extractall( path = locations.website ) # noqa: S202
+    
+    if not locations.versions.is_file( ):
+        context = "published" if use_extant else "local"
+        print( f"No versions manifest found for {context} website. "
+               f"Run 'website update' first." )
+        return
+    with locations.versions.open( 'r' ) as file:
+        data = __.json.load( file )
+    versions = data.get( 'versions', { } )
+    latest = data.get( 'latest_version' )
+    if not versions:
+        context = "published" if use_extant else "local"
+        print( f"No versions found in {context} manifest." )
+        return
+    context = "Published" if use_extant else "Local"
+    print( f"{context} versions:" )
+    for version, species in versions.items( ):
+        marker = " (latest)" if version == latest else ""
+        species_list = ', '.join( species ) if species else "none"
+        print( f"  {version}{marker}: {species_list}" )
+
 
 def update(
     auxdata: __.Globals,
     version: str, *,
-    project_anchor: __.Absential[ __.Path ] = __.absent
+    project_anchor: __.Absential[ __.Path ] = __.absent,
+    use_extant: bool = False,
+    production: bool = False
 ) -> None:
     ''' Updates project website with latest documentation and coverage.
 
@@ -145,6 +208,11 @@ def update(
     from tarfile import open as tarfile_open
     locations = Locations.from_project_anchor( auxdata, project_anchor )
     locations.publications.mkdir( exist_ok = True, parents = True )
+    
+    # Handle --use-extant flag: fetch publication branch and checkout tarball
+    if use_extant:
+        _fetch_publication_branch_and_tarball( locations )
+    
     if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
     locations.website.mkdir( exist_ok = True, parents = True )
     if locations.archive.is_file( ):
@@ -163,6 +231,86 @@ def update(
     with chdir( locations.website ): # noqa: SIM117
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
+    
+    # Handle --production flag: update publication branch
+    if production:
+        _update_publication_branch( locations, version )
+
+
+def _fetch_publication_branch_and_tarball( locations: Locations ) -> None:
+    ''' Fetches publication branch and checks out existing tarball.
+    
+        Attempts to fetch the publication branch from origin and checkout
+        the website tarball. Ignores failures if branch or tarball don't exist.
+    '''
+    import subprocess
+    # Fetch publication branch, ignoring failure if it doesn't exist
+    with __.ctxl.suppress( Exception ):
+        subprocess.run(
+            [ 'git', 'fetch', 'origin', 'publication:publication' ],  # noqa: S607
+            cwd = locations.project,
+            check = False,  # Don't raise on non-zero exit
+            capture_output = True )
+    
+    # Checkout tarball from publication branch, ignoring failure if not found
+    with __.ctxl.suppress( Exception ):
+        subprocess.run(  # noqa: S603
+            [ 'git', 'checkout', 'publication', '--',  # noqa: S607
+              str( locations.archive ) ],
+            cwd = locations.project,
+            check = False,  # Don't raise on non-zero exit
+            capture_output = True )
+
+
+def _update_publication_branch( locations: Locations, version: str ) -> None:
+    ''' Updates publication branch with new tarball.
+    
+        Adds the tarball to git, commits to the publication branch, and pushes
+        to origin. Uses the same approach as the GitHub workflow.
+    '''
+    import subprocess
+    try:
+        # Add the tarball to git
+        subprocess.run(  # noqa: S603
+            [ 'git', 'add', str( locations.archive ) ],  # noqa: S607
+            cwd = locations.project,
+            check = True )
+        
+        # Commit to publication branch without checkout
+        # Get current tree hash
+        tree_result = subprocess.run(
+            [ 'git', 'write-tree' ],  # noqa: S607
+            cwd = locations.project,
+            check = True,
+            capture_output = True,
+            text = True )
+        tree_hash = tree_result.stdout.strip( )
+        
+        # Create commit with publication branch as parent
+        commit_result = subprocess.run(  # noqa: S603
+            [ 'git', 'commit-tree', tree_hash, '-p', 'publication',  # noqa: S607
+              '-m', f"Update documents for publication. ({version})" ],
+            cwd = locations.project,
+            check = True,
+            capture_output = True,
+            text = True )
+        commit_hash = commit_result.stdout.strip( )
+        
+        # Force update publication branch to point to new commit
+        subprocess.run(  # noqa: S603
+            [ 'git', 'branch', '--force', 'publication', commit_hash ],  # noqa: S607
+            cwd = locations.project,
+            check = True )
+        
+        # Push to origin
+        subprocess.run(
+            [ 'git', 'push', 'origin', 'publication:publication' ],  # noqa: S607
+            cwd = locations.project,
+            check = True )
+            
+    except subprocess.CalledProcessError as error:
+        print( f"Failed to update publication branch: {error}" )
+        raise
 
 
 def _extract_coverage( locations: Locations ) -> int:
