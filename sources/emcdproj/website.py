@@ -19,8 +19,6 @@
 
 
 ''' Static website maintenance utilities for projects. '''
-# TODO: Support separate section for current documentation: stable, latest.
-# TODO? Separate coverage SVG files for each release.
 
 
 from __future__ import annotations
@@ -81,21 +79,22 @@ class UpdateCommand(
         __.typx.Doc( ''' Release version to update. ''' ),
         __.tyro.conf.Positional,
     ]
-    
+
     use_extant: __.typx.Annotated[
         bool,
         __.typx.Doc( ''' Fetch publication branch and use tarball. ''' ),
     ] = False
-    
+
     production: __.typx.Annotated[
         bool,
-        __.typx.Doc( ''' Update publication branch with new tarball. ''' ),
+        __.typx.Doc( ''' Update publication branch with new tarball. 
+                     Implies --use-extant to prevent data loss. ''' ),
     ] = False
 
     async def __call__(
         self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
     ) -> None:
-        update( 
+        update(
             auxdata, self.version,
             use_extant = self.use_extant,
             production = self.production )
@@ -152,12 +151,12 @@ def survey(
     use_extant: bool = False
 ) -> None:
     ''' Surveys release versions published in static website.
-    
+
         Lists all versions from the versions manifest, showing their
         available documentation types and highlighting the latest version.
     '''
     locations = Locations.from_project_anchor( auxdata, project_anchor )
-    
+
     # Handle --use-extant flag: fetch publication branch and checkout tarball
     if use_extant:
         _fetch_publication_branch_and_tarball( locations )
@@ -169,7 +168,7 @@ def survey(
             locations.website.mkdir( exist_ok = True, parents = True )
             with tarfile_open( locations.archive, 'r:xz' ) as archive:
                 archive.extractall( path = locations.website ) # noqa: S202
-    
+
     if not locations.versions.is_file( ):
         context = "published" if use_extant else "local"
         print( f"No versions manifest found for {context} website. "
@@ -208,11 +207,9 @@ def update(
     from tarfile import open as tarfile_open
     locations = Locations.from_project_anchor( auxdata, project_anchor )
     locations.publications.mkdir( exist_ok = True, parents = True )
-    
-    # Handle --use-extant flag: fetch publication branch and checkout tarball
-    if use_extant:
+    # --production implies --use-extant to prevent clobbering existing versions
+    if use_extant or production:
         _fetch_publication_branch_and_tarball( locations )
-    
     if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
     locations.website.mkdir( exist_ok = True, parents = True )
     if locations.archive.is_file( ):
@@ -234,86 +231,75 @@ def update(
     with chdir( locations.website ): # noqa: SIM117
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
-    
-    # Handle --production flag: update publication branch
-    if production:
-        _update_publication_branch( locations, version )
+    if production: _update_publication_branch( locations, version )
 
 
-def _fetch_publication_branch_and_tarball( locations: Locations ) -> None:
-    ''' Fetches publication branch and checks out existing tarball.
-    
-        Attempts to fetch the publication branch from origin and checkout
-        the website tarball. Ignores failures if branch or tarball don't exist.
+def _create_stable_dev_directories(
+    locations: Locations, data: dict[ __.typx.Any, __.typx.Any ]
+) -> None:
+    ''' Creates stable/ and development/ directories with current releases.
+
+        Copies the content from the identified stable and development versions
+        to stable/ and development/ directories to provide persistent URLs
+        that don't change when new versions are released.
     '''
-    import subprocess
-    # Fetch publication branch, ignoring failure if it doesn't exist
-    with __.ctxl.suppress( Exception ):
-        subprocess.run(
-            [ 'git', 'fetch', 'origin', 'publication:publication' ],  # noqa: S607
-            cwd = locations.project,
-            check = False,  # Don't raise on non-zero exit
-            capture_output = True )
-    
-    # Checkout tarball from publication branch, ignoring failure if not found
-    with __.ctxl.suppress( Exception ):
-        subprocess.run(  # noqa: S603
-            [ 'git', 'checkout', 'publication', '--',  # noqa: S607
-              str( locations.archive ) ],
-            cwd = locations.project,
-            check = False,  # Don't raise on non-zero exit
-            capture_output = True )
+    stable_version = data.get( 'stable_version' )
+    development_version = data.get( 'development_version' )
+    if stable_version:
+        stable_source = locations.website / stable_version
+        stable_dest = locations.website / 'stable'
+        if stable_dest.is_dir( ):
+            __.shutil.rmtree( stable_dest )
+        if stable_source.is_dir( ):
+            __.shutil.copytree( stable_source, stable_dest )
+    if development_version:
+        dev_source = locations.website / development_version
+        dev_dest = locations.website / 'development'
+        if dev_dest.is_dir( ):
+            __.shutil.rmtree( dev_dest )
+        if dev_source.is_dir( ):
+            __.shutil.copytree( dev_source, dev_dest )
 
 
-def _update_publication_branch( locations: Locations, version: str ) -> None:
-    ''' Updates publication branch with new tarball.
-    
-        Adds the tarball to git, commits to the publication branch, and pushes
-        to origin. Uses the same approach as the GitHub workflow.
+def _enhance_index_data_with_stable_dev(
+    data: dict[ __.typx.Any, __.typx.Any ]
+) -> None:
+    ''' Enhances index data with stable/development version information.
+
+        Identifies the latest stable release and latest development version
+        from the versions data and adds them as separate entries for the
+        stable/development table.
     '''
-    import subprocess
-    try:
-        # Add the tarball to git
-        subprocess.run(  # noqa: S603
-            [ 'git', 'add', str( locations.archive ) ],  # noqa: S607
-            cwd = locations.project,
-            check = True )
-        
-        # Commit to publication branch without checkout
-        # Get current tree hash
-        tree_result = subprocess.run(
-            [ 'git', 'write-tree' ],  # noqa: S607
-            cwd = locations.project,
-            check = True,
-            capture_output = True,
-            text = True )
-        tree_hash = tree_result.stdout.strip( )
-        
-        # Create commit with publication branch as parent
-        commit_result = subprocess.run(  # noqa: S603
-            [ 'git', 'commit-tree', tree_hash, '-p', 'publication',  # noqa: S607
-              '-m', f"Update documents for publication. ({version})" ],
-            cwd = locations.project,
-            check = True,
-            capture_output = True,
-            text = True )
-        commit_hash = commit_result.stdout.strip( )
-        
-        # Force update publication branch to point to new commit
-        subprocess.run(  # noqa: S603
-            [ 'git', 'branch', '--force', 'publication', commit_hash ],  # noqa: S607
-            cwd = locations.project,
-            check = True )
-        
-        # Push to origin
-        subprocess.run(
-            [ 'git', 'push', 'origin', 'publication:publication' ],  # noqa: S607
-            cwd = locations.project,
-            check = True )
-            
-    except subprocess.CalledProcessError as error:
-        print( f"Failed to update publication branch: {error}" )
-        raise
+    from packaging.version import Version
+    versions = data.get( 'versions', { } )
+    if not versions:
+        data[ 'stable_dev_versions' ] = { }
+        return
+    stable_version = None
+    development_version = None
+    # Sort versions by packaging.version.Version for proper comparison
+    sorted_versions = sorted(
+        versions.items( ),
+        key = lambda entry: Version( entry[ 0 ] ),
+        reverse = True )
+    # Find latest stable (non-prerelease) and development (prerelease) versions
+    for version_string, species in sorted_versions:
+        version_obj = Version( version_string )
+        if not version_obj.is_prerelease and stable_version is None:
+            stable_version = ( version_string, species )
+        if version_obj.is_prerelease and development_version is None:
+            development_version = ( version_string, species )
+        if stable_version and development_version:
+            break
+    stable_dev_versions: dict[ str, tuple[ str, ... ] ] = { }
+    if stable_version:
+        stable_dev_versions[ 'stable (current)' ] = stable_version[ 1 ]
+        data[ 'stable_version' ] = stable_version[ 0 ]
+    if development_version:
+        stable_dev_versions[ 'development (current)' ] = (
+            development_version[ 1 ] )
+        data[ 'development_version' ] = development_version[ 0 ]
+    data[ 'stable_dev_versions' ] = stable_dev_versions
 
 
 def _extract_coverage( locations: Locations ) -> int:
@@ -335,18 +321,25 @@ def _extract_coverage( locations: Locations ) -> int:
     return __.math.floor( float( line_rate ) * 100 )
 
 
-def _update_available_species(
-    locations: Locations, version: str
-) -> tuple[ str, ... ]:
-    available_species: list[ str ] = [ ]
-    for species in ( 'coverage-pytest', 'sphinx-html' ):
-        origin = locations.artifacts / species
-        if not origin.is_dir( ): continue
-        destination = locations.website / version / species
-        if destination.is_dir( ): __.shutil.rmtree( destination )
-        __.shutil.copytree( origin, destination )
-        available_species.append( species )
-    return tuple( available_species )
+def _fetch_publication_branch_and_tarball( locations: Locations ) -> None:
+    ''' Fetches publication branch and checks out existing tarball.
+
+        Attempts to fetch the publication branch from origin and checkout
+        the website tarball. Ignores failures if branch or tarball don't exist.
+    '''
+    with __.ctxl.suppress( Exception ):
+        __.subprocess.run(
+            [ 'git', 'fetch', 'origin', 'publication:publication' ],
+            cwd = locations.project,
+            check = False,
+            capture_output = True )
+    with __.ctxl.suppress( Exception ):
+        __.subprocess.run(
+            [ 'git', 'checkout', 'publication', '--',
+              str( locations.archive ) ],
+            cwd = locations.project,
+            check = False,
+            capture_output = True )
 
 
 def _generate_coverage_badge_svg(
@@ -380,6 +373,20 @@ def _generate_coverage_badge_svg(
         value_width = value_width )
 
 
+def _update_available_species(
+    locations: Locations, version: str
+) -> tuple[ str, ... ]:
+    available_species: list[ str ] = [ ]
+    for species in ( 'coverage-pytest', 'sphinx-html' ):
+        origin = locations.artifacts / species
+        if not origin.is_dir( ): continue
+        destination = locations.website / version / species
+        if destination.is_dir( ): __.shutil.rmtree( destination )
+        __.shutil.copytree( origin, destination )
+        available_species.append( species )
+    return tuple( available_species )
+
+
 def _update_coverage_badge(
     locations: Locations, j2context: _jinja2.Environment
 ) -> None:
@@ -393,103 +400,42 @@ def _update_coverage_badge(
         file.write( svg_content )
 
 
-def _update_version_coverage_badge(
-    locations: Locations, j2context: _jinja2.Environment, version: str
-) -> None:
-    ''' Updates version-specific coverage badge SVG.
+def _update_publication_branch( locations: Locations, version: str ) -> None:
+    ''' Updates publication branch with new tarball.
 
-        Generates a coverage badge for the specific version and places it
-        in the version's subtree. This allows each version to have its own
-        coverage badge accessible at version/coverage.svg.
+        Adds the tarball to git, commits to the publication branch, and pushes
+        to origin. Uses the same approach as the GitHub workflow.
     '''
-    svg_content = _generate_coverage_badge_svg( locations, j2context )
-    version_coverage_path = locations.website / version / 'coverage.svg'
-    with version_coverage_path.open( 'w' ) as file:
-        file.write( svg_content )
-
-
-def _enhance_index_data_with_stable_dev(
-    data: dict[ __.typx.Any, __.typx.Any ]
-) -> None:
-    ''' Enhances index data with stable/development version information.
-
-        Identifies the latest stable release and latest development version
-        from the versions data and adds them as separate entries for the
-        stable/development table.
-    '''
-    from packaging.version import Version
-    versions = data.get( 'versions', { } )
-    if not versions:
-        data[ 'stable_dev_versions' ] = { }
-        return
-    
-    stable_version = None
-    development_version = None
-    
-    # Sort versions by packaging.version.Version for proper comparison
-    sorted_versions = sorted(
-        versions.items( ),
-        key = lambda entry: Version( entry[ 0 ] ),
-        reverse = True )
-    
-    # Find latest stable (non-prerelease) and development (prerelease) versions
-    for version_string, species in sorted_versions:
-        version_obj = Version( version_string )
-        
-        if not version_obj.is_prerelease and stable_version is None:
-            stable_version = ( version_string, species )
-        
-        if version_obj.is_prerelease and development_version is None:
-            development_version = ( version_string, species )
-        
-        # Stop once we have both
-        if stable_version and development_version:
-            break
-    
-    # Build stable/development versions data
-    stable_dev_versions: dict[ str, tuple[ str, ... ] ] = { }
-    
-    if stable_version:
-        stable_dev_versions[ 'stable (current)' ] = stable_version[ 1 ]
-        data[ 'stable_version' ] = stable_version[ 0 ]
-    
-    if development_version:
-        stable_dev_versions[ 'development (current)' ] = (
-            development_version[ 1 ] )
-        data[ 'development_version' ] = development_version[ 0 ]
-    
-    data[ 'stable_dev_versions' ] = stable_dev_versions
-
-
-def _create_stable_dev_directories(
-    locations: Locations, data: dict[ __.typx.Any, __.typx.Any ]
-) -> None:
-    ''' Creates stable/ and development/ directories with current releases.
-
-        Copies the content from the identified stable and development versions
-        to stable/ and development/ directories to provide persistent URLs
-        that don't change when new versions are released.
-    '''
-    stable_version = data.get( 'stable_version' )
-    development_version = data.get( 'development_version' )
-    
-    # Create stable/ directory if we have a stable version
-    if stable_version:
-        stable_source = locations.website / stable_version
-        stable_dest = locations.website / 'stable'
-        if stable_dest.is_dir( ):
-            __.shutil.rmtree( stable_dest )
-        if stable_source.is_dir( ):
-            __.shutil.copytree( stable_source, stable_dest )
-    
-    # Create development/ directory if we have a development version
-    if development_version:
-        dev_source = locations.website / development_version
-        dev_dest = locations.website / 'development'
-        if dev_dest.is_dir( ):
-            __.shutil.rmtree( dev_dest )
-        if dev_source.is_dir( ):
-            __.shutil.copytree( dev_source, dev_dest )
+    __.subprocess.run(
+        [ 'git', 'add', str( locations.archive ) ],
+        cwd = locations.project,
+        check = True )
+    # Commit to publication branch without checkout
+    # Get current tree hash
+    tree_result = __.subprocess.run(
+        [ 'git', 'write-tree' ],
+        cwd = locations.project,
+        check = True,
+        capture_output = True,
+        text = True )
+    tree_hash = tree_result.stdout.strip( )
+    # Create commit with publication branch as parent
+    commit_result = __.subprocess.run(
+        [ 'git', 'commit-tree', tree_hash, '-p', 'publication',
+          '-m', f"Update documents for publication. ({version})" ],
+        cwd = locations.project,
+        check = True,
+        capture_output = True,
+        text = True )
+    commit_hash = commit_result.stdout.strip( )
+    __.subprocess.run(
+        [ 'git', 'branch', '--force', 'publication', commit_hash ],
+        cwd = locations.project,
+        check = True )
+    __.subprocess.run(
+        [ 'git', 'push', 'origin', 'publication:publication' ],
+        cwd = locations.project,
+        check = True )
 
 
 def _update_index_html(
@@ -506,6 +452,21 @@ def _update_index_html(
     # TODO: Add error handling for template rendering failures.
     with locations.index.open( 'w' ) as file:
         file.write( template.render( **data ) )
+
+
+def _update_version_coverage_badge(
+    locations: Locations, j2context: _jinja2.Environment, version: str
+) -> None:
+    ''' Updates version-specific coverage badge SVG.
+
+        Generates a coverage badge for the specific version and places it
+        in the version's subtree. This allows each version to have its own
+        coverage badge accessible at version/coverage.svg.
+    '''
+    svg_content = _generate_coverage_badge_svg( locations, j2context )
+    version_coverage_path = locations.website / version / 'coverage.svg'
+    with version_coverage_path.open( 'w' ) as file:
+        file.write( svg_content )
 
 
 def _update_versions_json(
