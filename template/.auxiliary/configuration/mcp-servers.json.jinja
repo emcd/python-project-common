@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    {%- if enable_rust_extension %}
+    "rust-analyzer": {
+      "command": "mcp-language-server",
+      "args": [
+        "--lsp",
+        "rust-analyzer",
+        "--workspace",
+        "."
+      ],
+    },
+    {%- endif %}
+    "pyright": {
+      "command": "mcp-language-server",
+      "args": [
+        "--lsp",
+        "pyright-langserver",
+        "--workspace",
+        ".",
+        "--",
+        "--stdio"
+      ]
+    },
+    "ruff": {
+       "command": "mcp-language-server",
+       "args": [
+         "--lsp",
+         "ruff",
+         "--workspace",
+         ".",
+         "--",
+         "server",
+         "--preview"
+      ]
+    },
+    "text-editor": {
+      "command": "uvx",
+      "args": [
+        "mcp-text-editor"
+      ]
+    }
+  }
+}
