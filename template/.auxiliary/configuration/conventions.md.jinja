@@ -64,23 +64,51 @@
 - Leave TODO comments about uncovered edge cases, tests, and other future work.
 - Do not break function bodies with empty lines.
 
-### Command Use
+### Operation
 
+- **Use `rg --line-number --column`** to get precise coordinates for MCP tools
+  that require line/column positions.
+- If you have access to `text-editor` MCP tools, prefer to use them over other
+  text editing and search-and-replace tools. (Line number-based edits are less
+  error-prone.)
+    - **Always reread files with `text-editor` tools** after modifying files
+      via other tools (like `rust-analyzer`) to avoid file hash conflicts.
+    - Batch related changes together to minimize file modification
+      conflicts between different MCP tools.
 - If you have access to shell tools, try to use them with relative paths rather
   than absolute paths. E.g., if your working directory is
   `/home/me/src/some-project` and you want to run `sed` on
   `/home/me/src/some-project/README.md`, then run `sed` on `README.md` and not
   on the full absolute path.
+- Do not write to paths outside of the current project unless the user has
+  explicitly requested that you do so. If you need a scratch space, use
+  the `.auxiliary/scribbles` directory instead of `/tmp`.
 
 # Per-Language Advice
+
+{%- if enable_rust_extension %}
 
 ## Rust
 
 ### Quality Assurance
 
-- Ensure the target builds.
-- Ensure linters give a clean report.
-- Ensure tests pass.
+- Ensure `cargo check` and `cargo clippy` give clean reports.
+- Ensure `cargo test` passes.
+
+### Operation
+
+- If you have access to the `rust-analyzer` MCP tools, please use them for code
+  edits involving renames or for rewriting function definitions.
+    - **Use absolute file paths** with these tools.
+    - These tools only work on code, not comments. Use other editing tools for
+      comment cleanup.
+    - Workflow for safe symbol renaming:
+      1. Use `rg --line-number --column 'symbol_name'` to find candidates.
+      2. Use `rust-analyzer` `references` to verify all usages.
+      3. Use `rust-analyzer` `rename_symbol` for guaranteed safe renaming.
+    - Use `definition` and `hover` to understand complex symbols before
+      renaming or refactoring.
+{%- endif %}
 
 ## Python
 

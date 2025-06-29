@@ -82,9 +82,9 @@ Artificial Intelligence
 * A more compact representation of the above guidance and standards, plus some
   other advice for these models, can be found in
   ``.auxiliary/configuration/conventions.md``. You may link to this file from a
-  ``AGENTS.md``, ``CLAUDE.md``, ``CONVENTIONS.md`` file in the root of the
-  project. These files are ignored by Git as we do not wish to pollute the
-  root of the project with them in the upstream repository.
+  ``AGENTS.md``, ``CLAUDE.md``, ``GEMINI.md``, ``CONVENTIONS.md``, etc... file
+  in the root of the project. These files are ignored by Git as we do not wish
+  to pollute the root of the project with them in the upstream repository.
 
 Resources
 -------------------------------------------------------------------------------
