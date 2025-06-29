@@ -226,6 +226,7 @@ def update(
     _update_index_html( locations, j2context, index_data )
     if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
         _update_coverage_badge( locations, j2context )
+        _update_version_coverage_badge( locations, j2context, version )
     ( locations.website / '.nojekyll' ).touch( )
     from .filesystem import chdir
     with chdir( locations.website ): # noqa: SIM117
@@ -346,13 +347,13 @@ def _update_available_species(
     return tuple( available_species )
 
 
-def _update_coverage_badge(
+def _generate_coverage_badge_svg(
     locations: Locations, j2context: _jinja2.Environment
-) -> None:
-    ''' Updates coverage badge SVG.
+) -> str:
+    ''' Generates coverage badge SVG content.
 
-        Generates a color-coded coverage badge based on the current coverage
-        percentage. Colors indicate coverage quality:
+        Returns the rendered SVG content for a coverage badge based on the
+        current coverage percentage. Colors indicate coverage quality:
         - red: < 50%
         - yellow: 50-79%
         - green: >= 80%
@@ -368,14 +369,41 @@ def _update_coverage_badge(
     total_width = label_width + value_width
     template = j2context.get_template( 'coverage.svg.jinja' )
     # TODO: Add error handling for template rendering failures.
+    return template.render(
+        color = color,
+        total_width = total_width,
+        label_text = label_text,
+        value_text = value_text,
+        label_width = label_width,
+        value_width = value_width )
+
+
+def _update_coverage_badge(
+    locations: Locations, j2context: _jinja2.Environment
+) -> None:
+    ''' Updates coverage badge SVG.
+
+        Generates a color-coded coverage badge based on the current coverage
+        percentage and writes it to the main coverage.svg location.
+    '''
+    svg_content = _generate_coverage_badge_svg( locations, j2context )
     with locations.coverage.open( 'w' ) as file:
-        file.write( template.render(
-            color = color,
-            total_width = total_width,
-            label_text = label_text,
-            value_text = value_text,
-            label_width = label_width,
-            value_width = value_width ) )
+        file.write( svg_content )
+
+
+def _update_version_coverage_badge(
+    locations: Locations, j2context: _jinja2.Environment, version: str
+) -> None:
+    ''' Updates version-specific coverage badge SVG.
+
+        Generates a coverage badge for the specific version and places it
+        in the version's subtree. This allows each version to have its own
+        coverage badge accessible at version/coverage.svg.
+    '''
+    svg_content = _generate_coverage_badge_svg( locations, j2context )
+    version_coverage_path = locations.website / version / 'coverage.svg'
+    with version_coverage_path.open( 'w' ) as file:
+        file.write( svg_content )
 
 
 def _update_index_html(
