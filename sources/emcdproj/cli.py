@@ -21,8 +21,6 @@
 ''' Command-line interface. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import interfaces as _interfaces
 from . import template as _template

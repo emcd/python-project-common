@@ -18,12 +18,10 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
+''' Common imports used throughout the package. '''
 
 # ruff: noqa: F401
 
-
-from __future__ import annotations
 
 import                      abc
 import collections.abc as   cabc
@@ -33,6 +31,7 @@ import                      io
 import                      json
 import                      math
 import                      os
+import                      subprocess
 import                      shutil
 import                      sys
 import                      tempfile
