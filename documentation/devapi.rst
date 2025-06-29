@@ -35,4 +35,9 @@ Module ``emcdproj.__.imports``
 -------------------------------------------------------------------------------
 
 .. automodule:: emcdproj.__.imports
-   :exclude-members: immutable
+
+
+Module ``emcdproj.__.nomina``
+-------------------------------------------------------------------------------
+
+.. automodule:: emcdproj.__.nomina
