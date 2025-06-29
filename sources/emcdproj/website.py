@@ -223,6 +223,8 @@ def update(
         loader = _jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
     index_data = _update_versions_json( locations, version, available_species )
+    _enhance_index_data_with_stable_dev( index_data )
+    _create_stable_dev_directories( locations, index_data )
     _update_index_html( locations, j2context, index_data )
     if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
         _update_coverage_badge( locations, j2context )
@@ -404,6 +406,90 @@ def _update_version_coverage_badge(
     version_coverage_path = locations.website / version / 'coverage.svg'
     with version_coverage_path.open( 'w' ) as file:
         file.write( svg_content )
+
+
+def _enhance_index_data_with_stable_dev(
+    data: dict[ __.typx.Any, __.typx.Any ]
+) -> None:
+    ''' Enhances index data with stable/development version information.
+
+        Identifies the latest stable release and latest development version
+        from the versions data and adds them as separate entries for the
+        stable/development table.
+    '''
+    from packaging.version import Version
+    versions = data.get( 'versions', { } )
+    if not versions:
+        data[ 'stable_dev_versions' ] = { }
+        return
+    
+    stable_version = None
+    development_version = None
+    
+    # Sort versions by packaging.version.Version for proper comparison
+    sorted_versions = sorted(
+        versions.items( ),
+        key = lambda entry: Version( entry[ 0 ] ),
+        reverse = True )
+    
+    # Find latest stable (non-prerelease) and development (prerelease) versions
+    for version_string, species in sorted_versions:
+        version_obj = Version( version_string )
+        
+        if not version_obj.is_prerelease and stable_version is None:
+            stable_version = ( version_string, species )
+        
+        if version_obj.is_prerelease and development_version is None:
+            development_version = ( version_string, species )
+        
+        # Stop once we have both
+        if stable_version and development_version:
+            break
+    
+    # Build stable/development versions data
+    stable_dev_versions: dict[ str, tuple[ str, ... ] ] = { }
+    
+    if stable_version:
+        stable_dev_versions[ 'stable (current)' ] = stable_version[ 1 ]
+        data[ 'stable_version' ] = stable_version[ 0 ]
+    
+    if development_version:
+        stable_dev_versions[ 'development (current)' ] = (
+            development_version[ 1 ] )
+        data[ 'development_version' ] = development_version[ 0 ]
+    
+    data[ 'stable_dev_versions' ] = stable_dev_versions
+
+
+def _create_stable_dev_directories(
+    locations: Locations, data: dict[ __.typx.Any, __.typx.Any ]
+) -> None:
+    ''' Creates stable/ and development/ directories with current releases.
+
+        Copies the content from the identified stable and development versions
+        to stable/ and development/ directories to provide persistent URLs
+        that don't change when new versions are released.
+    '''
+    stable_version = data.get( 'stable_version' )
+    development_version = data.get( 'development_version' )
+    
+    # Create stable/ directory if we have a stable version
+    if stable_version:
+        stable_source = locations.website / stable_version
+        stable_dest = locations.website / 'stable'
+        if stable_dest.is_dir( ):
+            __.shutil.rmtree( stable_dest )
+        if stable_source.is_dir( ):
+            __.shutil.copytree( stable_source, stable_dest )
+    
+    # Create development/ directory if we have a development version
+    if development_version:
+        dev_source = locations.website / development_version
+        dev_dest = locations.website / 'development'
+        if dev_dest.is_dir( ):
+            __.shutil.rmtree( dev_dest )
+        if dev_source.is_dir( ):
+            __.shutil.copytree( dev_source, dev_dest )
 
 
 def _update_index_html(
