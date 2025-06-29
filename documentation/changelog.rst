@@ -23,6 +23,19 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.24 (2025-06-29)
+==========================
+
+Enhancements
+------------
+
+- Website: Add --production flag for safe publication branch updates.
+- Website: Add --use-extant flag to preserve existing published versions.
+- Website: Add stable and development release table with persistent URLs.
+- Website: Add survey subcommand to list all published versions.
+- Website: Generate coverage badges in each version subdirectory.
+
+
 Emcdproj 1.22 (2025-06-14)
 ==========================
 
