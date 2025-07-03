@@ -84,6 +84,26 @@ git pull origin release-$ARGUMENTS
 ### 3. Patch Integration
 **Determine patch location and integrate if needed:**
 
+### 3.1. Identify Patch Commits
+Before cherry-picking, identify which commits contain actual patch fixes vs. maintenance:
+
+```bash
+git log --oneline master
+git log --graph --oneline master --since="1 month ago"
+```
+
+**Patch commits** (always cherry-pick):
+- Bug fixes
+- Security patches  
+- Critical functionality fixes
+
+**Maintenance commits** (evaluate case-by-case):
+- Template updates
+- Dependency bumps
+- Documentation changes
+
+Use `git show <commit>` to review each commit's content before deciding.
+
 **If patches were developed on master** (cherry-pick to release branch):
 ```bash
 # Cherry-pick patch commits from master to release branch
@@ -117,10 +137,14 @@ git push origin release-$ARGUMENTS
 gh run list --workflow=qa --limit=1
 gh run watch <qa-run-id> --interval 30 --compact
 ```
-**Halt if any QA jobs fail.** If `gh run watch` times out, rerun it until workflow completion.
+**CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
+- Monitor QA workflow with `gh run watch`
+- If command times out, immediately rerun `gh run watch` until completion
+- Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
+- HALT if any jobs fail - consult user before proceeding
 
 ### 7. Release Deployment
-After QA passes, tag and monitor release:
+**Verify QA passed before proceeding to release tag:**
 ```bash
 git tag -m "Release v$(hatch version) patch: <brief-description>." v$(hatch version)
 git push --tags
@@ -128,7 +152,11 @@ git push --tags
 gh run list --workflow=release --limit=1
 gh run watch <release-run-id> --interval 30 --compact
 ```
-**Halt if release workflow fails.** If `gh run watch` times out, rerun it until workflow completion.
+**CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
+- Monitor release workflow with `gh run watch`
+- If command times out, immediately rerun `gh run watch` until completion
+- Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
+- HALT if any jobs fail - consult user before proceeding
 
 ### 8. Post-Release Cleanup
 ```bash
