@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(git status), Bash(git pull:*), Bash(git checkout:*), Bash(git commit:*), Bash(git tag:*), Bash(git rm:*), Bash(git cherry-pick:*), Bash(git log:*), Bash(git branch:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(hatch version:*), Bash(hatch --env develop run:*), Bash(ls:*), Bash(grep:*), LS, Read
+allowed-tools: Bash(git status), Bash(git pull:*), Bash(git checkout:*), Bash(git commit:*), Bash(git tag:*), Bash(git rm:*), Bash(git cherry-pick:*), Bash(git log:*), Bash(git branch:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(hatch version:*), Bash(hatch --env develop run:*), Bash(echo:*), Bash(ls:*), Bash(grep:*), LS, Read
 description: Execute automated patch release with QA monitoring and master integration
 ---
 
@@ -14,6 +14,12 @@ Below is a validated process to create patch releases with automated monitoring
 and clean integration back to master.
 
 Target release version: `$ARGUMENTS` (e.g., `1.24`, `2.3`)
+
+**CRITICAL**: Verify exactly one target release version provided.
+**HALT if**:
+- No target release version is provided
+- Multiple release versions provided (e.g., `1.6 foo bar`)
+- Release version format doesn't match `X.Y` pattern (e.g., `1.6.2`, `1.6a0`)
 
 ## Context
 
@@ -90,11 +96,13 @@ Before cherry-picking, identify which commits contain actual patch fixes vs. mai
 ```bash
 git log --oneline master
 git log --graph --oneline master --since="1 month ago"
+# Show commits on master not on release branch
+git log --oneline release-$ARGUMENTS..master --since="1 month ago"
 ```
 
 **Patch commits** (always cherry-pick):
 - Bug fixes
-- Security patches  
+- Security patches
 - Critical functionality fixes
 
 **Maintenance commits** (evaluate case-by-case):
@@ -115,20 +123,27 @@ git cherry-pick <patch-commit-hash-2>
 
 **If patches were developed on release branch**: Skip this step - patches are already present.
 
-### 4. Version Management
+### 4. Pre-Release Validation
+Run linting to catch issues before formal release process:
+```bash
+hatch --env develop run linters
+```
+**HALT if any linting errors** - fix issues before proceeding.
+
+### 5. Version Management
 Increment to next patch version:
 ```bash
 hatch version patch
 git commit -am "Version: $(hatch version)"
 ```
 
-### 5. Changelog Generation
+### 6. Changelog Generation
 ```bash
 hatch --env develop run towncrier build --keep --version $(hatch version)
 git commit -am "Update changelog for v$(hatch version) patch release."
 ```
 
-### 6. Quality Assurance Phase
+### 7. Quality Assurance Phase
 Push branch and monitor QA workflow:
 ```bash
 git push origin release-$ARGUMENTS
@@ -143,7 +158,7 @@ gh run watch <qa-run-id> --interval 30 --compact
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
 - HALT if any jobs fail - consult user before proceeding
 
-### 7. Release Deployment
+### 8. Release Deployment
 **Verify QA passed before proceeding to release tag:**
 ```bash
 git tag -m "Release v$(hatch version) patch: <brief-description>." v$(hatch version)
@@ -158,14 +173,14 @@ gh run watch <release-run-id> --interval 30 --compact
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
 - HALT if any jobs fail - consult user before proceeding
 
-### 8. Post-Release Cleanup
+### 9. Post-Release Cleanup
 ```bash
 git rm .auxiliary/data/towncrier/*.rst
 git commit -m "Clean up news fragments."
 git push origin release-$ARGUMENTS
 ```
 
-### 9. Master Branch Integration
+### 10. Master Branch Integration
 Cherry-pick commits back to master based on patch development location:
 
 **If patches were developed on master**: Cherry-pick changelog and cleanup commits:

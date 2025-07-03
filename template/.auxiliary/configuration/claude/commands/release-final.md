@@ -15,6 +15,12 @@ monitoring and next development cycle setup.
 
 Target release version: `$ARGUMENTS` (e.g., `1.6`, `2.0`)
 
+**CRITICAL**: Verify exactly one target release version provided.
+**HALT if**:
+- No target release version is provided
+- Multiple release versions provided (e.g., `1.6 foo bar`)
+- Release version format doesn't match `X.Y` pattern (e.g., `1.6.2`, `1.6a0`)
+
 ## Context
 
 - Current git status: !`git status`
