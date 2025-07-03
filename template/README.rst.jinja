@@ -51,7 +51,73 @@
 {%- endif %}
 
 
-.. todo:: Provide content.
+.. todo:: Provide project description and key features.
+
+
+Installation 📦
+===============================================================================
+
+{%- if enable_executables %}
+
+Method: Download Standalone Executable
+-------------------------------------------------------------------------------
+
+Download the latest standalone executable for your platform from `GitHub
+Releases <https://github.com/{{ gh_owner }}/{{ project_name }}/releases>`_. These
+executables have no dependencies and work out of the box.
+
+{%- endif %}
+{%- if enable_cli %}
+
+Method: Install Executable Script
+-------------------------------------------------------------------------------
+
+Install via the `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_
+``tool`` command:
+
+::
+
+    uv tool install {{ distribution_name }}
+
+or, run directly with `uvx
+<https://github.com/astral-sh/uv/blob/main/README.md>`_:
+
+::
+
+{%- if package_name != distribution_name %}
+
+    uvx --from {{ distribution_name }} {{ package_name }}
+{%- else %}
+
+    uvx {{ distribution_name }}
+{%- endif %}
+
+Or, install via `pipx <https://pipx.pypa.io/stable/installation/>`_:
+
+::
+
+    pipx install {{ distribution_name }}
+
+{%- endif %}
+
+Method: Install Python Package
+-------------------------------------------------------------------------------
+
+Install via `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_ ``pip``
+command:
+
+::
+
+    uv pip install {{ distribution_name }}
+
+Or, install via ``pip``:
+
+::
+
+    pip install {{ distribution_name }}
+
+
+.. todo:: Provide usage examples and additional content.
 
 
 `More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
