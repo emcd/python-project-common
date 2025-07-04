@@ -52,17 +52,8 @@ jobs:
           set -eu -o pipefail
           git config --global user.name 'Github Actions Robot'
           git config --global user.email '${{ github.actor }}@users.noreply.github.com'
-          tarball="$(pwd)/.auxiliary/publications/website.tar.xz"
-          git fetch origin publication:publication || true
-          git checkout publication -- "${tarball}" || true
           version="$(hatch --env develop version 2>/dev/null)"
-          emcdproj website update "${version}"
-          git add "${tarball}"
-          # Commit to publication branch without checkout.
-          # https://stackoverflow.com/a/66850396/14833542
-          git branch --force publication \
-            $(git commit-tree $(git write-tree) -p publication -m "Update documents for publication.")
-          git push origin publication:publication
+          emcdproj website update "${version}" --production
           echo "website=$(pwd)/.auxiliary/artifacts/website" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
         shell: bash
