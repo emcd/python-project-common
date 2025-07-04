@@ -51,6 +51,10 @@ Guidance and Standards
   instructions <common/environment>` to ensure consistency with maintainer
   development environments and CI workflows.
 
+* Configure Git commit signing as required for all contributions. See the
+  :doc:`environment setup guide <common/environment>` for configuration
+  details.
+
 * Adhere to the :doc:`development practices <common/practices>` and :doc:`code
   style <common/style>` to improve the probability of pull request acceptance.
   You may wish to use an LLM to assist with this, if the standards seem too
@@ -61,6 +65,11 @@ Guidance and Standards
 
 * Prepare changelog fragments according to the :doc:`releases guide
   <common/releases>` as appropriate.
+
+* Run validation commands before submitting contributions. See the
+  :doc:`validation guide <common/validation>` for available commands and
+  workflow. (If you installed the Git pre-commit and pre-push hooks during
+  environment setup, then they will run the validations for you.)
 
 * Although unncessary for non-maintainer contributions, additional background
   can be found in the :doc:`maintenance guide <common/maintenance>`.

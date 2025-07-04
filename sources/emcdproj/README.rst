@@ -48,6 +48,48 @@
 `emcd/python-project-common <https://github.com/emcd/python-project-common>`_
 Copier template.
 
+Installation 📦
+===============================================================================
+
+Method: Install Executable Script
+-------------------------------------------------------------------------------
+
+Install via the `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_
+``tool`` command:
+
+::
+
+    uv tool install emcd-projects
+
+or, run directly with `uvx
+<https://github.com/astral-sh/uv/blob/main/README.md>`_:
+
+::
+
+    uvx --from emcd-projects emcdproj
+
+Or, install via `pipx <https://pipx.pypa.io/stable/installation/>`_:
+
+::
+
+    pipx install emcd-projects
+
+Method: Install Python Package
+-------------------------------------------------------------------------------
+
+Install via `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_ ``pip``
+command:
+
+::
+
+    uv pip install emcd-projects
+
+Or, install via ``pip``:
+
+::
+
+    pip install emcd-projects
+
 Features
 ===============================================================================
 
