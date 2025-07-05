@@ -25,7 +25,7 @@ from . import imports as __
 from . import nomina as _nomina
 
 
-class Information( metaclass = __.ImmutableDataclass ):
+class Information( __.immut.DataclassObject ):
     ''' Information about an application. '''
 
     name: __.typx.Annotated[

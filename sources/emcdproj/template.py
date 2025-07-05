@@ -36,11 +36,11 @@ class CommandDispatcher(
 
     command: __.typx.Union[
         __.typx.Annotated[
-            SurveyCommand,
+            'SurveyCommand',
             __.tyro.conf.subcommand( 'survey', prefix_name = False ),
         ],
         __.typx.Annotated[
-            ValidateCommand,
+            'ValidateCommand',
             __.tyro.conf.subcommand( 'validate', prefix_name = False ),
         ],
     ]

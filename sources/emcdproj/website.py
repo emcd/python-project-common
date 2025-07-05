@@ -37,11 +37,11 @@ class CommandDispatcher(
 
     command: __.typx.Union[
         __.typx.Annotated[
-            SurveyCommand,
+            'SurveyCommand',
             __.tyro.conf.subcommand( 'survey', prefix_name = False ),
         ],
         __.typx.Annotated[
-            UpdateCommand,
+            'UpdateCommand',
             __.tyro.conf.subcommand( 'update', prefix_name = False ),
         ],
     ]
@@ -100,7 +100,7 @@ class UpdateCommand(
             production = self.production )
 
 
-class Locations( metaclass = __.ImmutableDataclass ):
+class Locations( __.immut.DataclassObject ):
     ''' Locations associated with website maintenance. '''
 
     project: __.Path

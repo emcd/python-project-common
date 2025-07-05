@@ -34,7 +34,7 @@ from . import distribution as _distribution
 #     State = 'state'
 
 
-class Globals( metaclass = __.ImmutableDataclass ):
+class Globals( __.immut.DataclassObject ):
     ''' Immutable global data. Required by some library functions. '''
 
     application: _application.Information

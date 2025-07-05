@@ -76,20 +76,27 @@ def website( ):
 def auxdata( application, distribution, state ):
     ''' Provides minimal Globals instance for testing in mem fs. '''
 
-    class FakeDistributionInformation( distribution.Information ):
+    class FakeDistributionInformation:
+        def __init__( self, name: str, location: Path, editable: bool ):
+            self._info = distribution.Information(
+                name = name, location = location, editable = editable )
+            
+        def __getattr__( self, name: str ):
+            return getattr( self._info, name )
+            
         def provide_data_location( self, *appendages: str ) -> Path:
             base = Path( '/package/data' )
             if appendages: return base.joinpath( *appendages )
             return base
 
-    distribution = FakeDistributionInformation(
+    distribution_obj = FakeDistributionInformation(
         name = PACKAGE_NAME, location = Path( '/package' ), editable = True )
     return state.Globals(
         application = application.Information(
             name = PACKAGE_NAME ),
         directories = PlatformDirs(
             appname = PACKAGE_NAME, ensure_exists = False ),
-        distribution = distribution,
+        distribution = distribution_obj,
         exits = AsyncExitStack( ) )
 
 
@@ -97,13 +104,20 @@ def auxdata( application, distribution, state ):
 def auxdata_tmpdir( application, distribution, state, provide_tempdir ):
     ''' Provides minimal Globals instance for testing on real fs. '''
 
-    class FakeDistributionInformation( distribution.Information ):
+    class FakeDistributionInformation:
+        def __init__( self, name: str, location: Path, editable: bool ):
+            self._info = distribution.Information(
+                name = name, location = location, editable = editable )
+            
+        def __getattr__( self, name: str ):
+            return getattr( self._info, name )
+            
         def provide_data_location( self, *appendages: str ) -> Path:
             base = Path( provide_tempdir ) / 'package/data'
             if appendages: return base.joinpath( *appendages )
             return base
 
-    distribution = FakeDistributionInformation(
+    distribution_obj = FakeDistributionInformation(
         name = PACKAGE_NAME,
         location = Path( provide_tempdir ) / 'package',
         editable = True )
@@ -112,7 +126,7 @@ def auxdata_tmpdir( application, distribution, state, provide_tempdir ):
             name = PACKAGE_NAME ),
         directories = PlatformDirs(
             appname = PACKAGE_NAME, ensure_exists = False ),
-        distribution = distribution,
+        distribution = distribution_obj,
         exits = AsyncExitStack( ) )
 
 

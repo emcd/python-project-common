@@ -34,9 +34,7 @@ class DisplayStreams( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Stdout =    'stdout'
 
 
-class ConsoleDisplay(
-    metaclass = __.ImmutableDataclass,
-):
+class ConsoleDisplay( __.immut.DataclassObject ):
     silence: __.typx.Annotated[
         bool,
         __.tyro.conf.arg(
@@ -66,11 +64,7 @@ class ConsoleDisplay(
                 return __.sys.stderr # pyright: ignore[reportReturnType]
 
 
-class CliCommand(
-    __.typx.Protocol,
-    metaclass = __.ImmutableProtocolDataclass,
-    decorators = ( __.typx.runtime_checkable, ),
-):
+class CliCommand( __.immut.DataclassProtocol ):
     ''' CLI command. '''
 
     @__.abc.abstractmethod

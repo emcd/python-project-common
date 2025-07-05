@@ -42,7 +42,7 @@ class VersionCommand(
 
 
 class Cli(
-    metaclass = __.ImmutableDataclass,
+    __.immut.DataclassObject,
     decorators = ( __.simple_tyro_class, ),
 ):
     ''' Various utilities for projects by Github user '@emcd'. '''
