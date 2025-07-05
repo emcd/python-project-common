@@ -124,6 +124,7 @@ gh run watch <qa-run-id> --interval 30 --compact
 ```
 **CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
 - Monitor QA workflow with `gh run watch`
+- Use `timeout: 300000` (5 minutes) parameter in Bash tool for monitoring commands
 - If command times out, immediately rerun `gh run watch` until completion
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
 - HALT if any jobs fail - consult user before proceeding
@@ -139,6 +140,7 @@ gh run watch <release-run-id> --interval 30 --compact
 ```
 **CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
 - Monitor release workflow with `gh run watch`
+- Use `timeout: 600000` (10 minutes) parameter in Bash tool for monitoring commands
 - If command times out, immediately rerun `gh run watch` until completion
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
 - HALT if any jobs fail - consult user before proceeding
