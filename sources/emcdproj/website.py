@@ -21,36 +21,11 @@
 ''' Static website maintenance utilities for projects. '''
 
 
-from __future__ import annotations
-
 import jinja2 as _jinja2
 
 from . import __
 from . import exceptions as _exceptions
 from . import interfaces as _interfaces
-
-
-class CommandDispatcher(
-    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
-):
-    ''' Dispatches commands for static website maintenance. '''
-
-    command: __.typx.Union[
-        __.typx.Annotated[
-            'SurveyCommand',
-            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
-        ],
-        __.typx.Annotated[
-            'UpdateCommand',
-            __.tyro.conf.subcommand( 'update', prefix_name = False ),
-        ],
-    ]
-
-    async def __call__(
-        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
-    ) -> None:
-        ictr( 1 )( self.command )
-        await self.command( auxdata = auxdata, display = display )
 
 
 class SurveyCommand(
@@ -98,6 +73,29 @@ class UpdateCommand(
             auxdata, self.version,
             use_extant = self.use_extant,
             production = self.production )
+
+
+class CommandDispatcher(
+    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
+):
+    ''' Dispatches commands for static website maintenance. '''
+
+    command: __.typx.Union[
+        __.typx.Annotated[
+            SurveyCommand,
+            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            UpdateCommand,
+            __.tyro.conf.subcommand( 'update', prefix_name = False ),
+        ],
+    ]
+
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
+        ictr( 1 )( self.command )
+        await self.command( auxdata = auxdata, display = display )
 
 
 class Locations( __.immut.DataclassObject ):

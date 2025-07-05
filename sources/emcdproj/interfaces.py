@@ -21,8 +21,6 @@
 ''' Abstract bases and interfaces. '''
 
 
-from __future__ import annotations
-
 from . import __
 
 
@@ -64,7 +62,10 @@ class ConsoleDisplay( __.immut.DataclassObject ):
                 return __.sys.stderr # pyright: ignore[reportReturnType]
 
 
-class CliCommand( __.immut.DataclassProtocol ):
+class CliCommand(
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
+):
     ''' CLI command. '''
 
     @__.abc.abstractmethod
