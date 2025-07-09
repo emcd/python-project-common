@@ -62,7 +62,7 @@ class UpdateCommand(
 
     production: __.typx.Annotated[
         bool,
-        __.typx.Doc( ''' Update publication branch with new tarball. 
+        __.typx.Doc( ''' Update publication branch with new tarball.
                      Implies --use-extant to prevent data loss. ''' ),
     ] = False
 
@@ -413,18 +413,19 @@ def _update_publication_branch( locations: Locations, version: str ) -> None:
     tree_result = __.subprocess.run(
         [ 'git', 'write-tree' ],
         cwd = locations.project,
-        check = True,
-        capture_output = True,
-        text = True )
+        check = True, capture_output = True, text = True )
     tree_hash = tree_result.stdout.strip( )
-    # Create commit with publication branch as parent
+    # Check if publication branch exists
+    publication_exists = __.subprocess.run(
+        [ 'git', 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
+        cwd = locations.project,
+        check = False ).returncode == 0
     commit_result = __.subprocess.run(
-        [ 'git', 'commit-tree', tree_hash, '-p', 'publication',
+        [ 'git', 'commit-tree', tree_hash,
+          *( ( '-p', 'publication' ) if publication_exists else ( ) ),
           '-m', f"Update documents for publication. ({version})" ],
         cwd = locations.project,
-        check = True,
-        capture_output = True,
-        text = True )
+        check = True, capture_output = True, text = True )
     commit_hash = commit_result.stdout.strip( )
     __.subprocess.run(
         [ 'git', 'branch', '--force', 'publication', commit_hash ],

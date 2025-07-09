@@ -300,6 +300,19 @@ max-complexity = 12
   'SLF001',   # private-member-accessed
   'TRY',      # Tryceratops rules
 ]
+'template/tests/**/*.py' = [
+  'PLR0124',  # comparison-with-itself
+  'PLR0913',  # too-many-arguments
+  'PLR0915',  # too-many-statements
+  'PLR1704',  # redefined-argument-from-local
+  'PLR2004',  # magic-value-comparison
+  'PLW0129',  # assert-on-string-literal
+  'PLW0603',  # global-statement
+  'PLW0642',  # self-assignment
+  'S101',     # assert
+  'SLF001',   # private-member-accessed
+  'TRY',      # Tryceratops rules
+]
 [tool.ruff.lint.pylint]
 max-locals = 10
 max-public-methods = 10
