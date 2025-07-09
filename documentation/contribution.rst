@@ -55,10 +55,10 @@ Guidance and Standards
   :doc:`environment setup guide <common/environment>` for configuration
   details.
 
-* Adhere to the :doc:`development practices <common/practices>` and :doc:`code
-  style <common/style>` to improve the probability of pull request acceptance.
-  You may wish to use an LLM to assist with this, if the standards seem too
-  onerous or specific.
+* Adhere to the :doc:`development practices <common/practices>`, :doc:`code
+  style <common/style>`, and :doc:`testing guidelines <common/tests>` to
+  improve the probability of pull request acceptance. You may wish to use an
+  LLM to assist with this, if the standards seem too onerous or specific.
 
 * Also consider the :doc:`nomenclature advice <common/nomenclature>` for
   consistency and to improve the probability of pull request acceptance.
@@ -99,6 +99,7 @@ Resources
    common/environment
    common/practices
    common/style
+   common/tests
    common/nomenclature
    common/releases
    common/maintenance
