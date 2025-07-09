@@ -63,13 +63,13 @@ Guidance and Standards
 * Also consider the :doc:`nomenclature advice <common/nomenclature>` for
   consistency and to improve the probability of pull request acceptance.
 
-* Prepare changelog fragments according to the :doc:`releases guide
-  <common/releases>` as appropriate.
-
 * Run validation commands before submitting contributions. See the
   :doc:`validation guide <common/validation>` for available commands and
   workflow. (If you installed the Git pre-commit and pre-push hooks during
   environment setup, then they will run the validations for you.)
+
+* Prepare changelog fragments according to the :doc:`releases guide
+  <common/releases>` as appropriate.
 
 * Although unncessary for non-maintainer contributions, additional background
   can be found in the :doc:`maintenance guide <common/maintenance>`.
