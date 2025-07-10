@@ -55,21 +55,21 @@ Guidance and Standards
   :doc:`environment setup guide <common/environment>` for configuration
   details.
 
-* Adhere to the :doc:`development practices <common/practices>` and :doc:`code
-  style <common/style>` to improve the probability of pull request acceptance.
-  You may wish to use an LLM to assist with this, if the standards seem too
-  onerous or specific.
+* Adhere to the :doc:`development practices <common/practices>`, :doc:`code
+  style <common/style>`, and :doc:`testing guidelines <common/tests>` to
+  improve the probability of pull request acceptance. You may wish to use an
+  LLM to assist with this, if the standards seem too onerous or specific.
 
 * Also consider the :doc:`nomenclature advice <common/nomenclature>` for
   consistency and to improve the probability of pull request acceptance.
-
-* Prepare changelog fragments according to the :doc:`releases guide
-  <common/releases>` as appropriate.
 
 * Run validation commands before submitting contributions. See the
   :doc:`validation guide <common/validation>` for available commands and
   workflow. (If you installed the Git pre-commit and pre-push hooks during
   environment setup, then they will run the validations for you.)
+
+* Prepare changelog fragments according to the :doc:`releases guide
+  <common/releases>` as appropriate.
 
 * Although unncessary for non-maintainer contributions, additional background
   can be found in the :doc:`maintenance guide <common/maintenance>`.
@@ -99,6 +99,7 @@ Resources
    common/environment
    common/practices
    common/style
+   common/tests
    common/nomenclature
    common/releases
    common/maintenance

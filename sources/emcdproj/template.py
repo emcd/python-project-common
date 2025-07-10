@@ -21,35 +21,10 @@
 ''' Copier template maintenance and validation. '''
 
 
-from __future__ import annotations
-
 import subprocess as _subprocess
 
 from . import __
 from . import interfaces as _interfaces
-
-
-class CommandDispatcher(
-    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
-):
-    ''' Dispatches commands for Copier template maintenance. '''
-
-    command: __.typx.Union[
-        __.typx.Annotated[
-            SurveyCommand,
-            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
-        ],
-        __.typx.Annotated[
-            ValidateCommand,
-            __.tyro.conf.subcommand( 'validate', prefix_name = False ),
-        ],
-    ]
-
-    async def __call__(
-        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
-    ) -> None:
-        ictr( 1 )( self.command )
-        await self.command( auxdata = auxdata, display = display )
 
 
 class SurveyCommand(
@@ -87,6 +62,29 @@ class ValidateCommand(
         # TODO: Validate variant argument.
         validate_variant(
             auxdata, self.variant, preserve = self.preserve )
+
+
+class CommandDispatcher(
+    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
+):
+    ''' Dispatches commands for Copier template maintenance. '''
+
+    command: __.typx.Union[
+        __.typx.Annotated[
+            SurveyCommand,
+            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            ValidateCommand,
+            __.tyro.conf.subcommand( 'validate', prefix_name = False ),
+        ],
+    ]
+
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
+        ictr( 1 )( self.command )
+        await self.command( auxdata = auxdata, display = display )
 
 
 def copy_template( answers_file: __.Path, projectdir: __.Path ) -> None:

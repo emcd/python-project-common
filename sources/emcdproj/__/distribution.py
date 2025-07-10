@@ -25,7 +25,7 @@ from . import imports as __
 # from . import io as _io
 
 
-class Information( metaclass = __.ImmutableDataclass ):
+class Information( __.immut.DataclassObject ):
     ''' Information about a package distribution. '''
 
     name: str

@@ -21,36 +21,11 @@
 ''' Static website maintenance utilities for projects. '''
 
 
-from __future__ import annotations
-
 import jinja2 as _jinja2
 
 from . import __
 from . import exceptions as _exceptions
 from . import interfaces as _interfaces
-
-
-class CommandDispatcher(
-    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
-):
-    ''' Dispatches commands for static website maintenance. '''
-
-    command: __.typx.Union[
-        __.typx.Annotated[
-            SurveyCommand,
-            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
-        ],
-        __.typx.Annotated[
-            UpdateCommand,
-            __.tyro.conf.subcommand( 'update', prefix_name = False ),
-        ],
-    ]
-
-    async def __call__(
-        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
-    ) -> None:
-        ictr( 1 )( self.command )
-        await self.command( auxdata = auxdata, display = display )
 
 
 class SurveyCommand(
@@ -87,7 +62,7 @@ class UpdateCommand(
 
     production: __.typx.Annotated[
         bool,
-        __.typx.Doc( ''' Update publication branch with new tarball. 
+        __.typx.Doc( ''' Update publication branch with new tarball.
                      Implies --use-extant to prevent data loss. ''' ),
     ] = False
 
@@ -100,7 +75,30 @@ class UpdateCommand(
             production = self.production )
 
 
-class Locations( metaclass = __.ImmutableDataclass ):
+class CommandDispatcher(
+    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
+):
+    ''' Dispatches commands for static website maintenance. '''
+
+    command: __.typx.Union[
+        __.typx.Annotated[
+            SurveyCommand,
+            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            UpdateCommand,
+            __.tyro.conf.subcommand( 'update', prefix_name = False ),
+        ],
+    ]
+
+    async def __call__(
+        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
+    ) -> None:
+        ictr( 1 )( self.command )
+        await self.command( auxdata = auxdata, display = display )
+
+
+class Locations( __.immut.DataclassObject ):
     ''' Locations associated with website maintenance. '''
 
     project: __.Path
@@ -415,18 +413,19 @@ def _update_publication_branch( locations: Locations, version: str ) -> None:
     tree_result = __.subprocess.run(
         [ 'git', 'write-tree' ],
         cwd = locations.project,
-        check = True,
-        capture_output = True,
-        text = True )
+        check = True, capture_output = True, text = True )
     tree_hash = tree_result.stdout.strip( )
-    # Create commit with publication branch as parent
+    # Check if publication branch exists
+    publication_exists = __.subprocess.run(
+        [ 'git', 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
+        cwd = locations.project,
+        check = False ).returncode == 0
     commit_result = __.subprocess.run(
-        [ 'git', 'commit-tree', tree_hash, '-p', 'publication',
+        [ 'git', 'commit-tree', tree_hash,
+          *( ( '-p', 'publication' ) if publication_exists else ( ) ),
           '-m', f"Update documents for publication. ({version})" ],
         cwd = locations.project,
-        check = True,
-        capture_output = True,
-        text = True )
+        check = True, capture_output = True, text = True )
     commit_hash = commit_result.stdout.strip( )
     __.subprocess.run(
         [ 'git', 'branch', '--force', 'publication', commit_hash ],

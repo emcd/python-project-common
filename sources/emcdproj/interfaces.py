@@ -21,8 +21,6 @@
 ''' Abstract bases and interfaces. '''
 
 
-from __future__ import annotations
-
 from . import __
 
 
@@ -34,9 +32,7 @@ class DisplayStreams( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Stdout =    'stdout'
 
 
-class ConsoleDisplay(
-    metaclass = __.ImmutableDataclass,
-):
+class ConsoleDisplay( __.immut.DataclassObject ):
     silence: __.typx.Annotated[
         bool,
         __.tyro.conf.arg(
@@ -67,8 +63,7 @@ class ConsoleDisplay(
 
 
 class CliCommand(
-    __.typx.Protocol,
-    metaclass = __.ImmutableProtocolDataclass,
+    __.immut.DataclassProtocol, __.typx.Protocol,
     decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' CLI command. '''

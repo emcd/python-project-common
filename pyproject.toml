@@ -18,8 +18,8 @@ dependencies = [
   'Jinja2',
   'absence~=1.1',
   'defusedxml',
-  'frigid~=3.0',
-  'icecream-truck',
+  'frigid~=4.1',
+  'icecream-truck~=1.4',
   'importlib-metadata', # TODO: Drop once we have separate appcore package.
   'importlib-resources', # TODO: Drop once we have separate appcore package.
   'packaging',
@@ -288,6 +288,19 @@ max-complexity = 12
   'F405',     # undefined-local-with-import-star-usage
 ]
 'tests/**/*.py' = [
+  'PLR0124',  # comparison-with-itself
+  'PLR0913',  # too-many-arguments
+  'PLR0915',  # too-many-statements
+  'PLR1704',  # redefined-argument-from-local
+  'PLR2004',  # magic-value-comparison
+  'PLW0129',  # assert-on-string-literal
+  'PLW0603',  # global-statement
+  'PLW0642',  # self-assignment
+  'S101',     # assert
+  'SLF001',   # private-member-accessed
+  'TRY',      # Tryceratops rules
+]
+'template/tests/**/*.py' = [
   'PLR0124',  # comparison-with-itself
   'PLR0913',  # too-many-arguments
   'PLR0915',  # too-many-statements

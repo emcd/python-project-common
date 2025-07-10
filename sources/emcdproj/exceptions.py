@@ -24,11 +24,7 @@
 from . import __
 
 
-class Omniexception(
-    BaseException,
-    metaclass = __.ImmutableClass,
-    decorators = ( __.immutable, ),
-):
+class Omniexception( __.immut.Object, BaseException ):
     ''' Base for all exceptions raised by package API. '''
     # TODO: Class and instance attribute concealment.
 

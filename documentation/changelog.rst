@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.28 (2025-07-10)
+==========================
+
+Repairs
+-------
+
+- Website: Ensure that first release publication of documentation and coverage
+  reports succeeds.
+
+
 Emcdproj 1.24 (2025-06-29)
 ==========================
 

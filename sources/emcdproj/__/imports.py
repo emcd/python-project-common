@@ -39,18 +39,13 @@ import                      types
 
 from pathlib import Path
 
+import frigid as            immut
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import tyro
 # --- END: Injected by Copier ---
 
 from absence import Absential, absent, is_absent
-from frigid.qaliases import (
-    ImmutableClass,
-    ImmutableDataclass,
-    ImmutableProtocolDataclass,
-    immutable,
-)
 from platformdirs import PlatformDirs
 
 
