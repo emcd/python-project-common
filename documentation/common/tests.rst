@@ -244,6 +244,9 @@ Testing Strategy by Code Type
    * - **Abstract Methods**
      - ``# pragma: no cover``
      - Apply to ``NotImplementedError`` lines only
+   * - **Cross-Platform**
+     - ``pathlib.Path`` with ``.resolve()`` and ``.samefile()``
+     - Use ``Path.resolve()`` to unfurl symlinks; ``.samefile()`` for comparisons on Windows
 
 Development Environment
 ===============================================================================

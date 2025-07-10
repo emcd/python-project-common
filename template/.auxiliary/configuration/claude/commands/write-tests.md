@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, MultiEdit
+allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, MultiEdit, WebFetch
 description: Write comprehensive tests following project testing guidelines and improve coverage
 ---
 
@@ -79,8 +79,23 @@ following occur:
 
 Execute the following steps for test requirements: `$ARGUMENTS`
 
+### 0. Pre-Flight Verification
+**MANDATORY - Verify access to test-writing guide:**
+
+Use WebFetch to access and confirm you can read the complete testing guidelines:
+```
+https://raw.githubusercontent.com/emcd/python-project-common/refs/heads/master/documentation/common/tests.rst
+```
+
+**CRITICAL**: You MUST successfully access and read the guide before proceeding. If WebFetch fails, HALT and consult with the user.
+
 ### 1. Code Analysis Phase
 Examine the target code to understand testing needs:
+
+**Check for existing related tests to avoid duplication:**
+- Search for existing test files covering target modules
+- Review test coverage reports for current state
+- Identify gaps rather than recreating existing tests
 
 **For each target file:**
 - Read the source code to understand public API
@@ -92,6 +107,11 @@ Examine the target code to understand testing needs:
 Determine appropriate test organization and categories:
 
 **Review existing test structure and plan test numbering following project conventions.**
+
+**If tests/README.md is missing, create it with:**
+- Test module numbering scheme specific to the package
+- Rationale for any use of patch or other exceptions to standard patterns
+- Project-specific testing conventions and fixtures
 
 **Test Categories to Include:**
 - **Basic Functionality Tests (000-099):** Happy path scenarios, input validation, basic error conditions
@@ -180,3 +200,12 @@ Tests are complete when:
 
 **Note**: Always run full validation (`hatch --env develop run testers && hatch
 --env develop run linters`) before considering the task complete.
+
+## Final Report
+
+Upon completion, provide a brief report covering:
+- Coverage improvements achieved (before/after percentages)
+- Any technical conflicts encountered (e.g., dataclass/protocol issues, __slots__ conflicts)
+- How any conflicts were resolved or worked around
+- Pragma directives applied (# pragma: no cover, # pragma: no branch) and rationale
+- Any deviations from standard patterns and justification
