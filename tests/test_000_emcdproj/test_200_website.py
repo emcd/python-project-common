@@ -38,14 +38,14 @@ ictruck.register_module( PACKAGE_NAME )
 
 @pytest.fixture
 def application( ):
-    ''' Provides internal application module. '''
-    return cache_import_module( f"{ PACKAGE_NAME }.__.application" )
+    ''' Provides appcore application module. '''
+    return cache_import_module( "appcore.application" )
 
 
 @pytest.fixture
 def distribution( ):
-    ''' Provides internal package distribution module. '''
-    return cache_import_module( f"{ PACKAGE_NAME }.__.distribution" )
+    ''' Provides appcore distribution module. '''
+    return cache_import_module( "appcore.distribution" )
 
 
 @pytest.fixture
@@ -56,8 +56,8 @@ def imports( ):
 
 @pytest.fixture
 def state( ):
-    ''' Provides internal state package. '''
-    return cache_import_module( f"{ PACKAGE_NAME }.__.state" )
+    ''' Provides appcore state module. '''
+    return cache_import_module( "appcore.state" )
 
 
 @pytest.fixture
@@ -94,6 +94,7 @@ def auxdata( application, distribution, state ):
     return state.Globals(
         application = application.Information(
             name = PACKAGE_NAME ),
+        configuration = { },  # Empty configuration for tests
         directories = PlatformDirs(
             appname = PACKAGE_NAME, ensure_exists = False ),
         distribution = distribution_obj,
@@ -124,6 +125,7 @@ def auxdata_tmpdir( application, distribution, state, provide_tempdir ):
     return state.Globals(
         application = application.Information(
             name = PACKAGE_NAME ),
+        configuration = { },  # Empty configuration for tests
         directories = PlatformDirs(
             appname = PACKAGE_NAME, ensure_exists = False ),
         distribution = distribution_obj,

@@ -39,6 +39,7 @@ import                      types
 
 from pathlib import Path
 
+import                      appcore
 import frigid as            immut
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
@@ -46,7 +47,7 @@ import tyro
 # --- END: Injected by Copier ---
 
 from absence import Absential, absent, is_absent
-from platformdirs import PlatformDirs
+from appcore.state import Globals
 
 
 simple_tyro_class = tyro.conf.configure( )

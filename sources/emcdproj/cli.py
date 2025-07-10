@@ -47,7 +47,7 @@ class Cli(
 ):
     ''' Various utilities for projects by Github user '@emcd'. '''
 
-    application: __.ApplicationInformation
+    application: __.appcore.ApplicationInformation
     # configfile: __.typx.Optional[ str ] = None
     display: _interfaces.ConsoleDisplay
     command: __.typx.Union[
@@ -103,7 +103,7 @@ def execute( ) -> None:
 
 
 async def _prepare(
-    application: __.ApplicationInformation,
+    application: __.appcore.ApplicationInformation,
     # configedits: __.DictionaryEdits,
     # environment: bool,
     exits: __.ctxl.AsyncExitStack,
@@ -112,7 +112,7 @@ async def _prepare(
     import ictruck
     # TODO: Finetune Icecream truck installation from CLI arguments.
     ictruck.install( trace_levels = 9 )
-    return await __.prepare(
+    return await __.appcore.prepare(
         application = application,
         # configedits = configedits,
         # environment = environment,
