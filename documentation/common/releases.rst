@@ -70,7 +70,7 @@ Initial Release Candidate
 
         git checkout master
         hatch version minor,alpha
-        git commit -am "Version: $(hatch version)"
+        git commit -am "Start development for v$(hatch version | sed 's/a[0-9]*$//')."
         git tag -m "Start development for v$(hatch version | sed 's/a[0-9]*$//')." i$(hatch version | sed 's/a[0-9]*$//')
         git push origin master --tags
 
@@ -90,11 +90,11 @@ Final Release
 3. **Changelog Generation**: Run Towncrier to build final changelog::
 
         hatch --env develop run towncrier build --keep --version $(hatch version)
-        git commit -am "Update changelog for v$(hatch version) release."
+        git commit -am "Update changelog for v$(hatch version)."
 
 4. **Release Tag**: Create signed release tag::
 
-        git tag -m "Release v$(hatch version): <brief-description>." v$(hatch version)
+        git tag -m "<description>" v$(hatch version)
 
 5. **Push Release**: Push release branch and tag to upstream::
 
@@ -145,11 +145,11 @@ Postrelease Patch
 5. **Changelog Generation**: Run Towncrier to build patch changelog::
 
         hatch --env develop run towncrier build --keep --version $(hatch version)
-        git commit -am "Update changelog for v$(hatch version) patch release."
+        git commit -am "Update changelog for v$(hatch version)."
 
 6. **Patch Tag**: Create signed patch tag::
 
-        git tag -m "Release v$(hatch version) patch: <brief-description>." v$(hatch version)
+        git tag -m "<description>" v$(hatch version)
 
 7. **Push Patch**: Push release branch and tag to upstream::
 
