@@ -26,109 +26,156 @@ The project follows `semantic versioning <https://semver.org/>`_ for releases.
 Release Process
 ===============================================================================
 
+Pre-Release Quality Check
+-------------------------------------------------------------------------------
+
+Run local quality assurance before any release process::
+
+    git status && git pull origin master
+    hatch --env develop run linters
+    hatch --env develop run testers
+    hatch --env develop run docsgen
+
+Also, ensure that at least one news fragment exists under
+``.auxiliary/data/towncrier``.
+
 Initial Release Candidate
 -------------------------------------------------------------------------------
 
-1. Checkout ``master`` branch.
+1. **Branch Setup**: Checkout ``master`` branch and ensure it's up to date::
 
-2. Pull from upstream to ensure all changes have been synced.
+        git checkout master
+        git pull origin master
 
-3. Checkout new release branch: ``release-<major>.<minor>``.
+2. **Create Release Branch**: Checkout new release branch::
 
-4. Bump alpha to release candidate. Commit.
-   ::
+        git checkout -b release-<major>.<minor>
+
+3. **Version Bump**: Bump alpha to release candidate and commit::
 
         hatch version rc
+        git commit -am "Version: $(hatch version)"
 
-5. Tag.
-   ::
+4. **Tag Release Candidate**::
 
-        git tag v${rc_version}
+        git tag -m "Release candidate v$(hatch version)." v$(hatch version)
 
-6. Push release branch and tag to upstream with tracking enabled.
+5. **Push Branch and Tag**: Push release branch and tag to upstream::
 
-7. Checkout ``master`` branch.
+        git push -u origin release-<major>.<minor>
+        git push --tags
 
-8. Bump alpha to next minor version on ``master`` branch. Commit.
-   ::
+6. **Setup Next Development Cycle**: Return to ``master`` and prepare for next
+   version::
 
+        git checkout master
         hatch version minor,alpha
+        git commit -am "Version: $(hatch version)"
+        git tag -m "Start development for v$(hatch version | sed 's/a[0-9]*$//')." i$(hatch version | sed 's/a[0-9]*$//')
+        git push origin master --tags
 
-9. Tag start of development for next release.
-    ::
-
-        git tag i${next_release_version}
-
-Release
+Final Release
 -------------------------------------------------------------------------------
 
-1. Checkout release branch.
+1. **Branch Setup**: Checkout and update the release branch::
 
-2. Bump release candidate to release. Commit.
-   ::
+        git checkout release-<major>.<minor>
+        git pull origin release-<major>.<minor>
+
+2. **Version Finalization**: Bump release candidate to final release::
 
         hatch version release
+        git commit -am "Version: $(hatch version)"
 
-3. Run Towncrier. Commit.
-   ::
+3. **Changelog Generation**: Run Towncrier to build final changelog::
 
-        hatch --env develop run towncrier build --keep --version ${release_version}
+        hatch --env develop run towncrier build --keep --version $(hatch version)
+        git commit -am "Update changelog for v$(hatch version) release."
 
-4. Tag.
-   ::
+4. **Release Tag**: Create signed release tag::
 
-        git tag v${release_version}
+        git tag -m "Release v$(hatch version): <brief-description>." v$(hatch version)
 
-5. Push release branch and tag to upstream.
+5. **Push Release**: Push release branch and tag to upstream::
 
-6. Wait for the release workflow to complete successfully.
+        git push origin release-<major>.<minor>
+        git push --tags
 
-7. Clean up news fragments to prevent recycling in future releases. Commit.
-   ::
+6. **Monitor Release**: Wait for the release workflow to complete successfully.
+   Check the GitHub Actions tab to monitor progress.
+
+7. **Post-Release Cleanup**: Clean up news fragments and push::
 
         git rm .auxiliary/data/towncrier/*.rst
         git commit -m "Clean up news fragments."
+        git push origin release-<major>.<minor>
 
-8. Push cleanup commit to upstream.
+8. **Master Integration**: Cherry-pick release commits back to ``master``::
 
-9. Cherry-pick Towncrier commits back to ``master`` branch.
+        git checkout master
+        git pull origin master
+        git cherry-pick <changelog-commit-hash>
+        git cherry-pick <cleanup-commit-hash>
+        git push origin master
+
+   Use ``git log --oneline`` on the release branch to identify commit hashes.
 
 Postrelease Patch
 -------------------------------------------------------------------------------
 
-1. Checkout release branch.
+1. **Branch Setup**: Checkout and update the release branch::
 
-2. Develop and test patch against branch. Add Towncrier entry. Commit.
+        git checkout release-<major>.<minor>
+        git pull origin release-<major>.<minor>
 
-3. Bump release to patch or increment patch number. Commit.
-   ::
+2. **Patch Development**: Develop and test patch against branch.
+   Add Towncrier entry and commit changes.
+
+3. **Pre-Patch Validation**: Run quality checks to catch issues early::
+
+        hatch --env develop run linters
+
+   **Important**: Fix any linting errors before proceeding.
+
+4. **Version Bump**: Bump to patch version and commit::
 
         hatch version patch
+        git commit -am "Version: $(hatch version)"
 
-4. Run Towncrier. Commit.
-   ::
+5. **Changelog Generation**: Run Towncrier to build patch changelog::
 
-        hatch --env develop run towncrier build --keep --version ${patch_version}
+        hatch --env develop run towncrier build --keep --version $(hatch version)
+        git commit -am "Update changelog for v$(hatch version) patch release."
 
-5. Tag.
-   ::
+6. **Patch Tag**: Create signed patch tag::
 
-        git tag v${patch_version}
+        git tag -m "Release v$(hatch version) patch: <brief-description>." v$(hatch version)
 
-6. Push release branch and tag to upstream.
+7. **Push Patch**: Push release branch and tag to upstream::
 
-7. Wait for the release workflow to complete successfully.
+        git push origin release-<major>.<minor>
+        git push --tags
 
-8. Clean up news fragments to prevent recycling in future releases. Commit.
-   ::
+8. **Monitor Release**: Wait for the release workflow to complete successfully.
+   Check the GitHub Actions tab to monitor progress.
+
+9. **Post-Release Cleanup**: Clean up news fragments and push::
 
         git rm .auxiliary/data/towncrier/*.rst
         git commit -m "Clean up news fragments."
+        git push origin release-<major>.<minor>
 
-9. Push cleanup commit to upstream.
+10. **Master Integration**: Cherry-pick patch commits back to ``master``::
 
-10. Cherry-pick patch and Towncrier commits back to ``master`` branch,
-    resolving conflicts as necessary.
+        git checkout master
+        git pull origin master
+        git cherry-pick <patch-commit-hash>
+        git cherry-pick <changelog-commit-hash>
+        git cherry-pick <cleanup-commit-hash>
+        git push origin master
+
+    Use ``git log --oneline`` on the release branch to identify commit hashes.
+    Resolve any conflicts as necessary during cherry-picking.
 
 Changelog Entries
 ===============================================================================
