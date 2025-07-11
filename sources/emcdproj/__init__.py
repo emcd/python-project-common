@@ -36,4 +36,4 @@ def main( ):
     execute( )
 
 
-# TODO: Reclassify package modules as immutable and concealed.
+__.immut.finalize_module( __name__, recursive = True )

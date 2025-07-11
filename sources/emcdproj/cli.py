@@ -71,7 +71,6 @@ class Cli(
         async with __.ctxl.AsyncExitStack( ) as exits:
             auxdata = await _prepare( exits = exits, **nomargs )
             ictr( 0 )( self.command )
-            # await self.command( auxdata = auxdata )
             await self.command( auxdata = auxdata, display = self.display )
 
     def prepare_invocation_args(
@@ -83,7 +82,7 @@ class Cli(
         args: dict[ str, __.typx.Any ] = dict(
             application = self.application,
             # configedits = configedits,
-            # environment = True,
+            environment = True,
         )
         # if self.configfile: args[ 'configfile' ] = self.configfile
         return args
@@ -97,15 +96,15 @@ def execute( ) -> None:
     )
     try: run( __.tyro.cli( Cli, config = config )( ) )
     except SystemExit: raise
-    except BaseException:
-        # TODO: Log exception.
+    except BaseException as exc:
+        print( exc, file = __.sys.stderr )
         raise SystemExit( 1 ) from None
 
 
 async def _prepare(
     application: __.appcore.ApplicationInformation,
     # configedits: __.DictionaryEdits,
-    # environment: bool,
+    environment: bool,
     exits: __.ctxl.AsyncExitStack,
 ) -> __.Globals:
     ''' Configures logging based on verbosity. '''
@@ -115,5 +114,5 @@ async def _prepare(
     return await __.appcore.prepare(
         application = application,
         # configedits = configedits,
-        # environment = environment,
+        environment = environment,
         exits = exits )
