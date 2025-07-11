@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.29 (2025-07-11)
+==========================
+
+Enhancements
+------------
+
+- CLI: Enable environment detection. Add concealment and immutability to package modules.
+- Copier Template: Add write-tests and write-release-notes custom slash commands. Enhance existing release commands with improved guidance on cherry-picking commits and development cycle management.
+
+
 Emcdproj 1.28 (2025-07-10)
 ==========================
 
