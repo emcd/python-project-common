@@ -100,6 +100,11 @@ git log --graph --oneline master --since="1 month ago"
 git log --oneline release-$ARGUMENTS..master --since="1 month ago"
 ```
 
+**IMPORTANT**
+- Do **not** cherry-pick commits which were previously cherry-picked onto the
+  branch.
+- Look at the Towncrier news fragments to help you decide what to pick.
+
 **Patch commits** (always cherry-pick):
 - Bug fixes
 - Security patches
