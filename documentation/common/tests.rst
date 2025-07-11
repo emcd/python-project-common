@@ -73,9 +73,10 @@ Test Directory Structure
         ├── fixtures.py              # Common test fixtures and utilities
         ├── test_000_package.py      # Package-level tests
         ├── test_010_internals.py    # Internal utilities
-        ├── test_100_core.py         # Core public API
-        ├── test_200_advanced.py     # Advanced features
-        └── test_900_integration.py  # Integration tests
+        ├── test_100_<layer 0>.py    # Lowest levels of public API
+        ├── test_200_<layer 1>.py    # Lower levels of public API
+        ├── ...                      # Higher levels of API
+        └── test_500_integration.py  # Top levels of API; Integration tests
 
 Numbering System
 -------------------------------------------------------------------------------
@@ -96,10 +97,10 @@ Within test modules, number test functions similarly::
 
     def test_000_basic_functionality():
         ''' Basic feature works as expected. '''
-        
+
     def test_100_error_handling():
         ''' Error conditions are handled gracefully. '''
-        
+
     def test_200_advanced_scenarios():
         ''' Advanced usage patterns work correctly. '''
 
@@ -133,7 +134,7 @@ The most important testing pattern. Inject dependencies via parameters::
     async def test_process_data():
         def mock_processor( data ):
             return f"processed: {data}"
-        
+
         result = await process_data( "test", processor = mock_processor )
         assert result == "processed: test"
 
@@ -142,7 +143,7 @@ Constructor injection for objects::
     @dataclass( frozen = True )
     class DataProcessor:
         validator: Callable[ [ str ], bool ] = default_validator
-        
+
         def process( self, data: str ) -> str:
             if not self.validator( data ):
                 raise ValueError( "Invalid data" )
@@ -152,7 +153,7 @@ Constructor injection for objects::
     def test_data_processor():
         def always_valid( data ):
             return True
-        
+
         processor = DataProcessor( validator = always_valid )
         result = processor.process( "test" )
         assert result == "TEST"
@@ -181,7 +182,7 @@ only when necessary::
             temp_path = Path( temp_dir )
             config_file = temp_path / 'config.toml'
             config_file.write_text( '[section]\nkey = "value"' )
-            
+
             result = await async_process_config_file( config_file )
             assert result.key == 'value'
 
@@ -198,14 +199,14 @@ When to Mock
 Example with third-party mock::
 
     import httpx
-    
+
     def test_http_client():
         def handler( request ):
             return httpx.Response( 200, json = { "result": "success" } )
-        
+
         transport = httpx.MockTransport( handler )
         client = httpx.Client( transport = transport )
-        
+
         response = client.get( "https://example.com/api" )
         assert response.json() == { "result": "success" }
 
@@ -243,6 +244,9 @@ Testing Strategy by Code Type
    * - **Abstract Methods**
      - ``# pragma: no cover``
      - Apply to ``NotImplementedError`` lines only
+   * - **Cross-Platform**
+     - ``pathlib.Path`` with ``.resolve()`` and ``.samefile()``
+     - Use ``Path.resolve()`` to unfurl symlinks; ``.samefile()`` for comparisons on Windows
 
 Development Environment
 ===============================================================================
@@ -250,7 +254,7 @@ Development Environment
 * **Always use hatch environment** for all testing commands::
 
     hatch --env develop run pytest          # run tests
-    hatch --env develop run linters         # run linters  
+    hatch --env develop run linters         # run linters
     hatch --env develop run testers         # run full test suite with coverage
 
 * **Test performance**: The elapsed time reported by ``pytest`` should be
@@ -287,11 +291,11 @@ Mock frame chains for call stack simulation (document justification)::
         external_frame = MagicMock()
         external_frame.f_code.co_filename = '/external/caller.py'
         external_frame.f_back = None
-        
+
         internal_frame = MagicMock()
         internal_frame.f_code.co_filename = '/internal/module.py'
         internal_frame.f_back = external_frame
-        
+
         with patch( 'inspect.currentframe', return_value = internal_frame ):
             result = module._discover_invoker_location()
             assert result == Path( '/external' )
@@ -302,7 +306,7 @@ Resource Management
 Use ``ExitStack`` for multiple temporary resources::
 
     from contextlib import ExitStack
-    
+
     def test_multiple_temp_files():
         with ExitStack() as stack:
             temp1 = stack.enter_context(
@@ -321,7 +325,7 @@ Test error conditions and recovery paths::
             config[ 'application' ][ 'safe_mode' ] = True
         except Exception:
             config[ 'fallback' ] = True  # Apply fallback
-    
+
     @pytest.mark.asyncio
     async def test_error_recovery():
         async with contextlib.AsyncExitStack() as exits:

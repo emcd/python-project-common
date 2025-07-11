@@ -18,13 +18,10 @@ dependencies = [
   'Jinja2',
   'absence~=1.1',
   'defusedxml',
+  'emcd-appcore~=1.0',
   'frigid~=4.1',
   'icecream-truck~=1.4',
-  'importlib-metadata', # TODO: Drop once we have separate appcore package.
-  'importlib-resources', # TODO: Drop once we have separate appcore package.
   'packaging',
-  'platformdirs', # TODO: Drop once we have separate appcore package.
-  'tomli', # TODO: Drop once we have separate appcore package.
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
   'tyro',

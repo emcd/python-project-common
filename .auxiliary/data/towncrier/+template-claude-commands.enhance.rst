@@ -1,0 +1,1 @@
+Copier Template: Add write-tests and write-release-notes custom slash commands. Enhance existing release commands with improved guidance on cherry-picking commits and development cycle management.

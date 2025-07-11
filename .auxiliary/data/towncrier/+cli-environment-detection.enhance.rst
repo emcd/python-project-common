@@ -1,0 +1,1 @@
+CLI: Enable environment detection. Add concealment and immutability to package modules.

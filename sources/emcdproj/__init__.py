@@ -27,7 +27,7 @@ from . import exceptions
 # --- END: Injected by Copier ---
 
 
-__version__ = '1.28'
+__version__ = '1.29'
 
 
 def main( ):
@@ -36,4 +36,4 @@ def main( ):
     execute( )
 
 
-# TODO: Reclassify package modules as immutable and concealed.
+__.immut.finalize_module( __name__, recursive = True )
