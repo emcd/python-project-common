@@ -31,18 +31,24 @@ conventions detailed in `documentation/common/releases.rst`.
 
 ### Phase 2: Filtering and Classification
 
-4. **Filter User-Facing Changes**: Focus on changes that affect users:
-   - CLI or API changes
-   - Application/library behavior changes
+4. **Filter User-Facing Changes**: Focus on changes that affect how users interact with the tool:
+   - CLI command changes (new options, arguments, output formats)
+   - API changes (public functions, classes, return values)
+   - Behavior changes (different responses, error messages, processing)
+   - Configuration changes (new settings, file formats)
    - Deprecations and removals
-   - Platform support changes (Python versions, etc.)
+   - Platform support changes (Python versions, OS support)
 
    **Exclude** internal changes:
    - GitHub workflows
-   - `pyproject.toml` modifications
+   - Dependency changes without API impact
+   - Internal module restructuring that preserves public API
    - Git ignore files
    - Modules in internals subpackages (`__`)
-   - Internal refactoring without user impact
+   - Version bumps and maintenance updates
+   - Internal refactoring without user-visible changes
+
+   **Key Test**: Ask "Does this change how a user invokes the tool, what options they have, or what behavior they observe?"
 
 5. **Classify Changes**: Determine appropriate type for each change:
    - `enhance`: features and improvements
@@ -72,9 +78,13 @@ conventions detailed in `documentation/common/releases.rst`.
    - Be understandable by users, not just developers
    - Include topic prefixes when appropriate (e.g., "CLI: ", "API: ")
 
-### Phase 4: Final Review
+### Phase 4: Final Review and Commit
 
 9. **Summary**: Provide a brief summary of fragments created and any notable patterns or changes identified
+
+10. **Commit Changes**: Add fragments to git and commit them:
+    - `git add .auxiliary/data/towncrier`
+    - `git commit -m "Add news fragments for upcoming release"`
 
 ## Additional Instructions
 
