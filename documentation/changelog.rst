@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.29.1 (2025-07-12)
+============================
+
+Repairs
+-------
+
+- Properly detect data directory when running from installed package
+  distribution.
+
+
 Emcdproj 1.29 (2025-07-11)
 ==========================
 
