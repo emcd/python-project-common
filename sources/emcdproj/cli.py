@@ -77,11 +77,8 @@ class Cli(
         self,
     ) -> __.cabc.Mapping[ str, __.typx.Any ]:
         ''' Prepares arguments for initial configuration. '''
-        # configedits: __.DictionaryEdits = (
-        #     self.command.provide_configuration_edits( ) )
         args: dict[ str, __.typx.Any ] = dict(
             application = self.application,
-            # configedits = configedits,
             environment = True,
         )
         # if self.configfile: args[ 'configfile' ] = self.configfile
@@ -103,7 +100,6 @@ def execute( ) -> None:
 
 async def _prepare(
     application: __.appcore.ApplicationInformation,
-    # configedits: __.DictionaryEdits,
     environment: bool,
     exits: __.ctxl.AsyncExitStack,
 ) -> __.Globals:
@@ -111,8 +107,11 @@ async def _prepare(
     import ictruck
     # TODO: Finetune Icecream truck installation from CLI arguments.
     ictruck.install( trace_levels = 9 )
+    distribution = (
+        await __.appcore.DistributionInformation.prepare(
+            exits, package = __.package_name ) )
     return await __.appcore.prepare(
         application = application,
-        # configedits = configedits,
+        distribution = distribution,
         environment = environment,
         exits = exits )
