@@ -165,9 +165,8 @@ git push origin master
 Set up next development version:
 ```bash
 hatch version minor,alpha
-next_release="$(hatch version | sed 's/a[0-9]*$//')"
-git commit -am "Start of development for release ${next_release}."
-git tag -m "Start of development for ${next_release}." "i${next_release}"
+git commit -am "Start of development for release $(hatch version | sed 's/a[0-9]*$//')."
+git tag -m "Start of development for $(hatch version | sed 's/a[0-9]*$//')." "i$(hatch version | sed 's/a[0-9]*$//')"
 git push origin master --tags
 ```
 
