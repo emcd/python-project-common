@@ -77,7 +77,7 @@ gha-runners = [
 ]
 [tool.coverage.run]
 branch = true
-command_line = '-m pytest' # TODO? '--fail-under'
+command_line = '-m pytest'
 data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
 parallel = true
 source = [ 'sources' ]
@@ -165,9 +165,9 @@ HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
 [tool.hatch.envs.develop.scripts]
 docsgen = [
   """sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
-     documentation .auxiliary/artifacts/sphinx-linkcheck""",
+      documentation .auxiliary/artifacts/sphinx-linkcheck""",
   """sphinx-build -a -d .auxiliary/caches/sphinx \
-     documentation .auxiliary/artifacts/sphinx-html""",
+      documentation .auxiliary/artifacts/sphinx-html""",
 ]
 linters = [
   """ruff check --quiet sources documentation tests""",
@@ -176,7 +176,7 @@ linters = [
   # TODO: Use '-C' flag, which is only on nightly, as of 2024-12-11.
   """cargo check --manifest-path sources/{{ crate_name }}/Cargo.toml""",
   """cargo clippy --manifest-path sources/{{ crate_name }}/Cargo.toml \
-     -- --deny warnings --warn clippy::pedantic""",
+      -- --deny warnings --warn clippy::pedantic""",
   # TODO: cargo deny # Not installed with Cargo by default.
   {%- endif %}
   # --- END: Injected by Copier ---
@@ -193,14 +193,19 @@ packagers = [
   {%- endif %}
   # --- END: Injected by Copier ---
 ]
-testers-no-reports = [
-  'coverage erase',
-  'coverage run',
+testers-documentation = [
   """coverage run -m sphinx.cmd.build \
-     -E -b doctest -d .auxiliary/caches/sphinx \
-     documentation .auxiliary/artifacts/sphinx-doctest""",
+      -E -b doctest -d .auxiliary/caches/sphinx \
+      documentation .auxiliary/artifacts/sphinx-doctest""",
+]
+testers-serotine = [ """coverage run -m pytest -m 'slow'"""  ]
+testers-no-reports = [
+  'coverage run',
+  'testers-documentation',
+  'testers-serotine',
 ]
 testers = [
+  'coverage erase',
   'testers-no-reports',
   'coverage combine',
   'coverage report --skip-covered',
@@ -287,11 +292,14 @@ stubPath = 'sources/{{ package_name }}/_typedecls'
 # Note: Cannot run doctests from Pytest, because Pytest tries to update '_'
 #       attribute on protected modules. Instead, we use Sphinx to run doctests.
 minversion = '8.1'
-addopts = '--capture=no --exitfirst -rfE'
+addopts = """--capture=no --exitfirst -rfE -m 'not slow'""" # TODO? '--fail-under'
 testpaths = [ 'tests' ]
 python_files = [ 'test_*.py' ]
 python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
+markers = [
+    "slow: long-running tests",
+]
 
 [tool.ruff]
 #builtins = [ 'ic' ]

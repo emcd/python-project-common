@@ -32,9 +32,7 @@ Pre-Release Quality Check
 Run local quality assurance before any release process::
 
     git status && git pull origin master
-    hatch --env develop run linters
-    hatch --env develop run testers
-    hatch --env develop run docsgen
+    hatch --env develop run make-all
 
 Also, ensure that at least one news fragment exists under
 ``.auxiliary/data/towncrier``.
@@ -70,8 +68,9 @@ Initial Release Candidate
 
         git checkout master
         hatch version minor,alpha
-        git commit -am "Start development for v$(hatch version | sed 's/a[0-9]*$//')."
-        git tag -m "Start development for v$(hatch version | sed 's/a[0-9]*$//')." i$(hatch version | sed 's/a[0-9]*$//')
+        next_release="$(hatch version | sed 's/a[0-9]*$//')"
+        git commit -am "Start of development for release ${next_release}."
+        git tag -m "Start of development for release ${next_release}." "i${next_release}"
         git push origin master --tags
 
 Final Release

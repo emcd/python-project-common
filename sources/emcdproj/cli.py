@@ -107,11 +107,5 @@ async def _prepare(
     import ictruck
     # TODO: Finetune Icecream truck installation from CLI arguments.
     ictruck.install( trace_levels = 9 )
-    distribution = (
-        await __.appcore.DistributionInformation.prepare(
-            exits, package = __.package_name ) )
     return await __.appcore.prepare(
-        application = application,
-        distribution = distribution,
-        environment = environment,
-        exits = exits )
+        application = application, environment = environment, exits = exits )
