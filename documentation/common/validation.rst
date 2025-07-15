@@ -34,13 +34,12 @@ Run validation commands using ``hatch --env develop run <command>``.
   Runs code quality checks including Ruff linting, Pyright type checking, and
   Rust linting (if applicable). Must pass with no errors.
 
+**pytest**
+  Runs quick tests. Useful for quick validation during development.
+
 **testers**
   Runs the full test suite with coverage reporting. Generates HTML and XML
   coverage reports in ``.auxiliary/artifacts/coverage-pytest/``.
-
-**testers-no-reports**
-  Runs tests without generating coverage reports. Useful for quick validation
-  during development.
 
 **packagers**
   Builds distribution packages using Hatch. Also builds standalone executables
@@ -58,11 +57,11 @@ Run validation commands using ``hatch --env develop run <command>``.
 Workflow
 ===============================================================================
 
-1. **During Development**: Use ``testers-no-reports`` for quick feedback.
+1. **During Development**: Use ``pytest`` for quick feedback.
 2. **Before Committing**: Run ``linters`` to catch some bugs, code smells, and
    type issues.
 3. **Before Pull Requests**: Run ``make-all`` to ensure all validation passes.
 
 All validation commands must pass without errors before contributions can be
 accepted. If you installed the Git pre-commit and pre-push hooks for the
-project, then they will perform these validations for you.
+project, then they will perform most of these validations for you.
