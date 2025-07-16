@@ -47,7 +47,6 @@ class Cli(
 ):
     ''' Various utilities for projects by Github user '@emcd'. '''
 
-    application: __.appcore.ApplicationInformation
     # configfile: __.typx.Optional[ str ] = None
     display: _interfaces.ConsoleDisplay
     command: __.typx.Union[
@@ -78,7 +77,6 @@ class Cli(
     ) -> __.cabc.Mapping[ str, __.typx.Any ]:
         ''' Prepares arguments for initial configuration. '''
         args: dict[ str, __.typx.Any ] = dict(
-            application = self.application,
             environment = True,
         )
         # if self.configfile: args[ 'configfile' ] = self.configfile
@@ -99,7 +97,6 @@ def execute( ) -> None:
 
 
 async def _prepare(
-    application: __.appcore.ApplicationInformation,
     environment: bool,
     exits: __.ctxl.AsyncExitStack,
 ) -> __.Globals:
@@ -108,4 +105,4 @@ async def _prepare(
     # TODO: Finetune Icecream truck installation from CLI arguments.
     ictruck.install( trace_levels = 9 )
     return await __.appcore.prepare(
-        application = application, environment = environment, exits = exits )
+        environment = environment, exits = exits )

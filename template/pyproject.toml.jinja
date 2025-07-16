@@ -198,7 +198,7 @@ testers-documentation = [
       -E -b doctest -d .auxiliary/caches/sphinx \
       documentation .auxiliary/artifacts/sphinx-doctest""",
 ]
-testers-serotine = [ """coverage run -m pytest -m 'slow'"""  ]
+testers-serotine = [ """coverage run -m pytest -m slow"""  ]
 testers-no-reports = [
   'coverage run',
   'testers-documentation',
