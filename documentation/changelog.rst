@@ -23,6 +23,16 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.31 (2025-07-16)
+==========================
+
+Repairs
+-------
+
+- CLI: Do not expose application information as a configurable. No strong reason
+  to do so and now requires a default name, due to breaking change upstream.
+
+
 Emcdproj 1.29.1 (2025-07-12)
 ============================
 
