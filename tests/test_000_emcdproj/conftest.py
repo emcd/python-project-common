@@ -34,3 +34,8 @@ def provide_tempdir( ) -> typx.Iterator[ Path ]:
     ''' Provides temporary directory for test isolation. '''
     with tempfile.TemporaryDirectory( ) as tmpdir:
         yield Path( tmpdir )
+
+
+def pytest_sessionfinish( session, exitstatus ):
+    if exitstatus == 5:  # pytest exit code for "no tests collected"
+        session.exitstatus = 0
