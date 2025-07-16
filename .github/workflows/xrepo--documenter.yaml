@@ -36,9 +36,9 @@ jobs:
           hatch --env develop run docsgen
         shell: bash
 
-      - name: Install Website Utility
-        run: |
-          pipx install emcd-projects
+      # - name: Install Website Utility
+      #   run: |
+      #     pipx install emcd-projects
 
       # TODO: Sign commit with GPG key or use Github API.
       #       If Github API, need to upload tarball to LFS endpoint first.
@@ -53,7 +53,7 @@ jobs:
           git config --global user.name 'Github Actions Robot'
           git config --global user.email '${{ github.actor }}@users.noreply.github.com'
           version="$(hatch --env develop version 2>/dev/null)"
-          emcdproj website update "${version}" --production
+          hatch run emcdproj website update "${version}" --production
           echo "website=$(pwd)/.auxiliary/artifacts/website" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
         shell: bash
