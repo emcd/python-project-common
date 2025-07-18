@@ -119,11 +119,17 @@
 - Note the internal `__` subpackage which exposes imports used internally
   throughout the package (`cabc` alias for `collections.abc`, `enum`, `types`,
   `typx` alias for `typing_extensions`, etc...).
-- Do not pollute the module namespace with public imports. Either reference
+- Do **not** pollute the module namespace with public imports. Either reference
   common imports from the `__` subpackage or alias module-level imports as
   private.
 - Do not use `__all__` to advertise the public API of a module. Name anything,
   which should not be part of this API, with a private name starting with `_`.
+{%- if inject_exceptions %}
+- Subclass `Omniexception` or `Omnierror`, as appropriate, with custom
+  exceptions for the package. The exceptions should take relevant arguments
+  and format a message in their `__init__` methods before making a super call.
+{%- endif %}
+
 
 ### Documentation and Annotations
 
@@ -145,9 +151,10 @@
 
 ### Quality Assurance
 
-- Ensure the package imports in interpreter.
 - Ensure linters give a clean report.
   To run linters, use `hatch --env develop run linters`.
+- Do **not** suppress linter warnings with `noqa` pragma comments, unless the
+  user has agreed to this.
 - Ensure tests pass.
   To run testers, use `hatch --env develop run testers`.
 - Ensure documentation generates without error.
