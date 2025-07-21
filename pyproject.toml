@@ -201,8 +201,8 @@ strict = false
 
 # https://microsoft.github.io/pyright/#/configuration
 [tool.pyright]
-ignore = [ 'documentation', 'tests' ] # Stronger hint for language server.
-include = [ 'sources' ]
+ignore = [ '.auxiliary', 'documentation', 'tests' ]
+include = [ 'sources', 'tests' ]
 reportConstantRedefinition = true
 reportInvalidTypeVarUse = true
 reportMatchNotExhaustive = true

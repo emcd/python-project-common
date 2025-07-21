@@ -1,5 +1,31 @@
 {
   "env": {
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": 1
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".auxiliary/scripts/claude/pre-bash-python-check",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|mcp__text-editor__edit_text_file_contents",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".auxiliary/scripts/claude/post-edit-linter",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
   }
 }
