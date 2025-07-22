@@ -126,9 +126,9 @@ Python
 Lines and Spaces
 -------------------------------------------------------------------------------
 
-* One space after opening delimiters (``(``, ``[``, ``{``) and one space before
-  closing delimiters (``)``, ``]``, ``}``), *except* inside of f-strings and
-  strings to which ``.format`` is applied.
+* One space after opening delimiters ( ``(``, ``[``, ``{`` ) and one space
+  before closing delimiters ( ``)``, ``]``, ``}`` ), *except* inside of
+  f-strings and strings to which ``.format`` is applied.
 
   **✅ Prefer:**
 

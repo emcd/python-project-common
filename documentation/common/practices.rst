@@ -22,7 +22,7 @@ Practices
 *******************************************************************************
 
 This guide covers **code organization, patterns, and architectural decisions**.
-For guidance on code formatting and visual presentation, see :doc:`style`.
+For guidance on code formatting and visual presentation, see the :doc:`style`.
 
 General
 ===============================================================================
@@ -74,13 +74,14 @@ Module Organization
   maintainability:
 
   1. **Imports**: See section on imports organization below and in
-       the :doc:`style <style>` guide.
+     the :doc:`style`.
   2. **Common type aliases**: ``TypeAlias`` declarations used throughout the
-       module
+     module.
   3. **Private variables and functions**: Used as defaults for public
-       interfaces, grouped semantically, sorted lexicographically within groups
-  4. **Public classes and functions**: Sorted lexicographically
-  5. **All other private functions**: Sorted lexicographically
+     interfaces, grouped semantically, sorted lexicographically within groups.
+  4. **Public classes and functions**: Classes before functions. Sorted
+     lexicographically.
+  5. **All other private functions**: Sorted lexicographically.
 
   **✅ Example structure:**
 
@@ -92,8 +93,8 @@ Module Organization
       from . import __
 
       # 2. Common type aliases
-      UserData: __.typx.TypeAlias = dict[ str, str | int ]
       ProcessorFunction: __.typx.TypeAlias = __.cabc.Callable[ [ str ], str ]
+      UserData: __.typx.TypeAlias = dict[ str, str | int ]
 
       # 3. Private variables/functions for defaults (grouped semantically)
       # Configuration defaults
@@ -107,10 +108,10 @@ Module Organization
           return { 'User-Agent': 'MyApp/1.0' }
 
       # 4. Public classes and functions (alphabetical)
-      def process_data( data: UserData ) -> str: pass
-
       class UserProcessor:
           ''' Processes user data with configurable options. '''
+
+      def process_data( data: UserData ) -> str: pass
 
       def validate_user( user: UserData ) -> bool: pass
 
@@ -232,7 +233,7 @@ Type Annotations
               # Both "clear name" and "set name" end up here
               database.update( user_id, display_name = display_name )
 
-  **✅ Better with ``absence`` package:**
+  **✅ Better with Absence package:**
 
   .. code-block:: python
 
@@ -342,10 +343,11 @@ Function Signatures
           ''' Finds common elements as immutable set. '''
           return frozenset( set1 & set2 )
 
+      _OPTIONS_DEFAULT = __.immut.Dictionary( )
       def process_items(
           items: __.cabc.Sequence[ str ],
           filters: __.cabc.Sequence[ str ] = ( ),  # Empty tuple default
-          options: __.cabc.Mapping[ str, __.typx.Any ] = __.immut.Dictionary( )
+          options: __.cabc.Mapping[ str, __.typx.Any ] = _OPTIONS_DEFAULT
       ) -> tuple[ str, ... ]:
           ''' Processes items with optional filters and configuration. '''
           # Implementation preserves wide/narrow principle
@@ -375,8 +377,8 @@ Immutability
       # Using mutable containers for configuration
       class DatabaseConfig:
           def __init__( self, hosts: __.cabc.Sequence[ str ], options: __.cabc.Mapping[ str, str ] ):
-              self.hosts = hosts  # Mutable list can be modified externally
-              self.options = options  # Mutable dict can be modified externally
+              self.hosts = hosts  # Sequence can be modified externally
+              self.options = options  # Mapping can be modified externally
 
   **✅ Prefer:**
 
@@ -485,10 +487,12 @@ Exceptional Conditions
               results.append( formatted )
           return results
 
-      def save_data( data: __.cabc.Mapping[ str, __.typx.Any ], filename: str ) -> None:
+      def save_data(
+          data: __.cabc.Mapping[ str, __.typx.Any ], filename: str
+        ) -> None:
           try:
               with open( filename, 'w' ) as f:
-                  json.dump( data, f )
+                  serialize( data, f )
           except OSError as exc:
               raise SaveFailure( filename ) from exc
 

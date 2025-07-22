@@ -9,142 +9,185 @@ For bringing existing Python code into full compliance with project standards.
 
 Target code: `$ARGUMENTS`
 
-**CRITICAL**: This command focuses on style/practice conformance, not functionality changes.
+**CRITICAL**: Focus on style/practice conformance, not functionality changes.
 
 ## Context
 
 - Current git status: !`git status --porcelain`
 - Current branch: !`git branch --show-current`
-- Linter status: !`hatch --env develop run linters || echo "Linting issues detected"`
 
 ## Prerequisites
 
-- **MANDATORY**: Access project style guide:
-  ```
-  documentation/common/style.rst
-  documentation/common/practices.rst
-  ```
+- **MANDATORY**: Read project documentation guides first:
+    - https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/practices.rst
+    - https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/style.rst
+    - https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/nomenclature.rst
 - Understand target files to be conformed
 - Have read `CLAUDE.md` for project-specific guidance
 
-## Common Conformance Issues
+## Priority Conformance Issues
 
-### 1. Spacing and Delimiters
+### 1. Function Parameters: Wide Types
+**Issue:** Using narrow concrete types instead of wide abstract types for parameters
+**Before:**
+```python
+def process_items( items: list[ str ], config: dict[ str, int ] ) -> bool:
+    return all( validate( item, config ) for item in items )
+```
+**After:**
+```python
+def process_items(
+    items: __.cabc.Sequence[ str ],
+    config: __.cabc.Mapping[ str, int ],
+) -> bool:
+    return all( validate( item, config ) for item in items )
+```
+
+### 2. Import Organization: Namespace Pollution
+**Issue:** Polluting module namespace instead of using private aliases
+**Before:**
+```python
+from pathlib import Path
+from collections import defaultdict
+import json
+from typing import Any, Dict, List
+```
+**After:**
+```python
+# Direct imports when performance is a consideration
+from json import loads as _json_loads
+
+# Use __ subpackage for common imports
+from . import __
+```
+
+### 3. Module Organization
+**Issue:** Wrong order of module contents
+**Should follow this order:**
+1. Imports (see practices guide)
+2. Common type aliases (`TypeAlias` declarations)
+3. Private variables/functions for defaults (grouped semantically)
+4. Public classes and functions (alphabetical)
+5. All other private functions (alphabetical)
+
+### 4. Spacing and Delimiters
 **Issue:** Missing spaces in delimiters, operators
 **Before:**
 ```python
 def func(arg1,arg2="default"):
     result=process(arg1,{"key":"value"})
-    return result
 ```
 **After:**
 ```python
 def func( arg1, arg2 = 'default' ):
     result = process( arg1, { 'key': 'value' } )
-    return result
 ```
 
-### 2. Docstring Format
-**Issue:** Wrong quotes, spacing, structure
+### 5. Type Annotations: Missing or Incomplete
+**Issue:** Missing annotations, not using `TypeAlias` for complex types
 **Before:**
 ```python
-def example():
-    """Bad docstring format"""
-    
-class Example:
-    """Multi-line
-    description here"""
+def process_user( user, callback=None ):
+    return callback( user ) if callback else str( user )
 ```
 **After:**
 ```python
-def example( ):
-    ''' Proper docstring format. '''
-    
-class Example:
-    ''' Multi-line description.
-    
-        Additional details here.
-    '''
+UserRecord: __.typx.TypeAlias = dict[ str, str | int | list[ str ] ]
+
+def process_user(
+    user: UserRecord,
+    callback: __.Absential[
+        __.cabc.Callable[ [ UserRecord ], str ]
+    ] = __.absent
+) -> str:
+    if not __.is_absent( callback ): return callback( user )
+    return str( user )
 ```
 
-### 3. Import Organization
-**Issue:** Module pollution, wrong structure
+### 6. Exception Handling: Overly Broad Blocks
+**Issue:** Wrapping entire functions in try blocks
 **Before:**
 ```python
-from pathlib import Path
-from collections import defaultdict
-import asyncio
-from . import utils
+def process_items( items: list[ str ] ) -> list[ dict ]:
+    try:
+        results = [ ]
+        for item in items:
+            validated = validate_item( item )  # Can raise
+            processed = expensive_computation( validated )
+            results.append( processed )
+        return results
+    except ValidationError:
+        return [ ]
 ```
 **After:**
 ```python
-import asyncio
-from collections import defaultdict
-from pathlib import Path
-
-from . import __
-from . import utils as _utils
+def process_items( items: __.cabc.Sequence[ str ] ) -> list[ dict ]:
+    results = [ ]
+    for item in items:
+        try: validated = validate_item( item )  # Only risky statement
+        except ValidationError:
+            logger.warning( f"Skipping invalid item: {item}." )
+            continue
+        processed = expensive_computation( validated )
+        results.append( processed )
+    return results
 ```
 
-### 4. Type Annotations
-**Issue:** Missing hints, wrong patterns
+### 7. Docstring Format and Mood
+**Issue:** Wrong quotes, spacing, imperative mood
 **Before:**
 ```python
-def process(data, options=None):
-    if options is None: options = {}
-    return data
+def process_data( data ):
+    """Process the input data."""  # Wrong quotes, imperative mood
 ```
 **After:**
 ```python
-def process( data: str, options: dict | None = None ) -> str:
-    if options is None: options = { }
-    return data
+def process_data(
+    data: __.cabc.Sequence[ __.typx.Any ]
+) -> dict[ str, __.typx.Any ]:
+    ''' Processes input data and returns results. '''  # Narrative mood
 ```
 
-### 5. Line Length and Continuation
-**Issue:** Long lines, wrong continuation style
+### 8. Immutability: Using Mutable When Unnecessary
+**Issue:** Using mutable containers when immutable would suffice
 **Before:**
 ```python
-result = some_very_long_function_name(first_argument, second_argument, third_argument, fourth_argument)
+def calculate_stats( data: list[ int ] ) -> dict[ str, float ]:
+    results = { }
+    results[ 'mean' ] = sum( data ) / len( data )
+    return results
 ```
 **After:**
 ```python
-result = some_very_long_function_name(
-    first_argument, second_argument, third_argument, fourth_argument )
-```
-
-### 6. Function and Class Structure
-**Issue:** Wrong spacing, single-line forms
-**Before:**
-```python
-def simple_func(x): return x * 2
-
-class EmptyClass:
-    pass
-```
-**After:**
-```python
-def simple_func( x: int ) -> int: return x * 2
-
-class EmptyClass: pass
+def calculate_stats(
+    data: __.cabc.Sequence[ int ]
+) -> __.immut.Dictionary[ str, float ]:
+    return __.immut.Dictionary(
+        mean = sum( data ) / len( data ),
+        maximum = max( data ),
+        minimum = min( data )
+    )
 ```
 
 ## Conformance Process
 
 ### 1. Analysis Phase
-- Read target files to understand current state
+- Read the three documentation guides thoroughly
+- Examine target files to understand current state
 - Run linters to identify specific violations
-- Check against style guide patterns
+- Identify architectural patterns that need updating
 
 ### 2. Systematic Correction
 Apply fixes in this order:
-1. **Spacing/Delimiters**: Fix `( )`, `[ ]`, `{ }` patterns
-2. **Quotes**: Single for literals, double for f-strings/logging
-3. **Docstrings**: Triple single quotes with proper spacing  
-4. **Imports**: Organization per style guide
-5. **Type Hints**: Add missing annotations
-6. **Line Length**: Split at 79 columns using parentheses
-7. **Function Structure**: Single-line forms where appropriate
+1. **Module Organization**: Reorder imports, type aliases, functions per practices guide
+2. **Wide/Narrow Types**: Convert function parameters to wide abstract types
+3. **Import Cleanup**: Remove namespace pollution, use private aliases and __ subpackage
+4. **Type Annotations**: Add missing hints, create `TypeAlias` for complex types
+5. **Exception Handling**: Narrow try block scope, ensure proper chaining
+6. **Immutability**: Replace mutable with immutable containers where appropriate
+7. **Spacing/Delimiters**: Fix `( )`, `[ ]`, `{ }` patterns
+8. **Docstrings**: Triple single quotes, narrative mood, proper spacing
+9. **Line Length**: Split at 79 columns using parentheses
 
 ### 3. Validation
 ```bash
@@ -162,29 +205,32 @@ hatch --env develop run testers  # Must not break functionality
 - Tests start failing
 
 **Your responsibilities:**
-- Maintain exact functionality while improving style
-- Use project patterns consistently
-- Reference style guides for complex cases
+- Maintain exact functionality while improving practices/style
+- Use project patterns consistently per the guides
+- Reference all three guides for complex cases
 - Verify all changes with linters and tests
 
 ## Success Criteria
 
 - [ ] All linting violations resolved
+- [ ] Module organization follows practices guide structure
+- [ ] Function parameters use wide abstract types
+- [ ] Imports avoid namespace pollution
+- [ ] Type annotations comprehensive with `TypeAlias` usage
+- [ ] Exception handling uses narrow try blocks
+- [ ] Immutable containers used where appropriate
 - [ ] No functionality changes
 - [ ] Tests continue to pass
 - [ ] Code follows all style guide patterns
-- [ ] Imports properly organized
-- [ ] Type annotations added where appropriate
-- [ ] Line length within 79 columns
-- [ ] Proper spacing and delimiter usage
 
-**Note**: Always run full validation (`hatch --env develop run testers && hatch --env develop run linters`) before considering the task complete.
+**Note**: Always run full validation (`hatch --env develop run linters && hatch
+--env develop run testers`) before considering the task complete.
 
 ## Final Report
 
 Upon completion, provide a brief report covering:
-- Specific style violations corrected
+- Specific conformance issues corrected (categorized by the priority issues above)
 - Number of files modified
 - Any patterns that required manual intervention
 - Linter status before/after
-- Any deviations from standard patterns and justification
+- Any deviations from guides and justification

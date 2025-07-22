@@ -254,13 +254,13 @@ Variables and Attributes
 .. code-block:: python
 
     class DatabaseConnection:
-        timeout: float           # Not connection_timeout
+        timeout: float          # Not connection_timeout
         host: str               # Not database_host
 
     def validate_email( address: str ) -> bool:  # Not email_address
         ''' Validates email address format. '''
 
-    def parse_configuration( filename: str ):    # Not config_file
+    def parse_configuration( filename: str ) -> dict[ str, __.typx.Any ]:  # Not config_file
         ''' Parses configuration from file. '''
 
 
