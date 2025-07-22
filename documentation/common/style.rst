@@ -39,8 +39,8 @@ Lines and Spaces
 * No more than 79 columns for code lines. (Borrowed from the Python :pep:`8`
   guidelines.) Consider the following:
 
-  - Will long lines display well on laptops or other compact format mobile
-    devices?
+  - Will long lines display well on laptop screens? (Might not be hooked up to
+    a larger monitor while flying or in a meeting.)
 
   - Will long lines display well in side-by-side code panes with enlarged font
     sizes? (Enlarged font sizes are used to reduce eye strain and allow people
@@ -81,13 +81,15 @@ Vertical Compactness
 
 * Blank lines should not be used to group statements within a function body. If
   you need to group statements within a function body, then perhaps the
-  function should be refactored.
+  function should be refactored. Similarly, avoid obvious comments. Only
+  include comments which explain subtle nuances or reference external
+  documentation for additional context.
 
   **❌ Avoid:**
 
   .. code-block:: python
 
-      def complex_process( data: dict ) -> dict:
+      def complex_process(data: __.cabc.Mapping[ str, __.typx.Any ] ) -> dict[ str, __.typx.Any ]:
           # First phase - validation
           if not data: raise ValueError( "No data." )
           validated = validate_data( data )
@@ -104,19 +106,15 @@ Vertical Compactness
 
   .. code-block:: python
 
-      def complex_process( data: dict ) -> dict:
+      def complex_process(
+          data: __.cabc.Mapping[ str, __.typx.Any ]
+      ) -> dict[ str, __.typx.Any ]:
           if not data: raise ValueError( "No data." )
           validated = validate_data( data )
           processed = transform_data( validated )
           cleaned = clean_data( processed )
           result = format_output( cleaned )
           return result
-
-      # Or better - refactor into separate functions
-      def complex_process( data: dict ) -> dict:
-          validated = _validate_input( data )
-          processed = _transform_and_clean( validated )
-          return _format_output( processed )
 
 * Function bodies should not be longer than thirty (30) lines. I.e., one should
   not have to scroll to read a function.
@@ -139,9 +137,11 @@ Lines and Spaces
       func( arg1, arg2 )
       data = [ 1, 2, 3 ]
       config = { 'key': 'value' }
-      
+
       # Type annotations follow the same spacing rules
-      def process( items: list[ dict[ str, int ] ] ) -> dict[ str, bool ]: pass
+      def process(
+          items: __.cabc.Sequence[ __.cabc.Mapping[ str, int ] ]
+      ) -> dict[ str, bool ]: pass
       ComplexType: __.typx.TypeAlias = __.typx.Union[
           dict[ str, __.typx.Any ],
           list[ str ],
@@ -158,9 +158,9 @@ Lines and Spaces
       func(arg1, arg2)
       data = [1, 2, 3]
       config = {"key": "value"}
-      
+
       # Wrong: inconsistent bracket spacing in type annotations
-      def process( items: list[dict[str, int]] ) -> dict[str, bool]: pass
+      def process( items: __.cabc.Sequence[__.cabc.Mapping[str, int]] ) -> dict[str, bool]: pass
 
       # Wrong: spaces in f-strings
       message = f"Hello { name }."
@@ -207,22 +207,6 @@ Lines and Spaces
 
       result = process(data, timeout=30)
 
-* Follow :pep:`8` on line width: no more than 79 columns for code lines.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      def process_user_authentication_with_complex_validation( username, password, two_factor_token, session_config, retry_attempts ):
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      def process_user_authentication_with_complex_validation(
-          username, password, two_factor_token, session_config, retry_attempts
-      ):
-
 Vertical Compactness
 -------------------------------------------------------------------------------
 
@@ -257,8 +241,8 @@ Function and Class Definitions
   .. code-block:: python
 
       def complex_function(
-          first_very_long_positional_argument: dict[ str, int ],
-          second_very_long_positional_argument: list[ str ],
+          first_very_long_positional_argument: __.cabc.Mapping[ str, int ],
+          second_very_long_positional_argument: __.cabc.Sequence[ str ],
           first_named_arg: str = 'some very long default value',
           second_named_arg: str = 'another long default value',
       ) -> None: pass
@@ -396,33 +380,17 @@ Docstrings
 Imports
 -------------------------------------------------------------------------------
 
-* Follow the import grouping conventions from :pep:`8`.
+* Follow the import organization strategy from :doc:`practices` for namespace
+  management and performance considerations. For visual formatting, group
+  imports following :pep:`8` conventions:
 
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # __future__ from imports
-      from __future__ import annotations
-
-      # standard library imports
-      import asyncio
-      import json
-
-      # standard library from imports
-      from pathlib import Path
-
-      # third-party imports
-      import aiofiles
-
-      # third-party from imports
-      from click import command
-
-      # first-party relative imports
-      from . import __
-
-      # first-party relative from imports
-      from .utils import helper
+  - imports from ``__future__``
+  - stdlib imports
+  - imports from stdlib modules
+  - third-party imports
+  - imports from third-party modules
+  - first-party (relative) imports
+  - imports from first-party (relative) modules
 
 * For import sequences, which will not fit on one line, use parentheses with
   hanging indent.
@@ -492,7 +460,7 @@ Line Continuation
           if is_valid( value ) ]
 
       # Multi-line conditional statements
-      if (  validate_input( data, strict = True )
+      if (      validate_input( data, strict = True )
             and process_ready( )
             and not maintenance_mode
       ): process( data )
@@ -575,7 +543,7 @@ Strings
       path = 'C:\\Program Files\\Example'
 
       message = f"Processing {name} at {path}."
-      count = "Number of items: {count}".format( len( items ) )
+      count = "Number of items: {count}".format( count = len( items ) )
 
       raise ValueError( "Invalid configuration value." )
       logger.error( "Failed to process item." )
@@ -608,7 +576,7 @@ Strings
 
   .. code-block:: python
 
-      f"Values: {', '.join( values )}"
+      f"Values: {', '.join(values)}"
 
 Rust
 ===============================================================================

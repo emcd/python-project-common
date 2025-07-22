@@ -27,16 +27,6 @@ For guidance on code formatting and visual presentation, see :doc:`style`.
 General
 ===============================================================================
 
-Quality Assurance
--------------------------------------------------------------------------------
-
-* Be sure to install the Git hooks, as mentioned in the :doc:`environment`
-  section. This will save you turnaround time from pull request validation
-  failures.
-
-* Consider maintaining or improving code coverage when practical. Even if code
-  coverage is at 100%, consider cases which are not explicitly tested.
-
 Documentation
 -------------------------------------------------------------------------------
 
@@ -64,419 +54,204 @@ Command Examples
 * Write for readers who may be unfamiliar with the tools being demonstrated.
   Provide context and explanation for complex command sequences.
 
-Exceptional Conditions
+Quality Assurance
 -------------------------------------------------------------------------------
+
+* Be sure to install the Git hooks, as mentioned in the :doc:`environment`
+  section. This will save you turnaround time from pull request validation
+  failures.
+
+* Consider maintaining or improving code coverage when practical. Even if code
+  coverage is at 100%, consider cases which are not explicitly tested.
 
 Python
 ===============================================================================
 
-Exceptional Conditions
+Module Organization
 -------------------------------------------------------------------------------
 
-* Create a package exception hierarchy by subclassing from ``Omniexception``
-  and ``Omnierror`` base classes. This allows callers to catch all
-  package-specific exceptions generically if desired.
+* Organize module contents in the following order to improve readability and
+  maintainability:
 
-  **✅ Prefer:**
+  1. **Imports**: See section on imports organization below and in
+       the :doc:`style <style>` guide.
+  2. **Common type aliases**: ``TypeAlias`` declarations used throughout the
+       module
+  3. **Private variables and functions**: Used as defaults for public
+       interfaces, grouped semantically, sorted lexicographically within groups
+  4. **Public classes and functions**: Sorted lexicographically
+  5. **All other private functions**: Sorted lexicographically
+
+  **✅ Example structure:**
 
   .. code-block:: python
+
+      # 1. Imports
+      import requests as _requests
 
       from . import __
 
-      class Omniexception( __.immut.Object, BaseException ):
-          ''' Base for all exceptions raised by package API. '''
+      # 2. Common type aliases
+      UserData: __.typx.TypeAlias = dict[ str, str | int ]
+      ProcessorFunction: __.typx.TypeAlias = __.cabc.Callable[ [ str ], str ]
 
-      class Omnierror( Omniexception, Exception ):
-          ''' Base for error exceptions raised by package API. '''
+      # 3. Private variables/functions for defaults (grouped semantically)
+      # Configuration defaults
+      _DEFAULT_TIMEOUT = 30.0
+      _DEFAULT_RETRIES = 3
 
-      # Specific exceptions inherit from appropriate base
-      class DataAbsence( Omnierror, AssertionError ):
-          ''' Unexpected data absence. '''
+      # Validation defaults
+      _REQUIRED_FIELDS = frozenset( [ 'name', 'email' ] )
 
-          def __init__( self, source: str, label: str ):
-              super( ).__init__(
-                  f"Necessary data with label '{label}' is missing from {source}." )
+      def _build_default_headers( ) -> dict[ str, str ]:
+          return { 'User-Agent': 'MyApp/1.0' }
 
-      class ConfigureFailure( Omnierror ):
-          ''' Raised when configuration operation fails. '''
+      # 4. Public classes and functions (alphabetical)
+      def process_data( data: UserData ) -> str: pass
 
-  Usage: Callers can catch all package exceptions.
+      class UserProcessor:
+          ''' Processes user data with configurable options. '''
 
-  .. code-block:: python
+      def validate_user( user: UserData ) -> bool: pass
 
-      try: result = package_operation( )
-      except Omnierror as exc:
-          logger.error( f"Package operation failed: {exc}" )
-          # Handle all package errors generically
-      except Omniexception:
-          # Handle non-error package exceptions (e.g., interruptions)
-          pass
+      # 5. Other private functions (alphabetical)
+      def _format_error_message( error: str ) -> str: pass
+      def _sanitize_input( data: str ) -> str: pass
 
-* Follow established exception naming conventions from :doc:`nomenclature`.
-  Use patterns like ``<Noun><OperationVerb>Failure``, ``<Noun>Absence``,
-  ``<Noun>Invalidity``, ``<Noun>Empty``, etc.
+* Group private defaults semantically (configuration, validation, formatting,
+  etc.) but sort within each semantic group lexicographically.
 
-  **✅ Prefer:**
+* Type aliases which depend on a class defined in the module should appear
+  immediately after the class on which they depend.
 
-  .. code-block:: python
-
-      # Operation failures
-      class ConfigureFailure( Omnierror ):  # Not "ConfigurationError"
-      class ProcessInterruption( Omniexception ):  # For interrupted operations
-      class AttributeInvalidity( Omnierror ):  # For invalid states/data
-
-      # State-based exceptions
-      class FileAbsence( Omnierror, AssertionError ):  # For unexpected absense
-      class DataEmpty( Omnierror, AssertionError ):  # For unexpectedly empty data
-
-* Limit ``try`` block scope to contain only the statement(s) that can raise
-  exceptions. In rare cases, a ``with`` suite may be included. Avoid wrapping
-  entire loop bodies or function bodies in ``try`` blocks when possible.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Try block too broad - entire function wrapped
-      def process_items( items: list[ str ] ) -> list[ dict ]:
-          try:
-              results = [ ]
-              for item in items:
-                  validated = validate_item( item )  # Can raise
-                  processed = expensive_computation( validated )
-                  formatted = format_result( processed )
-                  results.append( formatted )
-              return results
-          except ValidationError:
-              return [ ]  # Loses information about which item failed
-
-      # Try block wrapping entire loop
-      def process_items( items: list[ str ] ) -> list[ dict ]:
-          results = [ ]
-          try:
-              for item in items:
-                  validated = validate_item( item )  # Can raise
-                  processed = expensive_computation( validated )
-                  formatted = format_result( processed )
-                  results.append( formatted )
-          except ValidationError:
-              pass  # Unclear which item caused the failure
-          return results
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # Narrow try block around specific risky operation
-      def process_items( items: list[ str ] ) -> list[ dict ]:
-          results = [ ]
-          for item in items:
-              try: validated = validate_item( item )  # Only statement that raises
-              except ValidationError:
-                  logger.warning( f"Skipping invalid item: {item}." )
-                  continue
-              processed = expensive_computation( validated )
-              formatted = format_result( processed )
-              results.append( formatted )
-          return results
-
-  **✅ Also acceptable - try with context manager:**
-
-  .. code-block:: python
-
-      def save_data( data: dict, filename: str ) -> None:
-          try:
-              with open( filename, 'w' ) as f:  # Context manager may raise
-                  json.dump( data, f )
-          except OSError as exc:
-              raise SaveFailure( filename ) from exc
-
-* Never swallow exceptions. Either chain a ``__cause__`` with a ``from``
-  original exception or raise a new exception with original exception as the
-  ``__context__``. Or properly handle the exception.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Swallows exception completely
-      def risky_operation( ):
-          try: dangerous_call( )
-          except Exception:
-              pass  # Silent failure loses debugging information
-
-      # Loses original context
-      def risky_operation( ):
-          try: dangerous_call( )
-          except ValueError:
-              raise RuntimeError( "Operation failed" )  # No connection to original
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # Explicit chaining with 'from'
-      def risky_operation( ):
-          try: dangerous_call( )
-          except ValueError as exc:
-              raise OperateFailure( operation_context ) from exc
-
-      # Proper handling (not swallowing)
-      def risky_operation( ):
-          try: dangerous_call( )
-          except ValueError as exc:
-              logger.warning( f"Dangerous call failed: {exc}." )
-              return fallback_result( )  # Proper recovery
-
-Import Organization
+Imports
 -------------------------------------------------------------------------------
 
-* Avoid ancillary imports into a module namespace. Instead, place common
-  imports into the ``__`` package base or use private module-level aliases
-  for specialized imports. This avoids pollution of the module namespace,
-  which should only have public attributes which relate to the interface
-  that it is providing.
+* Avoid ancillary imports into a module namespace. Use ``__`` subpackage for
+  common imports or private module-level aliases for specialized imports.
+  Choose import strategies based on usage patterns and performance needs.
 
-* **Performance considerations**: Choose import strategies based on usage
-  patterns:
-
-  - **``__.module.attribute`` access**: Acceptable for most code, but avoid
-    in hot path functions due to attribute lookup overhead.
-  - **Private module-level aliases**: Use ``from __.module import attribute as
-    _attribute`` in performance-critical modules.
-  - **Function-level imports**: Generally avoid due to import overhead on
-    each function call. Only use for specialized libraries needed by one or
-    two non-performance-critical functions.
-
-  **❌ Avoid:**
+  **❌ Avoid - namespace pollution and duplicate imports:**
 
   .. code-block:: python
 
-      # Pollutes module namespace
-      from pathlib import Path
-      from typing import Any, Dict, List, Optional
-      from collections.abc import Mapping, Sequence
-      import asyncio
       import json
 
-      def process_file( path: Path ) -> Dict: pass
-      def async_handler( data: List ) -> None: pass
+      from collections.abc import Mapping
+      from pathlib import Path
+      from typing import Any, Dict, List, Union
 
-      # Module now has Path, Any, Dict, List, Optional, Mapping, Sequence,
-      # asyncio, json in its public namespace
+      # Module now exposes Path, Any, Dict, List, Union, Mapping, json publicly
+      # These are not part of the public interface of the module.
 
-  **✅ Prefer:**
+  **✅ Prefer - organized imports with performance considerations:**
 
   .. code-block:: python
+
+      # Direct imports when performance is a consideration
+      from json import loads as _json_loads
+
+      # Private aliases for specialized libraries
+      # (to avoid function-level duplicates)
+      import aiofiles as _aiofiles
 
       # Use __ subpackage for common imports
       from . import __
 
-      def process_file( path: __.Path ) -> dict: pass
-      def async_handler( data: list ) -> None: pass
-
-  **✅ Also prefer - private aliases for specialized module-level imports:**
-
-  .. code-block:: python
-
-      import aiofiles as _aiofiles
-      from specialized_lib import ComplexProcessor as _ComplexProcessor
-
-      # For performance-critical code, prefer direct imports
-      from __.pathlib import Path as _Path
-      from __.json import loads as _json_loads
-
-      async def process_async( filename: str ) -> None:
-          async with _aiofiles.open( filename ) as f:
-              processor = _ComplexProcessor( )
-              # ...
-
-      def hot_path_function( data: bytes ) -> dict:
-          # Avoid __.json.loads in hot paths - use direct import
-          return _json_loads( data.decode( ) )
-
-      def parse_path( path_str: str ) -> dict:
-          # Use direct import to avoid __.pathlib.Path overhead
-          path = _Path( path_str )
-          return { 'name': path.name, 'suffix': path.suffix }
-
-* **Function portability considerations**: While function-level imports can
-  make functions more relocatable since dependencies move with them, avoid
-  duplicating the same import across multiple functions in the same module.
-  Instead, use a private module-level alias.
-
-  **❌ Avoid - duplicate function-level imports:**
-
-  .. code-block:: python
-
-      def process_toml_config( data: str ) -> dict:
-          from tomli import loads  # Duplicated import
-          return loads( data )
-
-      def validate_toml_schema( data: str ) -> bool:
-          from tomli import loads  # Same import repeated
-          try:
-              loads( data )
-              return True
-          except Exception:
-              return False
-
-  **✅ Prefer - single private alias:**
-
-  .. code-block:: python
-
-      from tomli import loads as _loads
-
-      def process_toml_config( data: str ) -> dict:
-          return _loads( data )
-
-      def validate_toml_schema( data: str ) -> bool:
-          try:
-              _loads( data )
-              return True
-          except Exception:
-              return False
-
-* Reference common imports from the ``__`` subpackage when available. The
-  ``__`` subpackage contains aliases for frequently used imports like ``cabc``
-  for ``collections.abc``, ``typx`` for ``typing_extensions``, etc.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Direct import when __ provides it
-      from typing import Any, Dict, List, Union
-      from collections.abc import Mapping
-      from typing_extensions import TypeAlias
-
-      UserData: TypeAlias = Dict[ str, Union[ str, int ] ]
-
-      def process( data: Mapping[ str, Any ] ) -> List[ str ]: pass
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # Use __ subpackage
-      from . import __
-
-      UserData: __.typx.TypeAlias = dict[ str, str | int ]
-
-      def process( data: __.cabc.Mapping[ str, __.typx.Any ] ) -> list[ str ]: pass
-
 * Never use ``__all__`` to advertise the public API of a module. Name anything,
   which should not be part of this API, with a private name starting with ``_``.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Using __all__ to control exports
-      def helper1( ): pass
-      def helper2( ): pass
-      def _internal_func( ): pass
-
-      __all__ = ['helper1', 'helper2']  # Fragile, easy to forget updates
-
-      def public_function( ): pass
-      # public_function not in __all__, but still publicly accessible
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # Private naming controls visibility
-      def helper1( ): pass
-      def helper2( ): pass
-      def _internal_func( ): pass  # Clear intent, starts with underscore
-
-      def public_function( ): pass
-      def _private_function( ): pass  # Clear intent, starts with underscore
-
-      # Public API is obvious: helper1, helper2, public_function
-      # Private internals: _internal_func, _private_function
 
 Type Annotations
 -------------------------------------------------------------------------------
 
 * Add type annotations for all function arguments, class attributes, and return
-  values. Use Python 3.10+ union syntax with ``|`` for simple unions that fit
-  on one line. For complex multi-line unions, use ``__.typx.Union``. For
-  optional types, prefer ``__.typx.Optional`` over ``| None``.
+  values. Use Python 3.10+ union syntax with ``|`` for simple unions,
+  ``__.typx.Union`` for complex multi-line unions, and ``TypeAlias`` for
+  reused complex types.
 
-  **❌ Avoid:**
+  **❌ Avoid - missing annotations and type repetition:**
 
   .. code-block:: python
 
       # Missing type annotations
       def process_data( items, callback=None ):
-          results = []
-          for item in items:
-              if callback:
-                  result = callback(item)
-              else:
-                  result = str(item)
-              results.append(result)
-          return results
+          return [ str( item ) for item in items ]
 
-  **✅ Prefer:**
+      # Repeating complex types without TypeAlias
+      def process_user( user: dict[ str, str | int | list[ str ] ] ) -> dict[ str, str | int | list[ str ] ]: pass
+      def validate_user( user: dict[ str, str | int | list[ str ] ] ) -> bool: pass
+
+  **✅ Prefer - comprehensive type annotations with aliases:**
 
   .. code-block:: python
 
       from . import __
 
+      # TypeAlias for reused complex types
+      UserRecord: __.typx.TypeAlias = dict[ str, str | int | list[ str ] ]
+
+      # Multi-line unions for very complex types
+      ComplexHandler: __.typx.TypeAlias = __.typx.Union[
+          __.cabc.Callable[ [ UserRecord ], str ],
+          __.cabc.Callable[ [ UserRecord, dict[ str, __.typx.Any ] ], str ],
+          tuple[ str, __.cabc.Callable[ [ UserRecord ], bool ] ],
+      ]
+
       def process_data(
-          items: list[ str | int ],
-          callback: __.typx.Optional[ __.cabc.Callable[ [ str | int ], str ] ] = None
+          items: __.cabc.Sequence[ str | int ],
+          callback: __.Absential[
+              __.cabc.Callable[ [ str | int ], str ]
+          ] = __.absent,
       ) -> list[ str ]:
           results = [ ]
           for item in items:
-              if callback: result = callback( item )
+              if not __.is_absent( callback ): result = callback( item )
               else: result = str( item )
               results.append( result )
           return results
 
-  **✅ For complex multi-line unions:**
-
-  .. code-block:: python
-
-      ComplexType: __.typx.TypeAlias = __.typx.Union[
-          dict[ str, __.typx.Any ],
-          list[ dict[ str, str ] ],
-          tuple[ int, str, bool ],
-          __.cabc.Callable[ [ int ], str ],
-      ]
+      def process_user( user: UserRecord ) -> UserRecord: pass
+      def validate_user( user: UserRecord ) -> bool: pass
 
 * Prefer ``__.Absential`` over ``__.typx.Optional`` for optional function
-  arguments when the ``absence`` package is available. This allows ``None``
-  to be used as a meaningful value.
+  arguments when ``None`` has semantic meaning distinct from "not provided".
+  This is especially valuable for update operations where ``None`` means
+  "remove/clear" and absence means "leave unchanged".
 
-  **✅ Standard approach:**
-
-  .. code-block:: python
-
-      def process_config(
-          data: dict[ str, __.typx.Any ],
-          default_timeout: __.typx.Optional[ float ] = None
-      ) -> dict[ str, __.typx.Any ]:
-          timeout = default_timeout if default_timeout is not None else 30.0
-          # ...
-
-  **✅ Better with absence package:**
+  **❌ Standard approach:**
 
   .. code-block:: python
 
-      def process_config(
-          data: dict[ str, __.typx.Any ],
-          default_timeout: __.Absential[ __.Optional[ float ] ] = __.absent
-      ) -> dict[ str, __.typx.Any ]:
-          timeout = default_timeout if not __.is_absent( default_timeout ) else 30.0
-          # Now None can be a meaningful timeout value (infinite timeout)
+      def update_user_profile(
+          user_id: int,
+          display_name: __.typx.Optional[ str ] = None,
+          avatar_url: __.typx.Optional[ str ] = None
+      ) -> None:
+          # Problem: Cannot distinguish "don't change" from "clear field"
+          if display_name is not None:
+              # Both "clear name" and "set name" end up here
+              database.update( user_id, display_name = display_name )
 
-* Use PEP 593 ``Annotated`` for parameter and return value documentation when
-  docstrings are insufficient. Prefer ``__.ddoc.Doc`` if the ``dynadoc`` package
-  is available, otherwise use ``__.typx.Doc``. Use space-padded annotation lists.
+  **✅ Better with ``absence`` package:**
+
+  .. code-block:: python
+
+      def update_user_profile(
+          user_id: int,
+          display_name: __.Absential[ __.typx.Optional[ str ] ] = __.absent,
+          avatar_url: __.Absential[ __.typx.Optional[ str ] ] = __.absent,
+      ) -> None:
+          # Clear distinction between three states
+          if not __.is_absent( display_name ):
+              if display_name is None:
+                  database.clear_field( user_id, 'display_name' )  # Remove field
+              else:
+                  database.update( user_id, display_name = display_name )  # Set value
+          # If absent: leave field unchanged
+
+* Use PEP 593 ``Annotated`` to encapsulate parameter and return value
+  documentation via ``dynadoc`` annotations: ``__.ddoc.Doc``,
+  ``__.ddoc.Raises``.
 
   **❌ Avoid:**
 
@@ -520,168 +295,62 @@ Type Annotations
           ''' Calculates distance between two geographic points. '''
           pass
 
-* Create ``TypeAlias`` declarations for complex type annotations that are reused
-  or form part of the public API.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Repeating complex types
-      def process_user( user: dict[ str, str | int | list[ str ] ] ) -> dict[ str, str | int | list[ str ] ]: pass
-      def validate_user( user: dict[ str, str | int | list[ str ] ] ) -> bool: pass
-      def store_user( user: dict[ str, str | int | list[ str ] ] ) -> None: pass
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      from . import __
-
-      # TypeAlias for reused complex types
-      UserRecord: __.typx.TypeAlias = dict[ str, str | int | list[ str ] ]
-
-      def process_user( user: UserRecord ) -> UserRecord: pass
-      def validate_user( user: UserRecord ) -> bool: pass
-      def store_user( user: UserRecord ) -> None: pass
-
-  **✅ Also prefer - more specific type structure with TypedDict:**
-
-  .. code-block:: python
-
-      UserMetadata: __.typx.TypeAlias = dict[ str, __.typx.Any ]
-      UserPermissions: __.typx.TypeAlias = list[ str ]
-
-      class UserRecord( __.typx.TypedDict ):
-          name: str
-          age: int
-          permissions: UserPermissions
-          metadata: UserMetadata
-
-Documentation Standards
+Function Signatures
 -------------------------------------------------------------------------------
 
-* Documentation must be written as Sphinx reStructuredText. The docstrings for
-  functions must not include parameter or return type documentation. Parameter
-  and return type documentation is handled via PEP 727 annotations. Pull
-  requests, which include Markdown documentation or which attempt to provide
-  function docstrings in the style of Google, NumPy, Sphinx, etc..., will be
-  rejected.
+* Accept wide types (abstract base classes) for public function parameters;
+  return narrow types (concrete types) from all functions.
 
-* Function docstrings should use narrative mood (third person) rather than
-  imperative mood (second person). The docstring describes what the function
-  does, not what the caller should do.
-
-  **❌ Avoid:**
+  **❌ Avoid - narrow parameters, wide returns:**
 
   .. code-block:: python
 
-      def validate_config( config: dict ) -> None:
-          ''' Validate the configuration dictionary. '''  # Imperative mood
-
-      def process_data( data: list ) -> dict:
-          ''' Process the input data and return results. '''  # Mixed - starts imperative
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      def validate_config( config: dict ) -> None:
-          ''' Validates the configuration dictionary. '''  # Narrative mood
-
-      def process_data( data: list ) -> dict:
-          ''' Processes input data and returns results. '''  # Narrative mood
-
-* Prefer PEP 727 annotations over docstring parameter sections. Use docstrings
-  for high-level descriptions, usage patterns, and examples rather than
-  parameter documentation.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Duplicating type info in docstring
+      # Restricts callers to specific types
       def merge_configs(
-          base: dict[ str, __.typx.Any ],
-          override: dict[ str, __.typx.Any ]
-      ) -> dict[ str, __.typx.Any ]:
-          """Merge two configuration dictionaries.
+          base: __.immut.Dictionary[ str, str ],  # Only accepts immutable dicts
+          override: list[ tuple[ str, str ] ]     # Only accepts lists
+      ) -> __.cabc.Mapping[ str, str ]:           # Vague return promise
+          result = dict( base )
+          for key, value in override:
+              result[ key ] = value
+          return result  # Could return any mapping type
 
-          Args:
-              base: Base configuration dictionary
-              override: Override configuration dictionary
+      def calculate_average( numbers: list[ float ] ) -> float:
+          return sum( numbers ) / len( numbers )  # Rejects tuples, arrays, etc.
 
-          Returns:
-              Merged configuration dictionary
-          """
-          pass
-
-  **✅ Prefer:**
+  **✅ Prefer - wide parameters, narrow returns:**
 
   .. code-block:: python
 
+      # Accept any mapping/sequence, return specific immutable types
       def merge_configs(
-          base: __.typx.Annotated[ dict[ str, __.typx.Any ], __.ddoc.Doc( "Base configuration." ) ],
-          override: __.typx.Annotated[ dict[ str, __.typx.Any ], __.ddoc.Doc( "Override values." ) ]
-      ) -> __.typx.Annotated[ dict[ str, __.typx.Any ], __.ddoc.Doc( "Merged configuration." ) ]:
-          ''' Merges configuration dictionaries with override precedence.
+          base: __.cabc.Mapping[ str, str ],      # Accept any mapping
+          override: __.cabc.Sequence[ tuple[ str, str ] ]  # Accept any sequence
+      ) -> __.immut.Dictionary[ str, str ]:       # Promise specific immutable type
+          result = dict( base )
+          for key, value in override:
+              result[ key ] = value
+          return __.immut.Dictionary( result )
 
-              Override values take precedence over base values. Nested
-              dictionaries are merged recursively.
+      def calculate_average( numbers: __.cabc.Sequence[ float ] ) -> float:
+          ''' Calculates average of numeric sequence. '''
+          return sum( numbers ) / len( numbers )  # Works with lists, tuples, arrays
 
-              Example usage::
+      def find_common_elements(
+          set1: __.cabc.Set[ str ], set2: __.cabc.Set[ str ]
+      ) -> frozenset[ str ]:
+          ''' Finds common elements as immutable set. '''
+          return frozenset( set1 & set2 )
 
-                  base = { 'host': 'localhost', 'port': 8080, 'debug': False }
-                  override = { 'port': 9090, 'debug': True }
-                  result = merge_configs( base, override )
-                  # result: { 'host': 'localhost', 'port': 9090, 'debug': True }
-          '''
-          pass
-
-Quality Assurance
--------------------------------------------------------------------------------
-
-* Run project-specific quality commands to ensure code meets standards. Use the
-  provided hatch environments for consistency.
-
-  **❌ Avoid:**
-
-  .. code-block:: shell
-
-      # Ad-hoc linting commands
-      flake8 src/
-      mypy src/
-      black --check src/
-
-  **✅ Prefer:**
-
-  .. code-block:: shell
-
-      # Use project's hatch environment
-      hatch --env develop run linters    # Runs all configured linters
-      hatch --env develop run testers    # Runs full test suite
-      hatch --env develop run docsgen    # Generates documentation
-
-* Do not suppress linter warnings with ``noqa`` pragma comments without explicit
-  approval. Address the underlying issues instead of silencing warnings.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Suppressing without fixing
-      def complex_function( data ):  # noqa: ANN001
-          result = eval(user_input)  # noqa: S307
-          return result
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # Fix the underlying issues
-      def complex_function( data: UserData ) -> ProcessedData:
-          result = safe_evaluate( user_input )  # Use proper parser instead of eval
-          return result
+      def process_items(
+          items: __.cabc.Sequence[ str ],
+          filters: __.cabc.Sequence[ str ] = ( ),  # Empty tuple default
+          options: __.cabc.Mapping[ str, __.typx.Any ] = __.immut.Dictionary( )
+      ) -> tuple[ str, ... ]:
+          ''' Processes items with optional filters and configuration. '''
+          # Implementation preserves wide/narrow principle
+          return tuple( item for item in items if all(
+              f( item ) for f in filters ) )
 
 Immutability
 -------------------------------------------------------------------------------
@@ -696,7 +365,7 @@ Immutability
   .. code-block:: python
 
       # Mutable data structures when immutability would suffice
-      def calculate_statistics( data: list[ int ] ) -> dict[ str, float ]:
+      def calculate_statistics( data: __.cabc.Sequence[ int ] ) -> dict[ str, float ]:
           results = { }
           results[ 'mean' ] = sum( data ) / len( data )
           results[ 'max' ] = max( data )
@@ -705,7 +374,7 @@ Immutability
 
       # Using mutable containers for configuration
       class DatabaseConfig:
-          def __init__( self, hosts: list[ str ], options: dict[ str, str ] ):
+          def __init__( self, hosts: __.cabc.Sequence[ str ], options: __.cabc.Mapping[ str, str ] ):
               self.hosts = hosts  # Mutable list can be modified externally
               self.options = options  # Mutable dict can be modified externally
 
@@ -723,177 +392,208 @@ Immutability
               minimum = min( data ) )
 
       # Using immutable containers for configuration
-      class DatabaseConfig( __.immut.Object ):
+      class DatabaseConfig( __.immut.DataclassObject ):
           hosts: tuple[ str, ... ]
           options: __.immut.Dictionary[ str, str ]
 
-      # For cases requiring growth-only behavior
-      event_log = __.accret.Dictionary( )  # Can add entries but not modify/remove existing ones
-      event_log[ 'startup' ] = 'Application started at 2024-01-01T10:00:00Z'
-      event_log[ 'user_login' ] = 'User admin logged in at 2024-01-01T10:05:00Z'
-      # event_log[ 'startup' ] = 'new value'  # Would raise exception - cannot modify
-      # del event_log[ 'startup' ]  # Would raise exception - cannot delete
-
-* Use immutable base classes from the ``frigid`` library (aliased as
-  ``__.immut``) for objects that should never change after creation. Use
-  ``accretive`` library containers (aliased as ``__.accret``) for data
-  structures that can grow by adding new entries but cannot modify or remove
-  existing entries.
-
-  **❌ Avoid:**
-
-  .. code-block:: python
-
-      # Standard mutable classes
-      class UserProfile:
-          def __init__( self, name: str, email: str ):
-              self.name = name
-              self.email = email  # Can be accidentally modified
-              self.login_attempts = 0
-
-          def record_login_attempt( self ):
-              self.login_attempts += 1  # Violates immutability
-
-  **✅ Prefer:**
-
-  .. code-block:: python
-
-      # Immutable object with frozen attributes
-      class UserProfile( __.immut.Object ):
-          name: str
-          email: str
-
-      # Accretive containers for grow-only data  
-      login_attempts = __.accret.Dictionary[ str, str ]( )
-      login_attempts[ '2024-01-01T10:05:00Z' ] = 'admin login successful'
-      login_attempts[ '2024-01-01T10:06:00Z' ] = 'user login failed'
-      # Can add new entries but cannot modify or delete existing ones
-      
-      user_sessions = __.accret.Namespace( )
-      user_sessions.session_001 = 'active'
-      user_sessions.session_002 = 'expired'
-      # Can add new attributes but cannot modify existing ones
+      # For cases requiring growth-only behavior - plugin registry
+      plugin_registry = __.accret.Dictionary[ str, __.cabc.Callable ]( )
+      plugin_registry[ 'json_formatter' ] = JsonFormatter
+      plugin_registry[ 'auth_middleware' ] = AuthMiddleware
+      # plugin_registry[ 'json_formatter' ] = NewFormatter  # Would raise - cannot overwrite
 
 * When mutable data structures are genuinely needed (e.g., performance-critical
   code, interfacing with mutable APIs), clearly document the mutability
-  requirement and consider using the ``Mutable`` variants of classes.
+  requirement and consider using the ``Mutable`` variants of ``__.accret`` and
+  ``__.immut`` classes.
 
-  **✅ Acceptable when required:**
 
-  .. code-block:: python
-
-      # Performance-critical accumulation
-      def process_large_dataset( data: __.cabc.Iterable[ int ] ) -> list[ int ]:
-          ''' Processes dataset using mutable list for performance.
-
-              Uses mutable list internally for efficient appending during
-              processing of potentially millions of items.
-          '''
-          results = [ ]  # Mutable for performance reasons
-          for item in data:
-              if is_valid( item ):
-                  results.append( transform( item ) )
-          return results
-
-      # Mutable class when needed
-      class Cache( __.immut.ObjectMutable ):
-          ''' Cache with mutable internal state for performance. '''
-          _cache: dict[ str, __.typx.Any ]  # Mutable for cache operations
-
-Function Signatures
+Exceptional Conditions
 -------------------------------------------------------------------------------
 
-* Accept wide types (abstract base classes) in function parameters but return
-  narrow types (concrete immutable types). This follows the Liskov
-  Substitution Principle and makes functions more flexible to call while
-  providing specific guarantees to callers.
+* Create a package exception hierarchy by subclassing from ``Omniexception``
+  and ``Omnierror`` base classes. This allows callers to catch all
+  package-specific exceptions generically if desired.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      from . import __
+
+      class Omniexception( __.immut.Object, BaseException ):
+          ''' Base for all exceptions raised by package API. '''
+
+      class Omnierror( Omniexception, Exception ):
+          ''' Base for error exceptions raised by package API. '''
+
+      # Specific exceptions inherit from appropriate base
+      class DataAbsence( Omnierror, AssertionError ):
+          ''' Unexpected data absence. '''
+
+          def __init__( self, source: str, label: str ):
+              super( ).__init__(
+                  f"Necessary data with label '{label}' "
+                  f"is missing from {source}." )
+
+  Usage: Callers can catch all package exceptions.
+
+  .. code-block:: python
+
+      try: result = package_operation( )
+      except Omnierror as exc:
+          logger.error( f"Package operation failed: {exc}" )
+          # Handle all package errors generically
+
+* Follow established exception naming conventions from the :doc:`nomenclature
+  document <nomenclature>`. Use patterns like ``<Noun><OperationVerb>Failure``,
+  ``<Noun>Absence``, ``<Noun>Invalidity``, ``<Noun>Empty``, etc.
+
+* Limit ``try`` block scope to contain only the statement(s) that can raise
+  exceptions. In rare cases, a ``with`` suite may be included. Avoid wrapping
+  entire loop bodies or function bodies in ``try`` blocks when possible.
+
+  **❌ Avoid - overly broad try blocks:**
+
+  .. code-block:: python
+
+      def process_items( items: __.cabc.Sequence[ str ] ) -> list[ dict ]:
+          try:
+              results = [ ]
+              for item in items:
+                  validated = validate_item( item )  # Can raise
+                  processed = expensive_computation( validated )
+                  formatted = format_result( processed )
+                  results.append( formatted )
+              return results
+          except ValidationError:
+              return [ ]  # Loses information about which item failed
+
+  **✅ Prefer - narrow scope with precise error handling:**
+
+  .. code-block:: python
+
+      def process_items( items: __.cabc.Sequence[ str ] ) -> list[ dict ]:
+          results = [ ]
+          for item in items:
+              try: validated = validate_item( item )  # Only risky statement
+              except ValidationError:
+                  logger.warning( f"Skipping invalid item: {item}." )
+                  continue
+              processed = expensive_computation( validated )
+              formatted = format_result( processed )
+              results.append( formatted )
+          return results
+
+      def save_data( data: __.cabc.Mapping[ str, __.typx.Any ], filename: str ) -> None:
+          try:
+              with open( filename, 'w' ) as f:
+                  json.dump( data, f )
+          except OSError as exc:
+              raise SaveFailure( filename ) from exc
+
+* Never swallow exceptions. Either chain a ``__cause__`` with a ``from``
+  original exception or raise a new exception with original exception as the
+  ``__context__``. Or properly handle the exception.
 
   **❌ Avoid:**
 
   .. code-block:: python
 
-      # Narrow parameter types limit flexibility
-      def merge_configs(
-          base: __.immut.Dictionary[ str, str ],
-          override: __.immut.Dictionary[ str, str ]
-      ) -> dict[ str, str ]:
-          result = dict( base )
-          result.update( override )
-          return result  # Returns mutable dict
+      # Swallows exception completely
+      def risky_operation( ):
+          try: dangerous_call( )
+          except Exception:
+              pass  # Silent failure loses debugging information
 
-      # Wide return types provide no guarantees
-      def get_user_permissions( user_id: int ) -> __.cabc.Sequence[ str ]:
-          permissions = fetch_permissions( user_id )
-          return list( permissions )  # Could return mutable list
+      # Loses original context
+      def risky_operation( ):
+          try: dangerous_call( )
+          except ValueError:
+              raise RuntimeError( "Operation failed" )  # No connection to original
 
   **✅ Prefer:**
 
   .. code-block:: python
 
-      # Wide parameter types, narrow return types
-      def merge_configs(
-          base: __.cabc.Mapping[ str, str ],  # Accept any mapping
-          override: __.cabc.Mapping[ str, str ]  # Accept any mapping
-      ) -> __.immut.Dictionary[ str, str ]:  # Return specific immutable type
-          result = dict( base )
-          result.update( override )
-          return __.immut.Dictionary( result )
+      # Explicit chaining with 'from'
+      def risky_operation( ):
+          try: dangerous_call( )
+          except ValueError as exc:
+              raise OperateFailure( operation_context ) from exc
 
-      def get_user_permissions( user_id: int ) -> tuple[ str, ... ]:
-          ''' Gets user permissions as immutable tuple. '''
-          permissions = fetch_permissions( user_id )
-          return tuple( permissions )  # Immutable, specific type
+      # Proper handling (not swallowing)
+      def risky_operation( ):
+          try: dangerous_call( )
+          except ValueError as exc:
+              logger.warning( f"Dangerous call failed: {exc}." )
+              return fallback_result( )  # Proper recovery
 
-* Use abstract collection types for parameters: ``__.cabc.Mapping``,
-  ``__.cabc.Sequence``, ``__.cabc.Iterable``, ``__.cabc.Set``. Return
-  concrete immutable types: ``tuple``, ``frozenset``, ``__.immut.Dictionary``.
+Documentation
+-------------------------------------------------------------------------------
+
+* Documentation must be written as Sphinx reStructuredText. The docstrings for
+  functions must not include parameter or return type documentation. Parameter
+  and return type documentation is handled via PEP 727 annotations. Pull
+  requests, which include Markdown documentation or which attempt to provide
+  function docstrings in the style of Google, NumPy, Sphinx, etc..., will be
+  rejected.
+
+* Function docstrings should use narrative mood (third person) rather than
+  imperative mood (second person). The docstring describes what the function
+  does, not what the caller should do.
 
   **❌ Avoid:**
 
   .. code-block:: python
 
-      # Restricts callers unnecessarily
-      def calculate_average( numbers: list[ float ] ) -> float:
-          return sum( numbers ) / len( numbers )
+      def validate_config( config: __.cabc.Mapping[ str, __.typx.Any ] ) -> None:
+          ''' Validate the configuration dictionary. '''  # Imperative mood
 
-      def find_common_elements(
-          set1: set[ str ], set2: set[ str ]
-      ) -> list[ str ]:
-          common = set1 & set2
-          return list( common )  # Mutable return type
+      def process_data( data: __.cabc.Sequence[ __.typx.Any ] ) -> dict[ str, __.typx.Any ]:
+          ''' Process the input data and return results. '''  # Mixed - starts imperative
 
   **✅ Prefer:**
 
   .. code-block:: python
 
-      # Flexible parameters, specific returns
-      def calculate_average( numbers: __.cabc.Sequence[ float ] ) -> float:
-          ''' Calculates average of numeric sequence. '''
-          return sum( numbers ) / len( numbers )
+      def validate_config(
+          config: __.cabc.Mapping[ str, __.typx.Any ]
+      ) -> None:
+          ''' Validates the configuration dictionary. '''  # Narrative mood
 
-      def find_common_elements(
-          set1: __.cabc.Set[ str ], set2: __.cabc.Set[ str ]
-      ) -> frozenset[ str ]:
-          ''' Finds common elements as immutable set. '''
-          return frozenset( set1 & set2 )
+      def process_data(
+          data: __.cabc.Sequence[ __.typx.Any ]
+      ) -> dict[ str, __.typx.Any ]:
+          ''' Processes input data and returns results. '''  # Narrative mood
 
-* For optional parameters, prefer abstract types with concrete defaults that
-  maintain the wide/narrow principle.
+Quality Assurance
+-------------------------------------------------------------------------------
 
-  **✅ Prefer:**
+* Run project-specific quality commands to ensure code meets standards. Use the
+  provided hatch environments for consistency.
 
-  .. code-block:: python
+  .. code-block:: shell
 
-      def process_items(
-          items: __.cabc.Sequence[ str ],
-          filters: __.cabc.Sequence[ str ] = ( ),  # Empty tuple as default
-          options: __.cabc.Mapping[ str, __.typx.Any ] = __.immut.Dictionary( )
-      ) -> tuple[ str, ... ]:
-          ''' Processes items with optional filters and configuration. '''
-          filtered_items = [ item for item in items if all(
-              filter_func( item ) for filter_func in filters ) ]
-          # Apply options...
-          return tuple( filtered_items )
+      hatch --env develop run linters    # Runs all configured linters
+      hatch --env develop run testers    # Runs full test suite
+      hatch --env develop run docsgen    # Generates documentation
+
+* Do not suppress linter warnings with ``noqa`` pragma comments without
+  explicit approval. Address the underlying issues instead of silencing
+  warnings.
+
+* If third-party typing stubs are missing, then ensure that the third-party
+  package has been included in ``pyproject.toml`` and rebuild the Hatch
+  environment with ``hatch env prune``. If they are still missing after that,
+  then generate them with:
+
+  .. code-block:: shell
+
+      hatch --env develop run pyright --createsub somepackage
+
+  Then, fill out the stubs you need to satisfy Pyright and comment out or
+  discard the remainder.
 
 
 Rust
