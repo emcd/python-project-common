@@ -32,7 +32,8 @@ Ensure that you:
 - have verified access to / read target code modules
 - understand what specific tests need to be written
 - have read any relevant `CLAUDE.md` file
-- understand the [test-writing guidelines](https://raw.githubusercontent.com/emcd/python-project-common/refs/heads/master/documentation/common/tests.rst)
+- understand the [test-writing
+  guidelines](https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst).
 
 ## Testing Principles (from project guidelines)
 
@@ -82,12 +83,12 @@ Execute the following steps for test requirements: `$ARGUMENTS`
 ### 0. Pre-Flight Verification
 **MANDATORY - Verify access to test-writing guide:**
 
-Use WebFetch to access and confirm you can read the complete testing guidelines:
-```
-https://raw.githubusercontent.com/emcd/python-project-common/refs/heads/master/documentation/common/tests.rst
-```
+Use WebFetch to access and confirm you can read the complete testing
+guidelines:
+https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst
 
-**CRITICAL**: You MUST successfully access and read the guide before proceeding. If WebFetch fails, HALT and consult with the user.
+**CRITICAL**: You MUST successfully access and read the guide before
+proceeding. If WebFetch fails, HALT and consult with the user.
 
 ### 1. Code Analysis Phase
 Examine the target code to understand testing needs:
@@ -161,7 +162,7 @@ async def test_100_process_with_custom_processor( ):
     ''' Process function accepts custom processor via injection. '''
     def mock_processor( data ):
         return f"processed: {data}"
-    
+
     result = await process_data( "test", processor = mock_processor )
     assert result == "processed: test"
 ```
@@ -173,7 +174,7 @@ def test_200_config_file_processing( ):
     with Patcher( ) as patcher:
         fs = patcher.fs
         fs.create_file( '/fake/config.toml', contents = '[section]\nkey="value"' )
-        
+
         result = process_config_file( Path( '/fake/config.toml' ) )
         assert result.key == 'value'
 ```

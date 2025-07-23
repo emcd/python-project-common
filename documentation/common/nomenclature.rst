@@ -31,37 +31,92 @@ presented here. The goal is consistency within a given context rather than
 rigid adherence to these patterns.
 
 
+Modules, Packages, and Crates
+===============================================================================
+
+- Prefer single-word names: ``users``, ``authentication``, ``storage``.
+
+
+- Use plurals for collections of related modules or classes: ``parsers``,
+  ``validators``.
+
+- Use ``-ation`` suffixes for functionality areas: ``authentication``,
+  ``configuration``.
+
+- Avoid underscores by making portmanteau words: ``datastore`` not
+  ``data_store``, ``userauth`` not ``user_auth``.
+
+
+**Python distribution packages and Rust crates:** Prefer single words; use
+``kebab-case`` if compound names are required:
+
+    frigid
+    emcd-projects
+
+**Python and Rust modules:** Prefer single words; use ``snake_case`` if
+compound names are required:
+
+    processors    # plural for collection
+    userauth      # portmanteau for "user authentication"
+    configuration # -ation for functionality area
+
+
 Classes
 ===============================================================================
 
 General Guidance
 -------------------------------------------------------------------------------
 
-- Use ``Async`` suffix for asynchronous interfaces.
+- Use ``Async`` suffix for asynchronous interfaces, if you need to distinguish
+  between asynchronous and synchronous varieties with the same module or
+  package.
 
-- Avoid ``Type`` suffix except when fitting to existing framework. I.e., do not
-  follow the pattern in Python's ``types`` module unless there is good reason
-  to do so.
+- Avoid ``Type`` suffix except when fitting to existing framework. I.e., do
+  **not** follow the pattern in Python's ``types`` module (``NoneType``,
+  etc...) unless there is good reason to do so.
 
 
 Abstract Classes
 -------------------------------------------------------------------------------
 
-- Prefix with ``Abstract`` for abstract base classes.
+- Suffix with ``Abstract`` for abstract base classes if you need to distinguish
+  between concrete and abstract classes within the same module or package.
+  However, prefer to name concrete classes with additional detail so that such
+  distinction is not necessary.
 
 - Use adjective names for interface-like classes when they describe
   capabilities.
 
 .. code-block:: python
 
-    class AbstractDictionary:
+    class DictionaryAbstract:
         ''' Abstract base for dictionary types. '''
+
+    class Dictionary( DictionaryAbstract ):
+        ''' Concrete class derived from abstract one. '''
 
     class Comparable:
         ''' Interface for objects supporting comparison. '''
 
     class Immutable:
         ''' Interface for objects preventing modification. '''
+
+**Rust traits** follow similar patterns:
+
+- **Capability adjectives:** ``Sized``, ``Clone``, ``Send``, ``Sync``
+- **Ability suffixes:** ``Readable``, ``Writable``, ``Comparable``
+- **Action agents:** ``Iterator``, ``Parser``, ``Builder``, ``Formatter``
+- **Behavior descriptions:** ``Default``, ``Debug``, ``Display``
+
+.. code-block:: rust
+
+    trait Comparable {
+        fn compare( &self, other: &Self ) -> Ordering;
+    }
+
+    trait ConfigurationBuilder {
+        fn build( self ) -> Configuration;
+    }
 
 
 Base Classes
@@ -70,7 +125,8 @@ Base Classes
 - Use ``Base`` or ``Common`` suffix for base classes.
 
 - Use ``Extension``/``Supplement`` (Latin-derived) or ``Mixin`` (Germanic-like)
-  suffix for mix-in classes.
+  suffix for mix-in classes. Choose the suffix which matches the rest of the
+  name.
 
 .. code-block:: python
 
@@ -84,7 +140,8 @@ Base Classes
 Container Classes
 -------------------------------------------------------------------------------
 
-Name based on behavior rather than implementation.
+Name based on behavior rather than implementation. I.e., talk about **what**
+instances of a class do and not **how** they do it.
 
 .. code-block:: python
 
@@ -93,22 +150,6 @@ Name based on behavior rather than implementation.
 
     class QueueAsync:
         ''' Queue with asynchronous interface. '''
-
-
-Decorator Classes
--------------------------------------------------------------------------------
-
-- Use adjectives when describing the modification.
-
-- Use nouns when describing the resulting form.
-
-.. code-block:: python
-
-    class Comparable:
-        ''' Decorator class providing comparison capabilities. '''
-
-    class Dataclass:
-        ''' Decorator class creating data class. '''
 
 
 Enum Classes
@@ -190,6 +231,73 @@ Use appropriate suffix pairs based on purpose:
         ''' Provides read-only view of dictionary. '''
 
 
+Variables and Attributes
+===============================================================================
+
+- Prefer single-word names: ``name``, ``count``, ``timeout``, ``callback``.
+
+- Avoid repeating the class or function name in variable names:
+
+  - ``User.name`` not ``User.user_name``
+  - ``validate_email( address )`` not ``validate_email( email_address )``
+  - ``parse_json( content )`` not ``parse_json( json_content )``
+
+- Avoid truncations: prefer ``configuration`` over ``config``, ``options``
+  over ``opts``, ``arguments`` over ``args``.
+
+- Portmanteau words are acceptable: ``configfile`` instead of
+  ``configuration_file``, ``envvar`` instead of ``environment_variable``.
+
+- Use context-appropriate specificity: ``start_time`` when multiple time
+  values exist, ``time`` when unambiguous.
+
+.. code-block:: python
+
+    class DatabaseConnection:
+        timeout: float          # Not connection_timeout
+        host: str               # Not database_host
+
+    def validate_email( address: str ) -> bool:  # Not email_address
+        ''' Validates email address format. '''
+
+    def parse_configuration( filename: str ) -> dict[ str, __.typx.Any ]:  # Not config_file
+        ''' Parses configuration from file. '''
+
+
+Constants and Module-Level Variables
+===============================================================================
+
+**True constants** (immutable values):
+
+- Use ``ALL_CAPS`` with underscores separating words.
+- Use suffixes for semantic grouping: ``TIMEOUT_DEFAULT``, ``TIMEOUT_MAXIMUM``,
+  ``RETRIES_MAXIMUM`` not ``DEFAULT_TIMEOUT``, ``MAX_TIMEOUT``, ``MAX_RETRIES``.
+- Group related constants with common prefixes: ``HTTP_OK``, ``HTTP_NOT_FOUND``,
+  ``HTTP_SERVER_ERROR``.
+
+**Module-level caches** (internal mutability):
+
+- Use leading underscore: ``_connection_pool``, ``_configuration_cache``.
+- These have internal mutability even though they cannot be reassigned as
+  module attributes.
+
+.. code-block:: python
+
+    # True constants
+    API_VERSION = '2.1.0'
+    TIMEOUT_DEFAULT = 30.0
+    TIMEOUT_MAXIMUM = 300.0
+    RETRIES_MAXIMUM = 3
+
+    HTTP_OK = 200
+    HTTP_NOT_FOUND = 404
+    HTTP_SERVER_ERROR = 500
+
+    # Module-level caches (internal mutability)
+    _connection_pool = ConnectionPool( )
+    _cached_settings = { }
+
+
 Functions
 ===============================================================================
 
@@ -235,157 +343,127 @@ Preposition Prefixes
 - ``with_<attribute>``: Returns copy of object with modified attributes.
   Chainable with other methods.
 
-Verb Prefixes
+Verb Prefixes by Semantic Cluster
 -------------------------------------------------------------------------------
 
-- ``access_<object>``: Returns value via computed or indirect access (e.g.,
-  property getter, descriptor protocol). For in-process objects only.
-
-- ``acquire_<resource>``: Obtains exclusive access to shared resource requiring
-  explicit release (e.g., mutex, database connection). Antonym:
-  ``release_<resource>``.
-
-- ``activate_<execution-or-service>``: Starts execution context or service. For
-  both in-process executions and external services. Antonym:
-  ``deactivate_<execution-or-service>``.
-
-- ``allocate_<space>``: Reserves system memory or storage space for future use.
-  Antonym: ``deallocate_<space>``.
+**Analysis and Discovery:**
 
 - ``assess_<data>``: Examines data to derive insights or patterns.
+- ``discover_<value>``: Detects or determines value from environment or
+  context.
+- ``examine_<resource>``: Retrieves metadata about resource without accessing
+  full content (file stats, HTTP HEAD).
+- ``survey_<resource>``: Lists or enumerates members of external resource
+  collection.
 
-- ``assert_<resource>`` [Python]: Verifies resource exists or condition holds,
-  raising exception if not. [Rust]: Panics if condition fails. Related:
-  ``verify_<condition>`` which returns boolean.
+**Component Initialization:**
+
+- ``configure_<component>``: Applies settings or parameters to component,
+  preparing it for operation.
+- ``prepare_<component>``: Fully initializes component, including registration
+  of handlers/extensions.
+
+**Computation:**
 
 - ``calculate_<value>``: Computes value from one or more inputs using defined
   algorithm.
 
-- ``cancel_<future-or-reservation>``: Revokes planned execution or resource
-  claim. Antonym for both ``schedule_<execution>`` and ``reserve_<resource>``.
-  See these related patterns for specific usage.
+**Data Operations:**
 
-- ``configure_<component>``: Applies settings or parameters to component,
-  preparing it for operation. Related: ``prepare_<component>`` for full
-  initialization.
-
-- ``create_<resource>``: Creates new resource external to current process
-  (e.g., file, database table). For in-process object creation, see
-  ``produce_<object>``. Antonym: ``delete_<resource>``.
-
-- ``deactivate_<execution-or-service>``: Stops execution context or service.
-  Antonym: ``activate_<execution-or-service>``.
-
-- ``deallocate_<space>``: Frees previously allocated system memory or storage
-  space. Antonym: ``allocate_<space>``.
-
-- ``delete_<resource>``: Removes resource external to current process.
-  [Python]: For in-process objects, we generally rely on garbage collection or
-  context managers and do not need explicit destructors. Antonym:
-  ``create_<resource>``.
-
-- ``deregister_<reactor>``: Removes previously registered event handler or
-  callback. Antonym: ``register_<reactor>``.
-
-- ``disable_<feature>``: Deactivates optional feature or functionality.
-  Antonym: ``enable_<feature>``.
-
-- ``discover_<value>``: Detects or determines value from environment or
-  context.
-
-- ``display_<data>``: Presents data in user-facing format. Synonym:
-  ``present_<data>``.
-
-- ``enable_<feature>``: Activates optional feature or functionality. Antonym:
-  ``disable_<feature>``.
-
-- ``ensure_<resource>``: Creates resource if it doesn't exist, returns existing
-  resource if it does. Related: ``create_<resource>`` for forced creation.
-
-- ``examine_<resource>``: Retrieves metadata about resource without accessing
-  full content (e.g., file stats, HTTP HEAD).
-
+- ``access_<object>``: Returns value via computed or indirect access (property
+  getter, descriptor protocol). For in-process objects only.
 - ``filter_<objects>``: Returns subset of objects matching specified criteria.
+- ``modify_<object>``: Updates in-process object state. Alternative to
+  ``update_<resource>`` for disambiguation.
+- ``parse_<format>``: Extracts structured data from formatted input (JSON,
+  XML).
+- ``query_<resource>``: Performs structured data retrieval with parameters or
+  filters.
+- ``retrieve_<resource>``: Obtains copy of data from external resource. No
+  release required.
+- ``transform_<data>``: Changes data structure or format. Synonym:
+  ``convert_<data>``.
+- ``update_<resource>``: Modifies state of external resource.
 
-- ``intercept_<exceptions>`` [Python]: Invokes functions while capturing their
+**Exception Handling (Python-specific):**
+
+- ``intercept_<exceptions>``: Invokes functions while capturing their
   exceptions for later handling. Used primarily in concurrent execution
   contexts where multiple exceptions need collection.
 
-- ``is_<member-or-state>``: Tests type membership or current state. Returns
-  boolean. Related: ``verify_<condition>`` for condition verification.
+**Persistence and Serialization:**
 
-- ``modify_<object>``: Updates in-process object state. Alternative to
-  ``update_<resource>`` when context requires disambiguation between in-process
-  and external modifications.
+- ``restore_<object>``: Deserializes object from persistent storage.
+- ``save_<object>``: Serializes object to persistent storage.
 
-- ``parse_<format>``: Extracts structured data from formatted input (e.g.,
-  JSON, XML).
+**Presentation and Output:**
 
-- ``prepare_<component>``: Fully initializes component, including registration
-  of handlers/extensions. Related: ``configure_<component>`` for settings
-  application.
-
-- ``probe_<resource>``: Tests resource accessibility or status. Returns boolean
-  indicating availability. Related: ``verify_<condition>`` for more thorough
-  verification.
-
-- ``produce_<object>``: Creates new instance in process memory. For external
-  resource creation, see ``create_<resource>``.
-
-- ``query_<resource>``: Performs structured data retrieval with parameters or
-  filters. Related: ``retrieve_<resource>`` for simpler data access.
-
-- ``register_<reactor>``: Adds event handler or callback to registry. Antonym:
-  ``deregister_<reactor>``.
-
-- ``release_<resource>``: Releases previously acquired shared resource.
-  Antonym: ``acquire_<resource>``.
-
+- ``display_<data>``: Presents data in user-facing format. Synonym:
+  ``present_<data>``.
 - ``render_<template>``: Produces output by combining template with data.
-
 - ``report_<data>``: Collates data from analyses or diverse sources into a
   structured or human-readable form.
 
+**Resource Lifecycle:**
+
+- ``acquire_<resource>``: Obtains exclusive access to shared resource requiring
+  explicit release (mutex, database connection). Antonym:
+  ``release_<resource>``.
+- ``allocate_<space>``: Reserves system memory or storage space for future use.
+  Antonym: ``deallocate_<space>``.
+- ``create_<resource>``: Creates new resource external to current process
+  (file, database table). Antonym: ``delete_<resource>``.
+- ``deallocate_<space>``: Frees previously allocated system memory or storage
+  space. Antonym: ``allocate_<space>``.
+- ``delete_<resource>``: Removes resource external to current process.
+  [Python]: For in-process objects, rely on garbage collection. Antonym:
+  ``create_<resource>``.
+- ``ensure_<resource>``: Creates resource if it doesn't exist, returns existing
+  resource if it does.
+- ``produce_<object>``: Creates new instance in process memory. For external
+  resource creation, see ``create_<resource>``.
+- ``release_<resource>``: Releases previously acquired shared resource.
+  Antonym: ``acquire_<resource>``.
+
+**Scheduling and Futures:**
+
+- ``cancel_<future-or-reservation>``: Revokes planned execution or resource
+  claim. Antonym: ``schedule_<execution>`` and ``reserve_<resource>``.
 - ``request_<action>``: Initiates asynchronous operation, typically on remote
   service. Returns future or promise representing eventual completion.
+- ``reserve_<resource>``: Claims resource for future use.
+- ``schedule_<execution>``: Plans future execution of task or process.
 
-- ``reserve_<resource>``: Claims resource for future use. Related to
-  ``schedule_<execution>``; both use ``cancel_<future-or-reservation>`` as
-  antonym.
+**State Management:**
 
-- ``restore_<object>``: Deserializes object from persistent storage. Related:
-  ``save_<object>`` for serialization.
+- ``activate_<execution-or-service>``: Starts execution context or service. For
+  both in-process executions and external services. Antonym:
+  ``deactivate_<execution-or-service>``.
+- ``deactivate_<execution-or-service>``: Stops execution context or service.
+  Antonym: ``activate_<execution-or-service>``.
+- ``deregister_<reactor>``: Removes previously registered event handler or
+  callback. Antonym: ``register_<reactor>``.
+- ``disable_<feature>``: Deactivates optional feature or functionality.
+  Antonym: ``enable_<feature>``.
+- ``enable_<feature>``: Activates optional feature or functionality. Antonym:
+  ``disable_<feature>``.
+- ``register_<reactor>``: Adds event handler or callback to registry. Antonym:
+  ``deregister_<reactor>``.
 
-- ``retrieve_<resource>``: Obtains copy of data from external resource. No
-  release required. Related: ``query_<resource>`` for parameterized retrieval.
+**Validation and Testing:**
 
-- ``save_<object>``: Serializes object to persistent storage. Related:
-  ``restore_<object>`` for deserialization.
-
-- ``schedule_<execution>``: Plans future execution of task or process. Related
-  to ``reserve_<resource>``; both use ``cancel_<future-or-reservation>`` as
-  antonym.
-
-- ``survey_<resource>``: Lists or enumerates members of external resource
-  collection.
-
+- ``assert_<resource>`` [Python]: Verifies resource exists or condition holds,
+  raising exception if not. [Rust]: Panics if condition fails.
+- ``is_<member-or-state>``: Tests type membership or current state. Returns
+  boolean.
+- ``probe_<resource>``: Tests resource accessibility or status. Returns boolean
+  indicating availability.
 - ``test_<assertion>``: Verifies specific assertion about code behavior. Note:
   Only for use in test suites, not in public interfaces.
-
-- ``transform_<data>``: Changes data structure or format. Synonym:
-  ``convert_<data>``.
-
-- ``update_<resource>``: Modifies state of external resource. For in-process
-  objects, consider ``modify_<object>`` when disambiguation is needed.
-
 - ``validate_<object>`` [Python]: Returns object if valid, raises exception if
   invalid. [Rust]: Returns ``Result::Ok`` containing object if valid else
-  ``Result::Err``. Related: ``verify_<condition>`` which returns boolean
-  if a condition is satisfied.
-
-- ``verify_<condition>``: Tests condition or state. Returns boolean. Related:
-  ``validate_<object>``, which returns object or raises exception,
-  ``is_<member-or-state>`` for type/state testing.
+  ``Result::Err``.
+- ``verify_<condition>``: Tests condition or state. Returns boolean.
 
 Function Suffixes
 -------------------------------------------------------------------------------
@@ -393,11 +471,11 @@ Function Suffixes
 The project uses a limited set of function suffixes to indicate specific
 execution patterns:
 
-- ``_async``: Indicates asynchronous execution
+- ``_async``: Indicates asynchronous execution.
 - ``_continuous``: Indicates generator/iterator return type (alternative:
-  ``_streaming`` when using Germanic-derived terms)
+  ``_streaming`` when using Germanic-derived terms).
 - ``_recursive``: Indicates recursive execution when this is part of the
-  function's contract rather than an implementation detail
+  function's contract rather than an implementation detail.
 
 Other execution patterns (parallel processing, batch operations, etc.) are
 better expressed through specific function names or appropriate use of
@@ -409,20 +487,27 @@ When Not to Use Suffixes
 Avoid suffixes for:
 
 - Implementation details (``_cached``, ``_optimized``)
-- Alternative implementations (``_safe``, ``_fallback``)
 - Batch operations (use prefix ``mass_`` or ``multi_`` prefixes instead)
 - In-place operations (use Python's established patterns like list methods)
 - Development status (``_experimental``)
 - Debugging aids (``_verbose``)
 - Parallel processing (use appropriate concurrency primitives instead)
 
-These aspects are better handled through:
 
-- Separate, clearly named functions
-- Documentation of performance characteristics
-- Version control and release management
-- Logging and debugging facilities
-- Threading and multiprocessing facilities
+Environment Variables
+===============================================================================
+
+- Use ``ALL_CAPS`` with underscores separating words.
+- Begin with package/application name: ``MYAPP_TRACE_LEVEL``,
+  ``MYAPP_DATABASE_CONNECTION_URL``.
+- Follow standard Unix conventions for system integration.
+
+.. code-block:: shell
+
+    # Application-specific variables
+    MYAPP_LOG_LEVEL=INFO
+    MYAPP_DATABASE_URL=postgresql://localhost/mydb
+    MYAPP_CACHE_TIMEOUT=3600
 
 
 Linguistic Consistency
@@ -459,96 +544,7 @@ When in doubt, prefer Latin-derived terms as the project default.
 Latin-to-Germanic Verb Mappings
 -------------------------------------------------------------------------------
 
-The following table provides Germanic alternatives to Latin-derived verbs.
-These are provided primarily for reference and for cases where linguistic
-consistency with Germanic nouns is desired.
-
-+-----------------+------------------+----------------------------------------+
-| Latin-derived   | Germanic-derived | Notes                                  |
-+=================+==================+========================================+
-| access          | get              |                                        |
-+-----------------+------------------+----------------------------------------+
-| acquire         | grab             | Common in technical phrases            |
-+-----------------+------------------+----------------------------------------+
-| activate        | start            |                                        |
-+-----------------+------------------+----------------------------------------+
-| allocate        | slot             |                                        |
-+-----------------+------------------+----------------------------------------+
-| assess          | weigh            | Is there a better synonym?             |
-+-----------------+------------------+----------------------------------------+
-| assert          | swear            | Is there a better synonym?             |
-+-----------------+------------------+----------------------------------------+
-| calculate       | reckon           |                                        |
-+-----------------+------------------+----------------------------------------+
-| cancel          | stop             |                                        |
-+-----------------+------------------+----------------------------------------+
-| configure       | setup            | Compound from "set up"                 |
-+-----------------+------------------+----------------------------------------+
-| create          | make             |                                        |
-+-----------------+------------------+----------------------------------------+
-| deactivate      | stop             |                                        |
-+-----------------+------------------+----------------------------------------+
-| deallocate      | free             |                                        |
-+-----------------+------------------+----------------------------------------+
-| delete          | kill             |                                        |
-+-----------------+------------------+----------------------------------------+
-| deregister      | unenroll         | Germanic ``un-`` prefix pattern        |
-+-----------------+------------------+----------------------------------------+
-| disable         | unswitch         | Neologism; pairs with ``switch``       |
-+-----------------+------------------+----------------------------------------+
-| discover        | find             |                                        |
-+-----------------+------------------+----------------------------------------+
-| display         | show             |                                        |
-+-----------------+------------------+----------------------------------------+
-| enable          | switch           | Pairs with ``unswitch``                |
-+-----------------+------------------+----------------------------------------+
-| ensure          | righten          | Slightly archaic                       |
-+-----------------+------------------+----------------------------------------+
-| examine         | sniff            | Informal but established in tech       |
-+-----------------+------------------+----------------------------------------+
-| filter          | sift             |                                        |
-+-----------------+------------------+----------------------------------------+
-| intercept       | catch            |                                        |
-+-----------------+------------------+----------------------------------------+
-| modify          | change           |                                        |
-+-----------------+------------------+----------------------------------------+
-| parse           | split            |                                        |
-+-----------------+------------------+----------------------------------------+
-| prepare         | ready            | Used as verb not adjective             |
-+-----------------+------------------+----------------------------------------+
-| probe           | ping             | From network terminology               |
-+-----------------+------------------+----------------------------------------+
-| produce         | new              | Verb; familiar to ``C++`` programmers  |
-+-----------------+------------------+----------------------------------------+
-| query           | ask              |                                        |
-+-----------------+------------------+----------------------------------------+
-| register        | enroll           |                                        |
-+-----------------+------------------+----------------------------------------+
-| release         | free             |                                        |
-+-----------------+------------------+----------------------------------------+
-| render          | fillin / mold    | Compound from "fill in"                |
-+-----------------+------------------+----------------------------------------+
-| report          | tell             |                                        |
-+-----------------+------------------+----------------------------------------+
-| request         | ask              | Same as ``query`` mapping              |
-+-----------------+------------------+----------------------------------------+
-| reserve         | earmark          |                                        |
-+-----------------+------------------+----------------------------------------+
-| restore         | load             | Common pair with ``dump``              |
-+-----------------+------------------+----------------------------------------+
-| retrieve        | fetch            |                                        |
-+-----------------+------------------+----------------------------------------+
-| save            | dump             | Common pair with ``load``              |
-+-----------------+------------------+----------------------------------------+
-| schedule        | handoff          | Compound from "hand off"               |
-+-----------------+------------------+----------------------------------------+
-| survey          | list             |                                        |
-+-----------------+------------------+----------------------------------------+
-| transform       | shape            | Avoids Latin ``re-`` prefix            |
-+-----------------+------------------+----------------------------------------+
-| update          | freshen          |                                        |
-+-----------------+------------------+----------------------------------------+
-| validate        | sound            | Archaic but precise meaning            |
-+-----------------+------------------+----------------------------------------+
-| verify          | truth            | Used as verb: "to tell truth"          |
-+-----------------+------------------+----------------------------------------+
+For Germanic alternatives to Latin-derived verbs, see :doc:`nomenclature-germanic`.
+This reference table provides Germanic alternatives for cases where linguistic
+consistency with Germanic nouns is desired. The main nomenclature guide uses
+Latin-derived terms as the project default.

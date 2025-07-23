@@ -68,15 +68,15 @@ Test Directory Structure
 
     tests/
     ├── README.md                     # Test organization documentation
-    └── test_000_packagename/         # Package-specific test namespace
-        ├── __init__.py              # Test package initialization
-        ├── fixtures.py              # Common test fixtures and utilities
-        ├── test_000_package.py      # Package-level tests
-        ├── test_010_internals.py    # Internal utilities
-        ├── test_100_<layer 0>.py    # Lowest levels of public API
-        ├── test_200_<layer 1>.py    # Lower levels of public API
-        ├── ...                      # Higher levels of API
-        └── test_500_integration.py  # Top levels of API; Integration tests
+    └── test_000_<packagename>/       # Package-specific test namespace
+        ├── __init__.py               # Test package initialization
+        ├── fixtures.py               # Common test fixtures and utilities
+        ├── test_000_package.py       # Package-level tests
+        ├── test_010_base.py          # Internal utilities
+        ├── test_100_<layer 1>.py     # Lowest levels of public API
+        ├── test_200_<layer 2>.py     # Lower levels of public API
+        ├── ...                       # Higher levels of API
+        └── test_N00_<layer N>.py     # Top levels of API; Integration tests
 
 Numbering System
 -------------------------------------------------------------------------------

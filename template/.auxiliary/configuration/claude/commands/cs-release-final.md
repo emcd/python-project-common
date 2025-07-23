@@ -13,7 +13,7 @@ For execution of a fully-automated final release.
 Below is a validated process to create a final release with automated
 monitoring and next development cycle setup.
 
-Target release version: `$ARGUMENTS` (e.g., `1.6`, `2.0`)
+Target release version: `$ARGUMENTS`
 
 **CRITICAL**: Verify exactly one target release version provided.
 **HALT if**:
@@ -28,8 +28,6 @@ Target release version: `$ARGUMENTS` (e.g., `1.6`, `2.0`)
 - Current version: !`hatch version`
 - Recent commits: !`git log --oneline -10`
 - Available towncrier fragments: !`ls .auxiliary/data/towncrier/*.rst 2>/dev/null || echo "No fragments found"`
-- Target release branch status: !`git branch -r | grep release-$ARGUMENTS || echo "Release branch not found - will create new"`
-- Local release branch status: !`git branch | grep release-$ARGUMENTS || echo "No local release branch"`
 
 ## Prerequisites
 
