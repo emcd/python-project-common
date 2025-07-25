@@ -55,6 +55,21 @@ Anti-Patterns to Avoid
 * **Testing Implementation Details**: Tests should verify behavior, not
   internal implementation specifics.
 
+* **External Network Testing**: NEVER test against real external sites. Use mocks or test doubles instead::
+
+    # WRONG - tests against real external services
+    response = httpx.get( 'https://example.com' )
+    response = httpx.get( 'https://httpbin.org/post' ) 
+
+    # CORRECT - use httpx MockTransport
+    def handler( request ):
+        return httpx.Response( 200, json = { 'result': 'success' } )
+
+    transport = httpx.MockTransport( handler )
+    async with httpx.AsyncClient( transport = transport ) as client:
+        response = await client.get( 'https://api.example.com/data' )
+        assert response.json( ) == { 'result': 'success' }
+
 Test Organization
 ===============================================================================
 
@@ -68,6 +83,11 @@ Test Directory Structure
 
     tests/
     ├── README.md                     # Test organization documentation
+    ├── data/                         # Test data and fixtures
+    │   ├── packages/                 # Fake packages for extension testing
+    │   ├── artifacts/                # Captured artifacts for regression testing
+    │   ├── snapshots/                # Snapshots for output comparison testing
+    │   └── mocks/                    # Mock data files for structured test input
     └── test_000_<packagename>/       # Package-specific test namespace
         ├── __init__.py               # Test package initialization
         ├── fixtures.py               # Common test fixtures and utilities
@@ -89,6 +109,21 @@ Numbering System
 
 * Test modules should generally correspond to source modules
 * Siblings can be separated by increments of 10
+* **Subpackage modules**: Use format ``test_<M><N>0_<subpackage>_<module>.py``
+  
+  - ``M`` = major component number (e.g., 1, 2, 3)
+  - ``N`` = advances by 1 for each module within subpackage (0, 1, 2, ...)
+  - Examples: ``test_110_auth_tokens.py``, ``test_120_auth_sessions.py``
+
+.. warning::
+   **Do Not Confuse Module and Function Numbering**
+   
+   * **Test modules**: ``test_100_exceptions.py`` (hundreds place)
+   * **Test functions**: ``def test_100_basic_validation():`` (within modules)
+   
+   These are completely separate numbering schemes. Module numbers indicate
+   architectural hierarchy; function numbers indicate test organization within
+   that module.
 
 Test Function Numbering
 -------------------------------------------------------------------------------
@@ -117,6 +152,13 @@ Maintain a ``tests/README.md`` file documenting:
 * Test module numbering scheme specific to your package
 * Rationale for any use of ``patch`` or other exceptions to standard patterns
 * Project-specific testing conventions and fixtures
+
+**Maintenance Requirements**:
+
+* **Update when adding test modules**: Add entries for new test files with their numbering rationale
+* **Keep current**: Remove references to deprecated test modules
+* **Document changes**: Note any modifications to testing conventions or fixture usage
+* **Responsibility**: Update during test planning phase, not during implementation
 
 Preferred Testing Patterns
 ===============================================================================
@@ -185,6 +227,19 @@ only when necessary::
 
             result = await async_process_config_file( config_file )
             assert result.key == 'value'
+
+Test Data and Fixtures
+-------------------------------------------------------------------------------
+
+Store test data files under ``tests/data/`` in organized subdirectories:
+
+* **Fake packages**: ``tests/data/packages/`` for extension mechanism testing
+* **Captured artifacts**: ``tests/data/artifacts/`` for regression testing
+* **Snapshots**: ``tests/data/snapshots/`` for output comparison testing
+* **Mock data files**: ``tests/data/mocks/`` for structured test input
+
+Use fixture files when data is complex or reused across multiple tests.
+Prefer in-memory test data for simple, single-use scenarios.
 
 When to Mock
 -------------------------------------------------------------------------------
