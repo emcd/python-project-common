@@ -17,6 +17,7 @@ def main( ):
     for command in commands:
         _check_direct_python_usage( command )
         _check_multiline_python_c( command )
+        _check_direct_tool_usage( command )
     raise SystemExit( 0 )
 
 
@@ -51,6 +52,18 @@ def _check_multiline_python_c( tokens ):
         ): _error( emessage )
 
 
+def _check_direct_tool_usage( tokens ):
+    ''' Checks for direct usage of Python tools outside Hatch environment. '''
+    emessage = (
+        "Warning: Direct Python tool usage detected in command.\n"
+        "Use 'hatch --env develop run {tool}' instead to ensure "
+        "proper environment and configuration." )
+    for token in tokens:
+        if token == 'hatch': return # noqa: S105
+        if _is_python_tool( token ): 
+            _error( emessage.format( tool = token ) )
+
+
 def _check_python_c_argument( tokens, python_index ):
     ''' Checks if Python -c argument contains multiline code. '''
     for j in range( python_index + 1, len( tokens ) ):
@@ -80,6 +93,11 @@ def _is_python_command( token ):
     ''' Checks if token is a Python command. '''
     return (
         token in ( 'python', 'python3' ) or token.startswith( 'python3.' ) )
+
+
+def _is_python_tool( token ):
+    ''' Checks if token is a Python development tool. '''
+    return token in ( 'coverage', 'pyright', 'pytest', 'ruff' )
 
 
 _splitters = frozenset( ( ';', '&', '|', '&&', '||' ) )

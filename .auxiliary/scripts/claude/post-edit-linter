@@ -23,7 +23,8 @@ def main( ):
         _reactor_failure( f"{exc_class.__qualname__}: {exc}" )
     if result.returncode != 0:
         # Combine stdout and stderr since linting output may go to stdout.
-        print( f"{result.stdout}\n\n{result.stderr}", file = sys.stderr )
+        result_text = f"{result.stdout}\n\n{result.stderr}".strip( )
+        print( _truncate_if_necessary( result_text ), file = sys.stderr )
         raise SystemExit( 2 )
         # Use JSON output for better integration with Claude Code
         # _emit_decision_json( "block", f"{result.stdout}\n\n{result.stderr}" )
@@ -60,6 +61,18 @@ def _error( message ):
 def _reactor_failure( message ):
     print( "Claude Code Hook Failure: {message}", file = sys.stderr )
     raise SystemExit( 1 )
+
+
+def _truncate_if_necessary( output, lines_max = 50 ):
+    ''' Truncates output to maximum number of lines with truncation notice. '''
+    lines = output.split( '\n' )
+    if len( lines ) <= lines_max: return output
+    lines_to_display = lines[ : lines_max ]
+    truncations_count = len( lines ) - lines_max
+    lines_to_display.append(
+        f"\n[OUTPUT TRUNCATED: {truncations_count} additional lines omitted. "
+        f"Fix the issues above to see remaining diagnostics.]" )
+    return '\n'.join( lines_to_display )
 
 
 if __name__ == '__main__': main( )

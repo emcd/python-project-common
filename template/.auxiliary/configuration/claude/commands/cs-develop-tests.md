@@ -1,39 +1,39 @@
 ---
 allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, MultiEdit, WebFetch
-description: Write comprehensive tests following project testing guidelines and improve coverage
+description: Implement comprehensive tests following an existing test plan and project guidelines
 ---
 
-# Write Tests
+# Implement Tests
 
 **NOTE: This is an experimental workflow! If anything seems unclear or missing,
 please stop for consultation with the user.**
 
-For systematic test creation following project testing guidelines and conventions.
+For systematic test implementation following a pre-created test plan and project testing guidelines.
 
-Test requirements: `$ARGUMENTS`
+Test plan path: `$ARGUMENTS`
 
-**CRITICAL**: Apply project testing principles consistently.
+**CRITICAL**: Implement tests according to the provided test plan only.
 **HALT if**:
-- No test requirements are provided
-- Target code cannot be analyzed
-- Testing principles would be violated
+- No test plan path is provided
+- Test plan cannot be read or is invalid
+- Plan conflicts with project testing principles
+- Implementation deviates from plan without justification
 
 ## Context
 
 - Current git status: !`git status --porcelain`
 - Current branch: !`git branch --show-current`
-- Current test coverage: !`hatch --env develop run coverage report --skip-covered || echo "No coverage data available"`
+- Test plan to implement: !`ls "$ARGUMENTS" 2>/dev/null && echo "Present" || echo "Missing - HALT"`
 - Existing test structure: !`find tests -name "*.py" | head -20`
 - Test README: !`ls tests/README.md 2>/dev/null && echo "Present" || echo "Missing"`
 
 ## Prerequisites
 
 Ensure that you:
-- have verified access to / read target code modules
-- understand what specific tests need to be written
-- have read any relevant `CLAUDE.md` file
-- understand the [test-writing
-  guidelines](https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst).
+- Have a valid test plan document
+- Have verified access to target code modules referenced in the plan
+- Have read any relevant `CLAUDE.md` file
+- Understand the [test-writing guidelines](https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst)
 
 ## Testing Principles (from project guidelines)
 
@@ -62,97 +62,122 @@ Ensure that you:
 **CRITICAL**: You MUST halt the process and consult with the user if ANY of the
 following occur:
 
-- **Anti-Pattern Detection**: If proposed tests violate project principles
-- **Coverage Regression**: If tests would reduce existing coverage
+- **Plan Deviation**: If implementation cannot follow the test plan as specified
+- **Anti-Pattern Detection**: If plan requires tests that violate project principles
 - **Architecture Conflicts**: If tests require monkey-patching internal code
-- **Numbering Conflicts**: If test numbering clashes with existing conventions
-- **Missing Dependencies**: If required test fixtures or dependencies are
-  unavailable
+- **Numbering Conflicts**: If planned test numbering clashes with existing conventions
+- **Missing Dependencies**: If required test fixtures or dependencies are unavailable
+- **Plan Inconsistencies**: If the test plan contains contradictions or unclear instructions
 
 **Your responsibilities:**
-- Follow project style and test-writing conventions exactly.
-- Use dependency injection patterns consistently.
-- Prefer pyfakefs for filesystem operations.
-- Maintain systematic test numbering.
-- Ensure tests validate behavior, not implementation.
+- Follow the test plan precisely while adhering to project conventions
+- Use dependency injection patterns as specified in the plan
+- Implement tests exactly as planned without adding extras
+- Maintain systematic test numbering as outlined in the plan
+- Ensure tests validate behavior, not implementation
+- Document any necessary deviations from the plan with clear justification
 
-## Test Writing Process
+## Test Implementation Process
 
-Execute the following steps for test requirements: `$ARGUMENTS`
+Execute the following steps for test plan: `$ARGUMENTS`
 
 ### 0. Pre-Flight Verification
-**MANDATORY - Verify access to test-writing guide:**
+**MANDATORY - Verify access to project guidelines:**
 
-Use WebFetch to access and confirm you can read the complete testing
-guidelines:
-https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst
+Use WebFetch to access and confirm you can read the complete project guidelines:
+- Testing: https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst
+- Practices: https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/practices.rst
+- Style: https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/style.rst
 
-**CRITICAL**: You MUST successfully access and read the guide before
-proceeding. If WebFetch fails, HALT and consult with the user.
+**CRITICAL**: You MUST successfully access and read all three guides before
+proceeding. If WebFetch fails for any guide, HALT and consult with the user.
 
-### 1. Code Analysis Phase
-Examine the target code to understand testing needs:
+### 1. Test Plan Reading and Validation
+**CRITICAL - Read and validate the provided test plan:**
 
-**Check for existing related tests to avoid duplication:**
-- Search for existing test files covering target modules
-- Review test coverage reports for current state
-- Identify gaps rather than recreating existing tests
+Read the test plan document at the provided path:
+```
+Read the test plan file at: $ARGUMENTS
+```
 
-**For each target file:**
-- Read the source code to understand public API
-- Identify functions/classes that need testing
-- Note dependency injection points
-- Check for existing test coverage gaps
+**Validate plan completeness:**
+- Verify plan contains coverage analysis summary
+- Confirm test strategy is clearly defined
+- Check that component-specific tests are detailed
+- Ensure implementation notes are present
+- Validate success metrics are specified
 
-### 2. Test Structure Planning
-Determine appropriate test organization and categories:
+**HALT if the plan is incomplete, unclear, or missing critical sections.**
 
-**Review existing test structure and plan test numbering following project conventions.**
+### 2. Plan Compliance Verification
+**Ensure plan aligns with project principles:**
 
-**If tests/README.md is missing, create it with:**
-- Test module numbering scheme specific to the package
-- Rationale for any use of patch or other exceptions to standard patterns
-- Project-specific testing conventions and fixtures
+**Verify plan adheres to project testing guidelines:**
+- No monkey-patching of internal code required
+- Dependency injection patterns are viable
+- Test numbering follows project conventions
+- No external network testing planned
 
-**Test Categories to Include:**
-- **Basic Functionality Tests (000-099):** Happy path scenarios, input validation, basic error conditions
-- **Feature-Specific Tests (100+ blocks):** Each public function/class gets its own 100-block with normal usage patterns, edge cases, and error handling
-- **Integration Tests (higher numbers):** Cross-module interactions and end-to-end workflows
+**Check for conflicts with existing tests:**
+- Review planned test module names against existing files
+- Verify planned test function numbering doesn't conflict
+- Ensure no duplication of existing test coverage
 
-### 3. Test Implementation
-Create tests following project conventions:
+### 3. Test Data and Fixture Setup
+**Prepare test data as specified in the plan:**
+
+**Create required test data under tests/data/:**
+- Set up fake packages for extension mechanisms (if planned)
+- Prepare captured artifacts and snapshots (if planned)
+- Create any mock data files as specified in the plan
+
+**CRITICAL**: Only create test data explicitly mentioned in the test plan.
+
+### 4. Test Module Creation/Updates
+**Implement test modules following the plan:**
+
+**For each planned test module:**
+- Create or update test files with planned naming (e.g., `test_100_exceptions.py`)
+- Follow planned test function numbering within modules
+- Implement only the tests specified in the plan
+- Use dependency injection patterns as outlined in the plan
 
 **Key Implementation Guidelines:**
-- Use dependency injection for all external dependencies
-- Prefer `pyfakefs.Patcher()` for filesystem operations
+- Use dependency injection for all external dependencies as planned
+- Prefer `pyfakefs.Patcher()` for filesystem operations as specified
 - Mock only third-party services, never internal code
-- Include docstrings explaining what behavior is tested
+- **Insert tests in numerical order within files** - do NOT append to end
+- **Write behavior-focused docstrings**: "Functionality is correct with Y" NOT "function_name does X with Y"
 - Follow existing naming conventions and code style
+- Implement tests in the exact order and numbering specified in the plan
 
 ### 5. Coverage Validation
-Verify tests improve coverage without regressions:
+**Verify implementation matches plan coverage goals:**
 ```bash
 hatch --env develop run testers
 hatch --env develop run coverage report --show-missing
 ```
 
-**CRITICAL - VERIFY COVERAGE IMPROVEMENT:**
+**CRITICAL - VERIFY PLAN COMPLIANCE:**
 - Run full test suite to ensure no regressions
-- Check that new tests increase overall coverage
-- Verify no existing functionality is broken
-- Confirm tests follow project numbering conventions
+- Check that coverage matches the plan's target metrics
+- Verify all planned test functions are implemented
+- Confirm coverage gaps identified in the plan are addressed
+- Ensure no existing functionality is broken
 
 ### 6. Code Quality Validation
-Ensure tests meet project standards:
+**Ensure implemented tests meet project standards:**
 ```bash
 hatch --env develop run linters
 ```
 
 **Requirements:**
 - All linting checks must pass
+- Note that the linters do not check style; you must verify style compliance
 - No violations of project coding standards
 - Test docstrings are clear and descriptive
 - Proper imports and dependencies
+- Implementation follows all conventions specified in the plan
 
 ## Test Pattern Examples
 
@@ -163,7 +188,7 @@ async def test_100_process_with_custom_processor( ):
     def mock_processor( data ):
         return f"processed: {data}"
 
-    result = await process_data( "test", processor = mock_processor )
+    result = await process_data( 'test', processor = mock_processor )
     assert result == "processed: test"
 ```
 
@@ -174,7 +199,6 @@ def test_200_config_file_processing( ):
     with Patcher( ) as patcher:
         fs = patcher.fs
         fs.create_file( '/fake/config.toml', contents = '[section]\nkey="value"' )
-
         result = process_config_file( Path( '/fake/config.toml' ) )
         assert result.key == 'value'
 ```
@@ -189,24 +213,33 @@ def test_300_invalid_input_handling( ):
 
 ## Success Criteria
 
-Tests are complete when:
-- [ ] Coverage has measurably improved
+Implementation is complete when:
+- [ ] All tests specified in the plan have been implemented
+- [ ] Coverage matches or exceeds the plan's target metrics
+- [ ] All planned test modules and functions are created with correct numbering
+- [ ] Test data and fixtures are set up as specified in the plan
 - [ ] All new tests pass consistently
 - [ ] No existing tests are broken
 - [ ] Linting passes without issues
-- [ ] Tests follow project numbering conventions
-- [ ] Dependency injection is used appropriately
+- [ ] Project coding practices and style have been followed
+- [ ] Tests follow project numbering conventions as planned
+- [ ] Tests are inserted in proper numerical order within files
+- [ ] Test docstrings focus on behavior, not function names
+- [ ] Dependency injection is used as specified in the plan
 - [ ] No monkey-patching of internal code
-- [ ] Performance-conscious patterns are applied
+- [ ] Performance-conscious patterns are applied as planned
 
-**Note**: Always run full validation (`hatch --env develop run testers && hatch
---env develop run linters`) before considering the task complete.
+**Note**: Always run full validation (`hatch --env develop run linters && hatch
+--env develop run testers`) before considering the task complete.
 
 ## Final Report
 
 Upon completion, provide a brief report covering:
-- Coverage improvements achieved (before/after percentages)
-- Any technical conflicts encountered (e.g., dataclass/protocol issues, __slots__ conflicts)
-- How any conflicts were resolved or worked around
-- Pragma directives applied (# pragma: no cover, # pragma: no branch) and rationale
-- Any deviations from standard patterns and justification
+- **Plan Compliance**: Confirmation that all planned tests were implemented as specified
+- **Coverage Achievement**: Final coverage percentages vs. plan targets
+- **Deviations from Plan**: Any necessary changes made to the plan during implementation with justification
+- **Technical Issues Resolved**: Any conflicts encountered and how they were resolved
+- **Pragma Directives Applied**: Any `# pragma: no cover` or `# pragma: no branch` added with rationale
+- **Test Data Created**: Summary of fixtures and test data files created under `tests/data/`
+- **Module Updates**: List of test modules created or updated with their numbering
+- **Code Quality**: Confirmation that tests are properly ordered and have behavior-focused docstrings
