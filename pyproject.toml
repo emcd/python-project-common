@@ -133,9 +133,9 @@ PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
 # --- END: Injected by Copier ---
 [tool.hatch.envs.develop.scripts]
 docsgen = [
-  """sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
+  """sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx --quiet \
       documentation .auxiliary/artifacts/sphinx-linkcheck""",
-  """sphinx-build -a -d .auxiliary/caches/sphinx \
+  """sphinx-build -a -d .auxiliary/caches/sphinx --quiet \
       documentation .auxiliary/artifacts/sphinx-html""",
 ]
 linters = [
@@ -151,7 +151,7 @@ packagers = [
 ]
 testers-documentation = [
   """coverage run -m sphinx.cmd.build \
-      -E -b doctest -d .auxiliary/caches/sphinx \
+      -E -b doctest -d .auxiliary/caches/sphinx --quiet \
       documentation .auxiliary/artifacts/sphinx-doctest""",
 ]
 testers-serotine = [ """coverage run -m pytest -m slow"""  ]
@@ -234,7 +234,7 @@ stubPath = 'sources/emcdproj/_typedecls'
 # Note: Cannot run doctests from Pytest, because Pytest tries to update '_'
 #       attribute on protected modules. Instead, we use Sphinx to run doctests.
 minversion = '8.1'
-addopts = """--capture=no --exitfirst -rfE -m 'not slow'""" # TODO? '--fail-under'
+addopts = """--capture=no --exitfirst --quiet -rfE -m 'not slow'""" # TODO? '--fail-under'
 testpaths = [ 'tests' ]
 python_files = [ 'test_*.py' ]
 python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
