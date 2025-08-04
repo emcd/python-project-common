@@ -129,7 +129,18 @@ def process_items(
 ### Quality Assurance
 
 - Ensure linters give a clean report: `hatch --env develop run linters`
-- Do **not** suppress linter warnings with `noqa` pragma comments without explicit approval
+- Address linting issues within the first few conversation turns from when they
+  appear.
+- Do **not** suppress linter warnings via `noqa` pragma comments without
+  explicit user approval.
+- Do **not** avoid `TRY003` exceptions from Ruff. Instead, use appropriate
+  custom exceptions in the `exceptions` module for the package. If an
+  appropriate exception does not exist, then create it.
+- Do **not** suppress typechecker warnings via `type` pragma comments without
+  explicit user approval. For missing third-party stubs, you can generate them
+  with `hatch --env develop run pyright --createstub <import>` and then edit
+  the stubs (under `sources/<package>/_typedecls`) to flesh out what you need,
+  discarding the remainder.
 - Ensure tests pass: `hatch --env develop run testers`
 - Ensure documentation generates without error: `hatch --env develop run docsgen`
 
