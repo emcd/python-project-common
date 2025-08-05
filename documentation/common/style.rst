@@ -462,7 +462,7 @@ Line Continuation
           if is_valid( value ) ]
 
       # Multi-line conditional statements
-      if (      validate_input( data, strict = True )
+      if (      is_valid_input( data, strict = True )
             and process_ready( )
             and not maintenance_mode
       ): process( data )

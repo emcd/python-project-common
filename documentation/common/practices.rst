@@ -113,7 +113,7 @@ Module Organization
 
       def process_data( data: UserData ) -> str: pass
 
-      def validate_user( user: UserData ) -> bool: pass
+      def validate_user( user: UserData ) -> UserData: pass
 
       # 5. Other private functions (alphabetical)
       def _format_error_message( error: str ) -> str: pass
@@ -180,7 +180,7 @@ Type Annotations
 
       # Repeating complex types without TypeAlias
       def process_user( user: dict[ str, str | int | list[ str ] ] ) -> dict[ str, str | int | list[ str ] ]: pass
-      def validate_user( user: dict[ str, str | int | list[ str ] ] ) -> bool: pass
+      def validate_user( user: dict[ str, str | int | list[ str ] ] ) -> dict[ str, str | int | list[ str ] ]: pass
 
   **✅ Prefer - comprehensive type annotations with aliases:**
 
@@ -212,7 +212,7 @@ Type Annotations
           return results
 
       def process_user( user: UserRecord ) -> UserRecord: pass
-      def validate_user( user: UserRecord ) -> bool: pass
+      def validate_user( user: UserRecord ) -> UserRecord: pass
 
 * Prefer ``__.Absential`` over ``__.typx.Optional`` for optional function
   arguments when ``None`` has semantic meaning distinct from "not provided".
@@ -551,7 +551,7 @@ Documentation
 
   .. code-block:: python
 
-      def validate_config( config: __.cabc.Mapping[ str, __.typx.Any ] ) -> None:
+      def validate_config( config: __.cabc.Mapping[ str, __.typx.Any ] ) -> __.cabc.Mapping[ str, __.typx.Any ]:
           ''' Validate the configuration dictionary. '''  # Imperative mood
 
       def process_data( data: __.cabc.Sequence[ __.typx.Any ] ) -> dict[ str, __.typx.Any ]:
@@ -563,7 +563,7 @@ Documentation
 
       def validate_config(
           config: __.cabc.Mapping[ str, __.typx.Any ]
-      ) -> None:
+      ) -> __.cabc.Mapping[ str, __.typx.Any ]:
           ''' Validates the configuration dictionary. '''  # Narrative mood
 
       def process_data(
