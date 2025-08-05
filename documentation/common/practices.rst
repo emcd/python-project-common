@@ -583,9 +583,26 @@ Quality Assurance
       hatch --env develop run testers    # Runs full test suite
       hatch --env develop run docsgen    # Generates documentation
 
-* Do not suppress linter warnings with ``noqa`` pragma comments without
-  explicit approval. Address the underlying issues instead of silencing
-  warnings.
+* Linter suppressions must be reviewed critically. Address underlying design
+  problems rather than masking them with suppressions.
+
+**Acceptable Suppressions:**
+
+* ``noqa: PLR0913`` may be used for CLI or service APIs with many parameters,
+  but data transfer objects should be considered in most other cases.
+* ``noqa: S*`` may be used for properly constrained and vetted subprocess
+  executions or Internet content retrievals.
+
+**Unacceptable Suppressions (require investigation):**
+
+* ``type: ignore`` must not be used except in extremely rare circumstances.
+  Such suppressions usually indicate missing third-party dependencies or type
+  stubs, inappropriate type variables, or bad inheritance patterns.
+* ``__.typx.cast`` should not be used except in extremely rare circumstances.
+  Such casts suppress normal type checking and usually indicate the same
+  problems as ``type: ignore``.
+* Tryceratops complaints must not be suppressed with ``noqa`` pragmas.
+* Most other ``noqa`` suppressions require compelling justification.
 
 * If third-party typing stubs are missing, then ensure that the third-party
   package has been included in ``pyproject.toml`` and rebuild the Hatch

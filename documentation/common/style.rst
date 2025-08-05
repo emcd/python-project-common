@@ -322,7 +322,9 @@ Collections
 Docstrings
 -------------------------------------------------------------------------------
 
-* Use triple single-quotes for all docstrings.
+* Use triple single-quotes for all docstrings with narrative mood (third
+  person). The docstring describes what the function does, not what the caller
+  should do.
 
 * For single-line docstrings, include one space after the opening quotes and
   before the closing quotes.
@@ -525,11 +527,64 @@ Function Invocations
           parameter2
       )
 
+Multi-line Construct Rules
+-------------------------------------------------------------------------------
+
+* **Function invocations and class instantiations** should place the closing
+  ``)`` on the same line as the last argument.
+
+* **Comprehensions and generator expressions** should place the closing
+  delimiter on the same line as the last statement.
+
+* **Parenthetical groupings** should place the closing delimiter on the same
+  line as the last statement.
+
+* **All other multi-line constructs** (function signatures, annotations, lists,
+  dictionaries, etc.) must place the closing delimiter on a separate line
+  following the last item and must dedent the closing delimiter to match the
+  opening line indentation.
+
+* **Trailing comma rule**: If a closing delimiter is not on the same line as
+  the last item in a multi-line construct, then the last item must be followed
+  by a trailing comma. The last argument of a function invocation must not be
+  followed by a trailing comma.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      # Function calls: closing ) on same line, no trailing comma
+      result = process_data(
+          input_file, output_file, strict = True )
+
+      # Comprehensions: closing delimiter on same line
+      squares = [ x**2 for x in range( 10 ) if x % 2 == 0 ]
+
+      # Lists/dicts: closing delimiter on separate line, trailing comma
+      data = {
+          'key1': 'value1',
+          'key2': 'value2',
+      }
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      # Wrong: trailing comma in function call
+      result = process_data(
+          input_file, output_file, strict = True, )
+
+      # Wrong: closing delimiter on separate line for function call
+      result = process_data(
+          input_file, output_file
+      )
+
 Strings
 -------------------------------------------------------------------------------
 
-* Use single quotes for string literals unless using f-strings, ``.format``
-  method, or exception and logging messages.
+* Use single quotes for plain data strings unless they contain single quotes.
+  Use double quotes for f-strings, ``.format`` strings, exception messages,
+  and log messages.
 
 * Exception messages and log messages should end with periods for consistency
   and proper sentence structure. Sentence fragments, which end in a colon,
