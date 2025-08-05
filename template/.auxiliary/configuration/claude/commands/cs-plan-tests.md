@@ -13,8 +13,9 @@ implementation plans following project testing guidelines.
 
 Target module/functionality: `$ARGUMENTS`
 
-**CRITICAL**: Focus on analysis and planning only - do NOT implement tests.
-**HALT if**:
+Focus on analysis and planning only - do not implement tests.
+
+Stop and consult if:
 - No target module or functionality is provided
 - Target code cannot be analyzed
 - Coverage data is unavailable
@@ -23,7 +24,7 @@ Target module/functionality: `$ARGUMENTS`
 
 - Current git status: !`git status --porcelain`
 - Current branch: !`git branch --show-current`
-- **CRITICAL - Current test coverage**: !`hatch --env develop run coverage report --show-missing`
+- Current test coverage: !`hatch --env develop run coverage report --show-missing`
 - Existing test structure: !`find tests -name "*.py" | head -20`
 - Test README status: !`ls tests/README.md 2>/dev/null && echo "Present" || echo "Missing"`
 
@@ -33,12 +34,11 @@ Ensure that you:
 - Have access to target code modules for analysis
 - Can generate current coverage reports
 - Have read any relevant `CLAUDE.md` file
-- Understand the [test-writing guidelines](https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst)
+- Understand the test-writing guidelines: @.auxiliary/instructions/tests.rst
 
 ## Safety Requirements
 
-**CRITICAL**: You MUST halt the process and consult with the user if ANY of the
-following occur:
+Stop and consult the user if any of the following occur:
 
 - **Missing Coverage Data**: If coverage reports cannot be generated
 - **Inaccessible Code**: If target modules cannot be read or analyzed
@@ -61,13 +61,12 @@ following occur:
 Execute the following steps for target: `$ARGUMENTS`
 
 ### 0. Pre-Flight Verification
-**MANDATORY - Access test-writing guidelines:**
+Access test-writing guidelines:
 
-Use WebFetch to access and read the complete testing guidelines:
-https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst
+Read and understand the complete testing guidelines:
+@.auxiliary/instructions/tests.rst
 
-**CRITICAL**: You MUST successfully access and understand the guide before
-proceeding. If WebFetch fails, HALT and consult with the user.
+You must successfully access and understand the guide before proceeding. If the guide cannot be accessed, stop and inform the user.
 
 ### 1. Coverage Analysis Phase
 
@@ -78,7 +77,7 @@ hatch --env develop run coverage report --show-missing
 hatch --env develop run coverage html
 ```
 
-**CRITICAL ANALYSIS REQUIREMENTS:**
+Analysis requirements:
 - Identify all uncovered lines in target modules
 - Analyze which functions/classes lack any tests
 - Determine which code paths are partially covered
@@ -144,7 +143,7 @@ hatch --env develop run coverage html
 - Identify next available number blocks for new test modules
 - Plan numbering for new test functions within modules
 
-**CRITICAL - Test Module vs Function Numbering:**
+Test module vs function numbering:
 - **Test modules**: Named as `test_<N>00_<module>.py` (e.g., `test_100_exceptions.py`, `test_500_cli.py`)
 - **Test functions**: Within modules use 000-099 basic, 100+ blocks per component
 - These are DIFFERENT numbering schemes - do not confuse them
@@ -244,7 +243,7 @@ Upon completion, provide a brief summary covering:
 - Current coverage percentage and specific gaps identified
 - Number of new tests planned by category
 - Key architectural considerations (dependency injection needs, etc.)
-- **CRITICAL ASSESSMENT**: Areas where 100% coverage may be impossible without violating immutability constraints
+- Assessment: Areas where 100% coverage may be impossible without violating immutability constraints
 - **PUSHBACK RECOMMENDATIONS**: Suggested architectural improvements to enable better testability
 - Private functions/methods that cannot be exercised via public API and analysis of why
 - Estimated complexity and implementation priority

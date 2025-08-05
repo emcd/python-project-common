@@ -24,12 +24,14 @@ Test argument: `$ARGUMENTS`
 2. **Test basic git commands**: Run `git status` and `git branch --show-current`
 3. **Test hatch command**: Run `hatch version`
 4. **Test file operations**: Use LS tool to list current directory contents
-5. **Test restricted command**: Attempt `git push` (should be blocked and require approval)
+5. **Test @-reference functionality**: @.auxiliary/instructions/practices.rst - Find and quote the section about "Module Organization" from this file
+6. **Test restricted command**: Attempt `git push` (should be blocked and require approval)
 
 ## Expected Results
 
 - Context should be populated with current state
 - Allowed commands should execute successfully
+- @-referenced file should be accessible and readable
 - `git push` should be blocked
 
 ## Your Task
@@ -37,5 +39,6 @@ Test argument: `$ARGUMENTS`
 Execute the validation tasks above and provide a summary report including:
 - The interpolated argument value you see on the "Test argument:" line
 - Results of each allowed command
+- Content extracted from the @-referenced practices guide (Module Organization section)
 - Confirmation that restricted commands are properly blocked
 - Any observations about the command execution experience
