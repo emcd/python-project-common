@@ -633,6 +633,7 @@ Strings
 
       f"Values: {', '.join(values)}"
 
+
 Rust
 ===============================================================================
 
@@ -640,6 +641,72 @@ Rust
 
    Add comprehensive Rust style guidance including formatting, naming
    conventions, import organization, and idiomatic patterns.
+
+TOML
+===============================================================================
+
+Strings
+-------------------------------------------------------------------------------
+
+* Use single quotes for string values unless escapes are needed, in which case
+  use double quotes.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      name = 'example-service'
+      description = 'A service for processing data'
+      pattern = 'user-.*'
+
+      # Use double quotes when escapes are needed
+      windows-path = "C:\\Program Files\\Example"
+      message = "Line 1\nLine 2"
+
+  **❌ Avoid:**
+
+  .. code-block:: toml
+
+      name = "example-service"
+      description = "A service for processing data"
+      pattern = "user-.*"
+
+* Use triple single quotes for multi-line strings to maintain consistency with
+  Python docstring conventions.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      description = '''
+      This is a longer description
+      that spans multiple lines.
+      '''
+
+Formatting
+-------------------------------------------------------------------------------
+
+* Keep arrays and inline tables on single lines when they fit within
+  reasonable length.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      ports = [ 8080, 8443, 9090 ]
+      database = { host = 'localhost', port = 5432 }
+
+* For longer arrays, place each element on its own line with proper indentation.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      allowed-origins = [
+          'https://example.com',
+          'https://api.example.com',
+          'https://admin.example.com',
+      ]
 
 
 Automation

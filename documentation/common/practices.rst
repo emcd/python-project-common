@@ -644,3 +644,69 @@ Quality Assurance
 
    Expand Rust practices sections with import organization, error handling,
    type usage patterns, and documentation standards similar to Python section.
+
+
+TOML
+===============================================================================
+
+Configuration Design
+-------------------------------------------------------------------------------
+
+* Prefer table arrays with ``name`` fields over proliferating custom subtables.
+  This approach scales better and reduces configuration complexity.
+
+  **❌ Avoid - custom subtables:**
+
+  .. code-block:: toml
+
+      [database]
+      host = 'localhost'
+
+      [database.primary]
+      port = 5432
+      timeout = 30
+
+      [database.replica]
+      port = 5433
+      timeout = 15
+
+  **✅ Prefer - table arrays with name field:**
+
+  .. code-block:: toml
+
+      [[database]]
+      name = 'primary'
+      host = 'localhost'
+      port = 5432
+      timeout = 30
+
+      [[database]]
+      name = 'replica'
+      host = 'localhost'
+      port = 5433
+      timeout = 15
+
+* Apply nomenclature guidelines to key and table names. Use Latin-derived words
+  when they are the established norm in the domain.
+
+Key Naming
+-------------------------------------------------------------------------------
+
+* Use hyphens instead of underscores in key names for better ergonomics and
+  visual clarity.
+
+  **❌ Avoid:**
+
+  .. code-block:: toml
+
+      max_connections = 100
+      retry_count = 3
+      database_url = 'postgresql://localhost/db'
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      max-connections = 100
+      retry-count = 3
+      database-url = 'postgresql://localhost/db'
