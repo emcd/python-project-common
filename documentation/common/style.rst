@@ -322,7 +322,9 @@ Collections
 Docstrings
 -------------------------------------------------------------------------------
 
-* Use triple single-quotes for all docstrings.
+* Use triple single-quotes for all docstrings with narrative mood (third
+  person). The docstring describes what the function does, not what the caller
+  should do.
 
 * For single-line docstrings, include one space after the opening quotes and
   before the closing quotes.
@@ -460,7 +462,7 @@ Line Continuation
           if is_valid( value ) ]
 
       # Multi-line conditional statements
-      if (      validate_input( data, strict = True )
+      if (      is_valid_input( data, strict = True )
             and process_ready( )
             and not maintenance_mode
       ): process( data )
@@ -525,11 +527,64 @@ Function Invocations
           parameter2
       )
 
+Multi-line Construct Rules
+-------------------------------------------------------------------------------
+
+* **Function invocations and class instantiations** should place the closing
+  ``)`` on the same line as the last argument.
+
+* **Comprehensions and generator expressions** should place the closing
+  delimiter on the same line as the last statement.
+
+* **Parenthetical groupings** should place the closing delimiter on the same
+  line as the last statement.
+
+* **All other multi-line constructs** (function signatures, annotations, lists,
+  dictionaries, etc.) must place the closing delimiter on a separate line
+  following the last item and must dedent the closing delimiter to match the
+  opening line indentation.
+
+* **Trailing comma rule**: If a closing delimiter is not on the same line as
+  the last item in a multi-line construct, then the last item must be followed
+  by a trailing comma. The last argument of a function invocation must not be
+  followed by a trailing comma.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      # Function calls: closing ) on same line, no trailing comma
+      result = process_data(
+          input_file, output_file, strict = True )
+
+      # Comprehensions: closing delimiter on same line
+      squares = [ x**2 for x in range( 10 ) if x % 2 == 0 ]
+
+      # Lists/dicts: closing delimiter on separate line, trailing comma
+      data = {
+          'key1': 'value1',
+          'key2': 'value2',
+      }
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      # Wrong: trailing comma in function call
+      result = process_data(
+          input_file, output_file, strict = True, )
+
+      # Wrong: closing delimiter on separate line for function call
+      result = process_data(
+          input_file, output_file
+      )
+
 Strings
 -------------------------------------------------------------------------------
 
-* Use single quotes for string literals unless using f-strings, ``.format``
-  method, or exception and logging messages.
+* Use single quotes for plain data strings unless they contain single quotes.
+  Use double quotes for f-strings, ``.format`` strings, exception messages,
+  and log messages.
 
 * Exception messages and log messages should end with periods for consistency
   and proper sentence structure. Sentence fragments, which end in a colon,
@@ -578,6 +633,7 @@ Strings
 
       f"Values: {', '.join(values)}"
 
+
 Rust
 ===============================================================================
 
@@ -585,6 +641,72 @@ Rust
 
    Add comprehensive Rust style guidance including formatting, naming
    conventions, import organization, and idiomatic patterns.
+
+TOML
+===============================================================================
+
+Strings
+-------------------------------------------------------------------------------
+
+* Use single quotes for string values unless escapes are needed, in which case
+  use double quotes.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      name = 'example-service'
+      description = 'A service for processing data'
+      pattern = 'user-.*'
+
+      # Use double quotes when escapes are needed
+      windows-path = "C:\\Program Files\\Example"
+      message = "Line 1\nLine 2"
+
+  **❌ Avoid:**
+
+  .. code-block:: toml
+
+      name = "example-service"
+      description = "A service for processing data"
+      pattern = "user-.*"
+
+* Use triple single quotes for multi-line strings to maintain consistency with
+  Python docstring conventions.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      description = '''
+      This is a longer description
+      that spans multiple lines.
+      '''
+
+Formatting
+-------------------------------------------------------------------------------
+
+* Keep arrays and inline tables on single lines when they fit within
+  reasonable length.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      ports = [ 8080, 8443, 9090 ]
+      database = { host = 'localhost', port = 5432 }
+
+* For longer arrays, place each element on its own line with proper indentation.
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      allowed-origins = [
+          'https://example.com',
+          'https://api.example.com',
+          'https://admin.example.com',
+      ]
 
 
 Automation

@@ -113,7 +113,7 @@ Module Organization
 
       def process_data( data: UserData ) -> str: pass
 
-      def validate_user( user: UserData ) -> bool: pass
+      def validate_user( user: UserData ) -> UserData: pass
 
       # 5. Other private functions (alphabetical)
       def _format_error_message( error: str ) -> str: pass
@@ -180,7 +180,7 @@ Type Annotations
 
       # Repeating complex types without TypeAlias
       def process_user( user: dict[ str, str | int | list[ str ] ] ) -> dict[ str, str | int | list[ str ] ]: pass
-      def validate_user( user: dict[ str, str | int | list[ str ] ] ) -> bool: pass
+      def validate_user( user: dict[ str, str | int | list[ str ] ] ) -> dict[ str, str | int | list[ str ] ]: pass
 
   **✅ Prefer - comprehensive type annotations with aliases:**
 
@@ -212,7 +212,7 @@ Type Annotations
           return results
 
       def process_user( user: UserRecord ) -> UserRecord: pass
-      def validate_user( user: UserRecord ) -> bool: pass
+      def validate_user( user: UserRecord ) -> UserRecord: pass
 
 * Prefer ``__.Absential`` over ``__.typx.Optional`` for optional function
   arguments when ``None`` has semantic meaning distinct from "not provided".
@@ -551,7 +551,7 @@ Documentation
 
   .. code-block:: python
 
-      def validate_config( config: __.cabc.Mapping[ str, __.typx.Any ] ) -> None:
+      def validate_config( config: __.cabc.Mapping[ str, __.typx.Any ] ) -> __.cabc.Mapping[ str, __.typx.Any ]:
           ''' Validate the configuration dictionary. '''  # Imperative mood
 
       def process_data( data: __.cabc.Sequence[ __.typx.Any ] ) -> dict[ str, __.typx.Any ]:
@@ -563,7 +563,7 @@ Documentation
 
       def validate_config(
           config: __.cabc.Mapping[ str, __.typx.Any ]
-      ) -> None:
+      ) -> __.cabc.Mapping[ str, __.typx.Any ]:
           ''' Validates the configuration dictionary. '''  # Narrative mood
 
       def process_data(
@@ -583,9 +583,26 @@ Quality Assurance
       hatch --env develop run testers    # Runs full test suite
       hatch --env develop run docsgen    # Generates documentation
 
-* Do not suppress linter warnings with ``noqa`` pragma comments without
-  explicit approval. Address the underlying issues instead of silencing
-  warnings.
+* Linter suppressions must be reviewed critically. Address underlying design
+  problems rather than masking them with suppressions.
+
+**Acceptable Suppressions:**
+
+* ``noqa: PLR0913`` may be used for CLI or service APIs with many parameters,
+  but data transfer objects should be considered in most other cases.
+* ``noqa: S*`` may be used for properly constrained and vetted subprocess
+  executions or Internet content retrievals.
+
+**Unacceptable Suppressions (require investigation):**
+
+* ``type: ignore`` must not be used except in extremely rare circumstances.
+  Such suppressions usually indicate missing third-party dependencies or type
+  stubs, inappropriate type variables, or bad inheritance patterns.
+* ``__.typx.cast`` should not be used except in extremely rare circumstances.
+  Such casts suppress normal type checking and usually indicate the same
+  problems as ``type: ignore``.
+* Tryceratops complaints must not be suppressed with ``noqa`` pragmas.
+* Most other ``noqa`` suppressions require compelling justification.
 
 * If third-party typing stubs are missing, then ensure that the third-party
   package has been included in ``pyproject.toml`` and rebuild the Hatch
@@ -627,3 +644,69 @@ Quality Assurance
 
    Expand Rust practices sections with import organization, error handling,
    type usage patterns, and documentation standards similar to Python section.
+
+
+TOML
+===============================================================================
+
+Configuration Design
+-------------------------------------------------------------------------------
+
+* Prefer table arrays with ``name`` fields over proliferating custom subtables.
+  This approach scales better and reduces configuration complexity.
+
+  **❌ Avoid - custom subtables:**
+
+  .. code-block:: toml
+
+      [database]
+      host = 'localhost'
+
+      [database.primary]
+      port = 5432
+      timeout = 30
+
+      [database.replica]
+      port = 5433
+      timeout = 15
+
+  **✅ Prefer - table arrays with name field:**
+
+  .. code-block:: toml
+
+      [[database]]
+      name = 'primary'
+      host = 'localhost'
+      port = 5432
+      timeout = 30
+
+      [[database]]
+      name = 'replica'
+      host = 'localhost'
+      port = 5433
+      timeout = 15
+
+* Apply nomenclature guidelines to key and table names. Use Latin-derived words
+  when they are the established norm in the domain.
+
+Key Naming
+-------------------------------------------------------------------------------
+
+* Use hyphens instead of underscores in key names for better ergonomics and
+  visual clarity.
+
+  **❌ Avoid:**
+
+  .. code-block:: toml
+
+      max_connections = 100
+      retry_count = 3
+      database_url = 'postgresql://localhost/db'
+
+  **✅ Prefer:**
+
+  .. code-block:: toml
+
+      max-connections = 100
+      retry-count = 3
+      database-url = 'postgresql://localhost/db'

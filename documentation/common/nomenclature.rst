@@ -257,8 +257,8 @@ Variables and Attributes
         timeout: float          # Not connection_timeout
         host: str               # Not database_host
 
-    def validate_email( address: str ) -> bool:  # Not email_address
-        ''' Validates email address format. '''
+    def validate_email( address: str ) -> str:  # Not email_address
+        ''' Validates email address format. Returns address if valid. '''
 
     def parse_configuration( filename: str ) -> dict[ str, __.typx.Any ]:  # Not config_file
         ''' Parses configuration from file. '''

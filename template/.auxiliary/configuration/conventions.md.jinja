@@ -175,11 +175,15 @@ def process_items(
 
 # Commits
 
+- Try to avoid bundling multiple features or fixes into the same commit.
+  Commits should reflect natural development milestones.
 - Use `git status` to ensure that all relevant changes are in the changeset to
   be committed.
-- Look at the previous five commit messages for guidance on message style.
+- Use the `code-conformer` agent to review all changes before committing.
+- Do **not** commit without explicit user approval.
 - Use present tense, imperative mood verbs to describe changes. E.g. "Fix" and
   *not* "Fixed".
+- Write sentences which end with proper punctuation.
 - The commit message should include a `Co-Authored-By:` field as its final
   line. The name of the author should be your model name. The email address
   should either be one which you have been designated to use or else a
