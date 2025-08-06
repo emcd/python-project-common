@@ -21,7 +21,6 @@ Stop and consult if:
 Before providing analysis, ensure:
 - Clear understanding of the technical question being asked
 - Sufficient context about the codebase or architecture being discussed
-- Have read @.auxiliary/instructions/practices.rst for architectural guidance when applicable
 
 ## Process Summary
 
