@@ -21,8 +21,8 @@
 Architecture Documentation
 *******************************************************************************
 
-This guide covers architectural documentation practices, including architectural
-decision records (ADRs) and design documentation standards.
+This guide covers architectural documentation practices, including
+architectural decision records (ADRs) and design documentation standards.
 
 Architectural Decision Records
 ===============================================================================
@@ -66,30 +66,30 @@ Use the following format for all architectural decision records:
     Context
     ===============================================================================
 
-    [Describe the forces at play, constraints, and business/technical situation 
-    that led to this decision. What problem are we trying to solve? What are the 
+    [Describe the forces at play, constraints, and business/technical situation
+    that led to this decision. What problem are we trying to solve? What are the
     key requirements and limitations?]
 
     Decision
     ===============================================================================
 
-    [State the decision clearly and concisely. This should be the response to the 
+    [State the decision clearly and concisely. This should be the response to the
     forces described in the Context section.]
 
     Alternatives
     ===============================================================================
 
-    [Document what other options were considered and why each was rejected. This 
-    provides valuable context for future decisions and shows that alternatives 
+    [Document what other options were considered and why each was rejected. This
+    provides valuable context for future decisions and shows that alternatives
     were properly evaluated.]
 
     Consequences
     ===============================================================================
 
-    [Describe the positive, negative, and neutral consequences of this decision. 
+    [Describe the positive, negative, and neutral consequences of this decision.
     Be honest about trade-offs and potential risks. Include impacts on:
     - Performance
-    - Maintainability  
+    - Maintainability
     - Team productivity
     - System complexity
     - Future flexibility]
@@ -124,7 +124,7 @@ Best Practices
 **Context Documentation**
 
 * Focus on forces and constraints that drove the decision.
-* Include relevant business context, technical limitations, and team constraints.
+* Include relevant business context, technical limitations, etc....
 * Avoid implementation details - focus on the decision-making environment.
 
 **Clear Decision Statements**
@@ -145,6 +145,169 @@ Best Practices
 * Include trade-offs and potential risks.
 * Consider long-term implications, not just immediate benefits.
 
+Standard Filesystem Organization Patterns
+===============================================================================
+
+This section documents the standard filesystem organization patterns used
+across all projects in the template system. These patterns provide consistency,
+maintainability, and clear separation of concerns.
+
+Root Directory Organization Principles
+-------------------------------------------------------------------------------
+
+**Single Sources Directory Pattern**
+
+All source code resides in a unified ``sources/`` directory, separate from
+other project artifacts:
+
+* **Clear separation**: Source code is distinctly separated from documentation,
+  tests, and configuration files
+* **Build process clarity**: Build tools can target the entire source tree
+  without ambiguity
+* **Mixed-language support**: Multiple languages can coexist with appropriate
+  subdirectories
+
+**Top-level Structure Standards**
+
+Essential project files remain at the top level for immediate visibility:
+
+* ``LICENSE.txt``, ``README.rst``, ``pyproject.toml`` provide project overview
+* ``documentation/`` contains all documentation source
+* ``tests/`` mirrors source structure for test organization
+* ``.auxiliary/`` provides development workspace (excluded from distributions)
+
+The `__` Subpackage Pattern
+-------------------------------------------------------------------------------
+
+The double underscore (``__``) subpackage serves as a centralized import hub,
+providing consistent namespace management across all project modules.
+
+**Core Concept**
+
+Each Python package includes a ``__`` subdirectory containing:
+
+* ``__init__.py``: Re-exports commonly used imports
+* ``imports.py``: Raw imports from external libraries
+* ``nomina.py``: Project-specific naming constants and conventions
+
+**Primary Benefits**
+
+**Namespace Management:**
+- Prevents pollution of individual module namespaces
+- Provides consistent access to common dependencies
+- Reduces import statement duplication and maintenance overhead
+
+**Performance Optimization:**
+- Centralizes import costs to package initialization time
+- Enables strategic use of direct imports for performance-critical code
+- Supports lazy loading patterns where beneficial
+
+**Maintenance Efficiency:**
+- Changes to common imports propagate automatically to all modules
+- Clear separation between common and module-specific imports
+- Reduces cognitive load when reading module code
+
+**Usage Pattern**
+
+All modules use the same import pattern regardless of package depth:
+
+.. code-block:: python
+
+    # In any module at any package level
+    from . import __
+
+    # Usage throughout the module
+    def process_data( items: __.cabc.Sequence[ str ] ) -> __.immut.Dictionary:
+        ''' Processes sequence items into immutable dictionary. '''
+        return __.immut.Dictionary( processed = True, count = len( items ) )
+
+**Cascading Import Hierarchy**
+
+When projects grow to include subpackages, the pattern extends naturally:
+
+**Hierarchical Inheritance:**
+- Each subpackage maintains its own ``__.py`` file
+- Subpackages inherit all parent imports with ``from ..__ import *``
+- Each level adds specialized imports without duplicating parent imports
+- Deep subpackages have access to all imports in their hierarchy
+
+**Consistent Interface:**
+- All modules use identical ``from . import __`` regardless of package depth
+- New subpackages require minimal import configuration
+- Subpackages automatically inherit all parent functionality
+
+**Import Resolution Chain:**
+- Nested imports resolve through the hierarchy: ``nested/__.py`` → ``parent/__.py`` → ``root/__/imports.py``
+- Each level adds to the namespace without overriding parent imports
+- Provides natural import scoping based on package hierarchy
+
+**Naming Rationale**
+
+The double underscore naming convention:
+
+* Short and distinctive to minimize visual noise in import statements
+* Uses Python's existing convention for special/internal names
+* Easily distinguishable from regular module names
+* Consistent across all project modules
+
+**Subpackage Implementation Pattern**
+
+When projects grow to include subpackages, each implements the cascading pattern:
+
+.. code-block:: python
+
+    # package/subpackage/__.py
+    ''' Internal imports for subpackage functionality. '''
+
+    # ruff: noqa: F403,F401
+
+    # Additional specialized imports as needed
+    import specialized_library
+
+    from ..__ import *  # Inherit all parent imports
+    from ..exceptions import *  # Package exceptions (if available)
+
+All subpackage modules maintain the consistent interface:
+
+.. code-block:: python
+
+    # package/subpackage/module.py
+    from . import __
+
+    def specialized_function(
+        data: __.cabc.Sequence[ __.typx.Any ]
+    ) -> __.immut.Dictionary:
+        ''' Processes specialized data using inherited imports. '''
+        return __.immut.Dictionary( processed = True, specialized = True )
+
+Tests Organization
+-------------------------------------------------------------------------------
+
+The test structure follows what is documented in the `tests guide
+<https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst>`_.
+
+Data Resources Organization
+-------------------------------------------------------------------------------
+
+The ``data/`` directory contains resources which are intended to be distributed
+with the package. These can include configuration templates, webapp icons,
+etc....
+
+Development Workspace
+-------------------------------------------------------------------------------
+
+Development-specific files are organized in `.auxiliary/`:
+
+.. code-block::
+
+    .auxiliary/
+    ├── notes/                       # Development notes and TODO items
+    ├── scribbles/                   # Temporary development files
+    └── instructions/                # Local development guide copies
+
+This workspace is excluded from package distributions but provides session
+continuity for development tools and local documentation storage.
+
 Architecture Documentation Beyond ADRs
 ===============================================================================
 
@@ -160,6 +323,17 @@ overview of the system architecture including:
 * **Deployment architecture**: How components are distributed and deployed.
 * **Key architectural patterns**: Major patterns employed (MVC, microservices,
   event-driven, etc.).
+
+Filesystem Documentation
+-------------------------------------------------------------------------------
+
+The filesystem documentation (``architecture/filesystem.rst``) implements the
+standard patterns documented above for the specific project configuration:
+
+* **Project-specific structure**: Shows actual package names and
+  feature-specific organization
+* **Integration patterns**: Shows how optional components (CLI, Rust
+  extensions, etc.) integrate with the standard structure
 
 Design Documents
 -------------------------------------------------------------------------------

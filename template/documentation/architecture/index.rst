@@ -25,6 +25,7 @@ Architecture
    :maxdepth: 2
 
    summary
+   filesystem
    decisions/index
    designs/index
 
