@@ -44,6 +44,27 @@ Ways to Contribute
 Development
 ===============================================================================
 
+Architecture
+-------------------------------------------------------------------------------
+
+* The :doc:`Product Requirements Document <prd>` is a good starting point to
+  understand the motivations and rationale for the project. This should be
+  reviewed and updated, as necessary, when making changes that affect product
+  functionality or user experience. See the :doc:`requirements documentation
+  guide <common/requirements>` for PRD format and best practices.
+
+* The :doc:`system architecture overview <architecture/summary>` should be
+  reviewed to understand the structure and operational patterns of the project.
+  Major changes to the architecture should be reflected in this document.
+
+* Document significant architectural decisions using Architectural Decision
+  Records (ADRs) in the ``architecture/decisions/`` directory. See the
+  :doc:`architecture documentation guide <common/architecture>` for ADR format
+  and best practices.
+
+* Document interface specifications, schemas, and algorithms in the
+  ``architecture/designs/`` directory to guide implementation efforts.
+
 Guidance and Standards
 -------------------------------------------------------------------------------
 
@@ -94,12 +115,18 @@ Resources
 .. toctree::
    :maxdepth: 2
 
-   devapi
    common/conduct
+   prd
+   architecture/index
+   devapi
    common/environment
    common/practices
    common/style
    common/tests
    common/nomenclature
+   common/nomenclature-germanic
+   common/validation
    common/releases
    common/maintenance
+   common/architecture
+   common/requirements

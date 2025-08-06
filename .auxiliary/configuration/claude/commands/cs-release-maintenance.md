@@ -15,8 +15,9 @@ and clean integration back to master.
 
 Target release version: `$ARGUMENTS` (e.g., `1.24`, `2.3`)
 
-**CRITICAL**: Verify exactly one target release version provided.
-**HALT if**:
+Verify exactly one target release version provided.
+
+Stop and consult if:
 - No target release version is provided
 - Multiple release versions provided (e.g., `1.6 foo bar`)
 - Release version format doesn't match `X.Y` pattern (e.g., `1.6.2`, `1.6a0`)
@@ -52,7 +53,7 @@ Key functional areas of the process:
 
 ## Safety Requirements
 
-**CRITICAL**: You MUST halt the process and consult with the user if ANY of the following occur:
+Stop and consult the user if any of the following occur:
 
 - **Step failures**: If any command fails, git operation errors, or tests fail
 - **Workflow failures**: If QA or release workflows show failed jobs
@@ -133,7 +134,7 @@ Run linting to catch issues before formal release process:
 ```bash
 hatch --env develop run linters
 ```
-**HALT if any linting errors** - fix issues before proceeding.
+Stop if any linting errors - fix issues before proceeding.
 
 ### 5. Version Management
 Increment to next patch version:
@@ -154,7 +155,7 @@ Push branch and monitor QA workflow:
 git push origin release-$ARGUMENTS
 ```
 
-**CRITICAL - WORKFLOW MONITORING REQUIREMENTS:**
+Workflow monitoring requirements:
 After pushing, you MUST ensure you monitor the correct QA workflow run:
 
 1. **Wait for workflow trigger**: Wait 30-60 seconds after pushing to allow GitHub to trigger the workflow
@@ -168,12 +169,12 @@ Once you've identified the correct QA run ID:
 gh run watch <correct-qa-run-id> --interval 30 --compact
 ```
 
-**CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
+Do not proceed until workflow completes:
 - Monitor QA workflow with `gh run watch` using the correct run ID
 - Use `timeout: 300000` (5 minutes) parameter in Bash tool for monitoring commands
 - If command times out, immediately rerun `gh run watch` until completion
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
-- HALT if any jobs fail - consult user before proceeding
+- Stop if any jobs fail - consult user before proceeding
 
 ### 8. Release Deployment
 **Verify QA passed before proceeding to release tag:**
@@ -182,7 +183,7 @@ git tag -m "Release v$(hatch version) patch: <brief-description>." v$(hatch vers
 git push --tags
 ```
 
-**CRITICAL - RELEASE WORKFLOW MONITORING REQUIREMENTS:**
+Release workflow monitoring requirements:
 After pushing the tag, you MUST ensure you monitor the correct release workflow run:
 
 1. **Wait for workflow trigger**: Wait 30-60 seconds after pushing tags to allow GitHub to trigger the release workflow
@@ -196,12 +197,12 @@ Once you've identified the correct release run ID:
 gh run watch <correct-release-run-id> --interval 30 --compact
 ```
 
-**CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
+Do not proceed until workflow completes:
 - Monitor release workflow with `gh run watch` using the correct run ID
 - Use `timeout: 600000` (10 minutes) parameter in Bash tool for monitoring commands
 - If command times out, immediately rerun `gh run watch` until completion
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
-- HALT if any jobs fail - consult user before proceeding
+- Stop if any jobs fail - consult user before proceeding
 
 ### 9. Post-Release Cleanup
 ```bash
