@@ -56,12 +56,23 @@
 - `/update-template` - Streamlined copier template updates
 - `/validate-release` - Pre-release validation checklist
 
+#### Claude Code Architectural Agents
+**Goal:** Create specialized Claude Code agents for architectural work and Python design.
+**Ideas:**
+- `architect` - For making architectural decisions, creating ADRs, reviewing system design
+- `python-designer` - For Python-specific design decisions, API design, module structure
+- `requirements-analyst` - For PRD creation, requirements gathering, user story development
+- Integration with the new architecture documentation framework
+
+#### Project Structure Documentation
+**Goal:** Add template/documentation/architecture/structure.rst with starter outline.
+**Details:** Document the standard project structure pattern generated from our template to help new contributors understand the architectural conventions.
+**Why:** Provides immediate context for the consistent patterns across template-generated projects.
+
 #### Documentation Improvements
 **Goal:** Enhance project documentation and developer experience.
 **Ideas:**
 - API documentation improvements
-- Architecture decision records (ADRs)
-- Contributing guide enhancements
 - Tutorial content for template usage
 
 #### Release Workflow Enhancements
