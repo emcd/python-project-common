@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+Emcdproj 1.36 (2025-08-07)
+==========================
+
+Enhancements
+------------
+
+- Documentation: Improve documentation on architecture.
+
+
 Emcdproj 1.35 (2025-08-05)
 ==========================
 

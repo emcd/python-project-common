@@ -1,11 +1,33 @@
 # Custom Slash Command Ideas
 
-Collection of potential custom slash commands to implement.
+Collection of potential custom slash commands to implement based on focused role specialization.
+
+## Core Specialized Role Commands
+
+### Requirements and Planning
+- `cs-manage-prd` - **IMPLEMENTED** - Manage product requirements documents and feature planning
+- `cs-analyze-requirements` - Analyze and validate existing requirements for completeness
+- `cs-trace-requirements` - Map requirements to implementation and test coverage
+
+### Architecture and Design  
+- `cs-architect` - High-level system design, architectural decisions, and ADR creation
+- `cs-design-python` - Python API design, module hierarchies, interface design
+- `cs-integrator` - System boundaries, integration patterns, dependency analysis
+
+### Implementation and Code Quality
+- `cs-code-python` - Python code implementation, refactoring, and quality assurance
+- `cs-conform-python` - **EXISTS** - Review Python code for compliance with project practices
+- `cs-conform-toml` - **EXISTS** - Review TOML files for formatting and standards
+
+### Testing and Validation
+- `cs-plan-tests` - **EXISTS** - Plan comprehensive test strategies
+- `cs-develop-tests` - **EXISTS** - Implement test cases and validation logic
 
 ## Project Analysis
 - `cs-analyze-dependencies` - Review and report on dependency health/updates
 - `cs-audit-codebase` - Comprehensive code quality and structure analysis
 - `cs-find-todos` - Collect and organize TODO comments across the project
+- `cs-inquire` - **EXISTS** - Interactive project exploration and analysis
 
 ## Development Workflow
 - `cs-prepare-pr` - Pre-PR checklist (tests, linting, docs, etc.)
@@ -22,30 +44,31 @@ Collection of potential custom slash commands to implement.
 - `cs-performance-profile` - Analyze performance bottlenecks
 - `cs-coverage-report` - Generate and analyze test coverage
 
-## Communication & Analysis
-- `cs-inquire` - Request analytical responses rather than immediate code changes (see draft below)
+## Release Management
+- `cs-release-checkpoint` - **EXISTS** - Create release checkpoints
+- `cs-release-final` - **EXISTS** - Handle final release preparation
+- `cs-release-maintenance` - **EXISTS** - Manage maintenance releases
+- `cs-annotate-release` - **EXISTS** - Add release annotations and notes
 
----
+## Utilities
+- `cs-obtain-instructions` - **EXISTS** - Retrieve and display project instructions
+- `cs-create-command` - **EXISTS** - Generate new custom slash commands
 
-## Draft: cs-inquire Command
+## Implementation Priority
 
-**Purpose**: Request analytical discussion and opinions rather than immediate code changes. Prevents misinterpretation of questions as hints for code modifications.
+**Phase 1** (Core Roles - Proof of Concept):
+1. `cs-architect` - Architecture and system design decisions
+2. `cs-code-python` - Python implementation and quality assurance
+3. `cs-design-python` - API design and module structure
 
-**Key behaviors**:
-- Respond to questions with rationale, pros/cons, alternatives
-- Provide pushback and disagreement when appropriate
-- Offer better alternatives if they exist
-- Focus on analysis and discussion before any code changes
-- Avoid deference - give honest technical opinions
-- Ask clarifying questions if the request is ambiguous
+**Phase 2** (Extended Workflow):
+4. `cs-analyze-requirements` - Requirements validation and traceability
+5. `cs-integrator` - System integration and boundaries
+6. `cs-prepare-pr` - Pre-commit workflow automation
 
-**Example usage scenarios**:
-- "What do you think about this architecture decision?"
-- "Are there any issues with this approach?"
-- "How would you handle error cases here?"
-- "What are the tradeoffs of using X vs Y?"
+**Phase 3** (Analysis and Maintenance):
+7. `cs-analyze-dependencies` - Dependency management and health
+8. `cs-audit-codebase` - Comprehensive project analysis
+9. `cs-sync-template` - Template synchronization and updates
 
-**Instruction draft for cs-create-command**:
-```
-cs-inquire.md - A process for providing analytical responses and technical opinions rather than immediately modifying code. When users ask questions about code or architecture, respond with analysis, rationale, pros/cons, and alternatives. Provide honest pushback and better alternatives when appropriate. Focus on discussion and technical reasoning before any code changes.
-```
+These commands follow the "focused roles with just the documentation they need" philosophy, where each command loads specific `@`-references relevant to its domain and avoids context pollution.

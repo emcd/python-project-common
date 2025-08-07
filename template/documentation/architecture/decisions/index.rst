@@ -24,9 +24,8 @@ Architectural Decision Records
 .. toctree::
    :maxdepth: 2
 
-   001-three-tier-architecture
-   002-centralized-import-pattern
 
-Additional ADRs will be created as the system evolves and new architectural decisions are required.
+.. todo:: Add architectural decision records to toctree.
 
-For ADR format and guidance, see :doc:`../../common/architecture`.
+For ADR format and guidance, see the `architecture documentation guide
+<https://emcd.github.io/python-project-common/stable/sphinx-html/common/architecture.html>`_.

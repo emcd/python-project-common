@@ -18,15 +18,10 @@
 
 
 *******************************************************************************
-Architectural Decision Records
+Product Requirements Document
 *******************************************************************************
 
-.. toctree::
-   :maxdepth: 2
+.. todo:: Define product requirements, user stories, and acceptance criteria.
 
-   001-three-tier-architecture
-   002-centralized-import-pattern
-
-Additional ADRs will be created as the system evolves and new architectural decisions are required.
-
-For ADR format and guidance, see :doc:`../../common/architecture`.
+For PRD format and guidance, see the `requirements documentation guide
+<https://emcd.github.io/python-project-common/stable/sphinx-html/common/requirements.html>`_.

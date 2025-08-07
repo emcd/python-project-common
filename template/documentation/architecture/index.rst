@@ -18,15 +18,16 @@
 
 
 *******************************************************************************
-Architectural Decision Records
+Architecture
 *******************************************************************************
 
 .. toctree::
    :maxdepth: 2
 
-   001-three-tier-architecture
-   002-centralized-import-pattern
+   summary
+   filesystem
+   decisions/index
+   designs/index
 
-Additional ADRs will be created as the system evolves and new architectural decisions are required.
 
-For ADR format and guidance, see :doc:`../../common/architecture`.
+.. todo:: Populate architecture documentation sections.
