@@ -25,7 +25,7 @@
 # Commits
 
 - Use `git status` to ensure all relevant changes are in the changeset.
-- Use the `python-conformer` agent to review all changes before committing.
+- Use the `python-conformer` agent to review changes that include Python code before committing.
 - Do **not** commit without explicit user approval.
 - Use present tense, imperative mood verbs (e.g., "Fix" not "Fixed").
 - Write sentences with proper punctuation.
