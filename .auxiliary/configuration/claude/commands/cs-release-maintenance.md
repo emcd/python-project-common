@@ -158,7 +158,7 @@ git push origin release-$ARGUMENTS
 Workflow monitoring requirements:
 After pushing, you MUST ensure you monitor the correct QA workflow run:
 
-1. **Wait for workflow trigger**: Wait 30-60 seconds after pushing to allow GitHub to trigger the workflow
+1. **Wait for workflow trigger**: Wait 10 seconds after pushing to allow GitHub to trigger the workflow
 2. **Verify correct workflow**: Use `gh run list --workflow=qa --limit=5` to list recent runs
 3. **Check timestamps**: Compare the workflow creation time with your push time using `date --utc`
 4. **Ensure fresh run**: Only monitor a workflow run that was created AFTER your push timestamp
@@ -186,7 +186,7 @@ git push --tags
 Release workflow monitoring requirements:
 After pushing the tag, you MUST ensure you monitor the correct release workflow run:
 
-1. **Wait for workflow trigger**: Wait 30-60 seconds after pushing tags to allow GitHub to trigger the release workflow
+1. **Wait for workflow trigger**: Wait 10 seconds after pushing tags to allow GitHub to trigger the release workflow
 2. **Verify correct workflow**: Use `gh run list --workflow=release --limit=5` to list recent runs
 3. **Check timestamps**: Compare the workflow creation time with your tag push time using `date --utc`
 4. **Ensure fresh run**: Only monitor a workflow run that was created AFTER your tag push timestamp

@@ -38,13 +38,14 @@ The project implements the standard filesystem organization:
 
     python-project-common/
     ├── LICENSE.txt              # Project license
-    ├── README.rst               # Project overview and quick start  
+    ├── README.rst               # Project overview and quick start
     ├── pyproject.toml           # Python packaging and tool configuration
     ├── documentation/           # Sphinx documentation source
     ├── sources/                 # All source code
     ├── tests/                   # Test suites
     ├── template/                # Copier template for project generation
     ├── .github/                 # GitHub Actions workflows
+    ├── data/                    # Redistributable data resources
     └── .auxiliary/              # Development workspace
 
 Source Code Organization
@@ -182,6 +183,6 @@ This filesystem organization provides a foundation that can evolve as the projec
 
 For questions about organizational principles, subpackage patterns, or testing strategies, refer to the comprehensive common documentation:
 
-* :doc:`../common/architecture` - Architecture Patterns  
+* :doc:`../common/architecture` - Architecture Patterns
 * :doc:`../common/practices` - Development Practices
 * :doc:`../common/tests` - Test Development Guidelines
