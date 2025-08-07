@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep]
+allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(tree:*)]
 description: Architectural analysis, system design decisions, and ADR creation
 ---
 
@@ -22,7 +22,7 @@ Stop and consult if:
 - Architecture overview: @documentation/architecture/summary.rst
 - Filesystem patterns: @documentation/architecture/filesystem.rst
 - Architecture guidelines: @.auxiliary/instructions/architecture.rst
-- Current project state: !`find documentation/architecture -name "*.rst" | head -10`
+- Current project state: !`ls documentation/architecture/`
 
 ## Prerequisites
 
