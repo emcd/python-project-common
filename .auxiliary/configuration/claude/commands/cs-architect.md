@@ -7,7 +7,7 @@ description: Architectural analysis, system design decisions, and ADR creation
 
 Analyze architectural decisions, system design patterns, component
 relationships, and technical trade-offs to provide guidance on high-level
-system structure.
+system structure and cross-component interactions.
 
 Request from user: $ARGUMENTS
 
@@ -15,6 +15,7 @@ Stop and consult if:
 - Implementation details are requested instead of architectural guidance
 - Specific code changes are needed
 - Requirements analysis is needed
+- Filesystem organization or module structure details are requested
 
 ## Context
 
@@ -22,6 +23,8 @@ Stop and consult if:
 - Architecture overview: @documentation/architecture/summary.rst
 - Filesystem patterns: @documentation/architecture/filesystem.rst
 - Architecture guidelines: @.auxiliary/instructions/architecture.rst
+- Nomenclature standards: @.auxiliary/instructions/nomenclature.rst
+- Germanic naming variants: @.auxiliary/instructions/nomenclature-germanic.rst
 - Current project state: !`ls documentation/architecture/`
 
 ## Prerequisites
@@ -36,9 +39,10 @@ Before providing architectural analysis, ensure:
 
 Key functional areas:
 1. **Analysis**: Examine architectural context and design forces
-2. **Decision Framework**: Apply architectural principles and trade-off analysis
-3. **Documentation**: Create ADRs or update architectural documentation
-4. **Validation**: Ensure decisions align with project constraints and goals
+2. **System Structure**: Define component relationships and system boundaries
+3. **Decision Framework**: Apply architectural principles and trade-off analysis
+4. **Documentation**: Create ADRs or update architectural documentation
+5. **Validation**: Ensure decisions align with project constraints and goals
 
 ## Safety Requirements
 

@@ -1,11 +1,11 @@
 ---
 allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, WebFetch, WebSearch, Bash(ls:*), Bash(find:*), Bash(tree:*), mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
-description: Python API design, module structure, and interface specifications
+description: Python API design, filesystem organization, module structure, and interface specifications
 ---
 
 # Python Design Analysis
 
-Analyze Python API design patterns, module structure, class hierarchies, interface definitions, and design patterns to provide guidance on Python-specific structural decisions.
+Analyze Python API design patterns, filesystem organization, module structure, class hierarchies, interface definitions, and design patterns to provide guidance on Python-specific structural decisions and project organization.
 
 Request from user: $ARGUMENTS
 
@@ -70,8 +70,9 @@ Define clean API boundaries and contracts:
 - Define type annotations using proper TypeAlias patterns
 - Consider immutability preferences and container design patterns
 
-### 3. Module Organization Design
-Apply Python-specific organizational patterns:
+### 3. Filesystem and Module Organization Design
+Apply Python-specific organizational patterns and filesystem structure:
+- Design project filesystem organization and update filesystem.rst as needed
 - Design module structure following the standard organization order
 - Plan `__` subpackage integration for centralized imports
 - Specify exception hierarchies and their organization
