@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, WebFetch, WebSearch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
+allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, WebFetch, WebSearch, Bash(ls:*), Bash(find:*), Bash(tree:*), mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
 description: Python API design, module structure, and interface specifications
 ---
 
