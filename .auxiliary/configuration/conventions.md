@@ -25,7 +25,7 @@
 
 - Use `git status` to ensure all relevant changes are in the changeset.
 - Use the `python-conformer` agent to review changes that include Python code before committing.
-- Do **not** commit without explicit user approval.
+- Do **not** commit without explicit user approval. Ask: "Do the changes that I am about to commit look good to you?"
 - Use present tense, imperative mood verbs (e.g., "Fix" not "Fixed").
 - Write sentences with proper punctuation.
 - Include a `Co-Authored-By:` field as the final line. Should include the model name and a no-reply address.
