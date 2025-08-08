@@ -15,9 +15,8 @@
 # Operation
 
 - Use `rg --line-number --column` to get precise coordinates for MCP tools that require line/column positions.
-- Prefer `text-editor` MCP tools over other text editing tools (line number-based edits are less error-prone).
-- Always reread files with `text-editor` tools after modifying files via other tools to avoid file hash conflicts.
-- Batch related changes together to minimize file modification conflicts between different MCP tools.
+- Choose appropriate editing tools based on the task complexity and your familiarity with the tools.
+- Batch related changes together when possible to maintain consistency.
 - Use relative paths rather than absolute paths when possible.
 - Do not write to paths outside the current project unless explicitly requested.
 - Use the `.auxiliary/scribbles` directory for scratch space instead of `/tmp`.
