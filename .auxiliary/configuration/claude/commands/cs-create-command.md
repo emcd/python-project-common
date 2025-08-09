@@ -7,7 +7,7 @@ description: Generate a new custom slash command with consistent structure and f
 
 Generate a new custom slash command following established patterns for structure, tone, and formatting.
 
-Target: `$ARGUMENTS`
+Target: $ARGUMENTS
 
 **IMPORTANT**: You are creating slash commands for other Claude instances to execute. They will have no knowledge of:
 - The concept of "arguments" being passed to slash commands
@@ -34,7 +34,7 @@ Extract from the user's input:
 
 - Current custom commands: !`ls .claude/commands/cs-*.md 2>/dev/null || echo "No cs-* commands found"`
 - Referenced files (if any): Check for existence and read as needed
-- Command template: @.claude/miscellany/command-template.md
+- Command template: @.auxiliary/configuration/claude/miscellany/command-template.md
 
 ## Prerequisites
 
@@ -61,6 +61,7 @@ Read the template to get the base structure, then customize:
 - Customize sections based on purpose
 - Select appropriate allowed-tools
 - Add relevant @-references if applicable
+- Add checklists to sections if applicable
 
 ### 3. Apply Formatting Standards
 
@@ -91,16 +92,17 @@ Choose appropriate allowed-tools based on functionality:
 
 ### 5. Generate and Write File
 
-1. **Read the template** from `.claude/miscellany/command-template.md`
+1. **Read the template** from `.auxiliary/configuration/claude/miscellany/command-template.md`
 2. **Customize all sections** based on the specific purpose
 3. **Replace placeholders** with appropriate content for the target functionality
 4. **Write the final file** to `.claude/commands/[filename].md`
 
 
-### 6. Validation
+### 6. Validation and Summary
 
 After generation:
 - Verify file structure matches established patterns
 - Check that allowed-tools are appropriate for the functionality
 - Ensure professional tone throughout (no excessive attention-grabbing, etc...)
 - Confirm all required sections are present and customized
+- Provide succinct summary of changes made to the user

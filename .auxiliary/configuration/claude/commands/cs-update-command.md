@@ -93,4 +93,4 @@ Complete the update command:
 - Review updated content for completeness and clarity
 - Verify all requested improvements have been addressed
 - Ensure command maintains effectiveness while addressing issues
-- Provide summary of changes made to the user
+- Provide succinct summary of changes made to the user
