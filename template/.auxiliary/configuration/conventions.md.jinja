@@ -15,9 +15,8 @@
 # Operation
 
 - Use `rg --line-number --column` to get precise coordinates for MCP tools that require line/column positions.
-- Prefer `text-editor` MCP tools over other text editing tools (line number-based edits are less error-prone).
-- Always reread files with `text-editor` tools after modifying files via other tools to avoid file hash conflicts.
-- Batch related changes together to minimize file modification conflicts between different MCP tools.
+- Choose appropriate editing tools based on the task complexity and your familiarity with the tools.
+- Batch related changes together when possible to maintain consistency.
 - Use relative paths rather than absolute paths when possible.
 - Do not write to paths outside the current project unless explicitly requested.
 - Use the `.auxiliary/scribbles` directory for scratch space instead of `/tmp`.
@@ -26,7 +25,7 @@
 
 - Use `git status` to ensure all relevant changes are in the changeset.
 - Use the `python-conformer` agent to review changes that include Python code before committing.
-- Do **not** commit without explicit user approval.
+- Do **not** commit without explicit user approval. Ask: "Do the changes that I am about to commit look good to you?"
 - Use present tense, imperative mood verbs (e.g., "Fix" not "Fixed").
 - Write sentences with proper punctuation.
 - Include a `Co-Authored-By:` field as the final line. Should include the model name and a no-reply address.

@@ -1,11 +1,11 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, WebFetch, WebSearch, mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
-description: Python API design, module structure, and interface specifications
+allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, WebFetch, WebSearch, Bash(ls:*), Bash(find:*), Bash(tree:*), mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
+description: Python API design, filesystem organization, module structure, and interface specifications
 ---
 
 # Python Design Analysis
 
-Analyze Python API design patterns, module structure, class hierarchies, interface definitions, and design patterns to provide guidance on Python-specific structural decisions.
+Analyze Python API design patterns, filesystem organization, module structure, class hierarchies, interface definitions, and design patterns to provide guidance on Python-specific structural decisions and project organization.
 
 Request from user: $ARGUMENTS
 
@@ -13,6 +13,7 @@ Stop and consult if:
 - Architectural decisions are needed instead of design specifications
 - Implementation details are requested instead of design specifications
 - Requirements analysis is needed instead of design specifications
+- User requests actual code implementations instead of specifications
 
 ## Context
 
@@ -63,15 +64,18 @@ Examine existing Python structure and patterns:
 - Document current design strengths and improvement opportunities
 
 ### 2. Interface Specification
-Define clean API boundaries and contracts:
-- Specify public interfaces using wide parameter, narrow return patterns
+Define clean API boundaries and contracts following practices guidelines:
+- All function and class signatures must follow @.auxiliary/instructions/practices.rst patterns exactly
+- Specify public interfaces using wide parameter, narrow return patterns (e.g., __.cabc.Sequence, __.cabc.Mapping for inputs)
+- Return narrow concrete types (list, dict, tuple, __.immut.Dictionary for outputs)
 - Design class hierarchies following Omniexception → Omnierror patterns
 - Apply appropriate naming conventions from nomenclature guidelines
-- Define type annotations using proper TypeAlias patterns
+- Define type annotations using proper TypeAlias patterns with __.typx.TypeAlias
 - Consider immutability preferences and container design patterns
 
-### 3. Module Organization Design
-Apply Python-specific organizational patterns:
+### 3. Filesystem and Module Organization Design
+Apply Python-specific organizational patterns and filesystem structure:
+- Design project filesystem organization and update filesystem.rst as needed
 - Design module structure following the standard organization order
 - Plan `__` subpackage integration for centralized imports
 - Specify exception hierarchies and their organization
@@ -79,20 +83,21 @@ Apply Python-specific organizational patterns:
 - Plan type alias organization and dependency management
 
 ### 4. Class and Function Design
-Create maintainable Python structures:
-- Design class hierarchies with appropriate base classes and mixins
-- Specify function signatures with proper type annotations
-- Apply nomenclature patterns for methods, attributes, and functions
+Create maintainable Python structures following practices guide exactly:
+- Design class hierarchies with appropriate base classes and mixins (__.immut.Object, __.immut.Protocol, etc.)
+- Specify function signatures using practices guide patterns (wide inputs, narrow outputs, proper spacing)
+- Apply nomenclature patterns for methods, attributes, and functions from nomenclature guidelines
 - Design immutable data structures and container patterns
-- Plan dependency injection and configuration patterns
+- Plan dependency injection and configuration patterns with sensible defaults
 
 ### 5. Design Documentation
-Create comprehensive design specifications:
-- Document interface contracts and expected behaviors
-- Provide design examples following style guidelines
-- Specify exception handling patterns and error propagation
+Create comprehensive design specifications without implementations:
+- Provide only signatures, contracts, and interface specifications - no implementations
+- Do not provide exception class implementations, function bodies, or method implementations
+- Document interface contracts and expected behaviors (contracts only, not code)
+- Provide design examples using signatures and type annotations only
+- Specify exception handling patterns and error propagation (exception classes by name/signature only)
 - Document design rationale and trade-off decisions
-- Create interface specifications without implementation details
 
 ### 6. Design Validation
 Ensure design quality and consistency:

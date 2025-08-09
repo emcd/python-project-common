@@ -21,7 +21,9 @@
 System Overview
 *******************************************************************************
 
-The Python Project Common system implements a three-tier architecture providing comprehensive project lifecycle management through template generation, workflow automation, and maintenance tooling.
+The Python Project Common system implements a three-tier architecture providing
+comprehensive project lifecycle management through template generation,
+workflow automation, and maintenance tooling.
 
 System Architecture
 ===============================================================================
@@ -42,7 +44,7 @@ The template system serves as the foundation for project creation:
 
 Reusable workflow components provide standardized automation:
 
-* **Cross-platform Testing**: Matrix execution across Python 3.9+ on Linux/macOS/Windows  
+* **Cross-platform Testing**: Matrix execution across Python 3.9+ on Linux/macOS/Windows
 * **Quality Gates**: Integrated linting (Ruff), type checking (Pyright), and test execution
 * **Documentation Pipeline**: Sphinx-based documentation generation with versioned deployment
 * **Release Automation**: Package building, PyPI publication, and GitHub release management
@@ -53,7 +55,7 @@ Reusable workflow components provide standardized automation:
 Runtime tooling for ongoing project management:
 
 * **Static Site Generation**: Self-contained documentation and reporting infrastructure
-* **Badge Management**: Dynamic coverage badge generation from test results  
+* **Badge Management**: Dynamic coverage badge generation from test results
 * **Version Management**: Documentation indexing and cross-linking across releases
 * **Template Synchronization**: Copier-based project updates with conflict resolution
 
@@ -72,7 +74,7 @@ Component Relationships
 **Integration Patterns**
 
 * **Template → CI/CD**: Generated projects include pre-configured workflow references
-* **CI/CD → Maintenance**: Workflows invoke maintenance tooling for reporting and site updates  
+* **CI/CD → Maintenance**: Workflows invoke maintenance tooling for reporting and site updates
 * **Maintenance → Template**: Tools support template updates via Copier synchronization
 * **Cross-cutting**: All layers share common filesystem organization patterns and quality standards
 
@@ -111,7 +113,7 @@ Deployment Architecture
 * **Quality Assurance**: Pre-commit hooks integrate linting, formatting, and type checking
 * **Documentation**: Local Sphinx builds for documentation development and testing
 
-**CI/CD Environment**  
+**CI/CD Environment**
 
 * **GitHub Actions**: Matrix-based execution across platform and Python version combinations
 * **Workflow Composition**: Reusable workflow components enable consistent automation patterns
@@ -167,7 +169,7 @@ Quality Attributes
 * **Standard Patterns**: Consistent filesystem organization and naming conventions across all projects
 * **Documentation Standards**: Comprehensive architectural decision records and design documentation
 
-**Reliability** 
+**Reliability**
 
 * **Quality Gates**: Multiple validation layers prevent defective releases
 * **Self-contained Infrastructure**: No external service dependencies reduce failure points
@@ -176,7 +178,7 @@ Quality Attributes
 **Scalability**
 
 * **Template Extensibility**: New features integrate through established plugin patterns
-* **Workflow Reusability**: Common automation patterns scale across multiple projects  
+* **Workflow Reusability**: Common automation patterns scale across multiple projects
 * **Documentation Automation**: Self-maintaining documentation reduces manual overhead
 
 **Security**
