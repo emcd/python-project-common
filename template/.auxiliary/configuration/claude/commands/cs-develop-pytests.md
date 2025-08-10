@@ -1,24 +1,15 @@
 ---
 allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, MultiEdit, WebFetch
-description: Implement comprehensive tests following an existing test plan and project guidelines
+description: Implement comprehensive Python tests following an existing test plan and project guidelines
 ---
 
-# Implement Tests
-
-**NOTE: This is an experimental workflow! If anything seems unclear or missing,
-please stop for consultation with the user.**
+# Implement Python Tests
 
 For systematic test implementation following a pre-created test plan and project testing guidelines.
 
-Test plan path: `$ARGUMENTS`
+Test plan path or special test-writing instructions: $ARGUMENTS
 
 Implement tests according to the provided test plan only.
-
-Stop and consult if:
-- No test plan path is provided
-- Test plan cannot be read or is invalid
-- Plan conflicts with project testing principles
-- Implementation deviates from plan without justification
 
 ## Context
 
@@ -26,7 +17,8 @@ Stop and consult if:
 - Current branch: !`git branch --show-current`
 - Test plan to implement: !`ls "$ARGUMENTS" 2>/dev/null && echo "Present" || echo "Missing"`
 - Existing test structure: !`find tests -name "*.py" | head -20`
-- Test README: !`ls tests/README.md 2>/dev/null && echo "Present" || echo "Missing"`
+- Test organization: @documentation/architecture/testplans/summary.rst
+- Test plans index: @documentation/architecture/testplans/index.rst
 
 ## Prerequisites
 
@@ -60,14 +52,17 @@ Ensure that you:
 
 ## Safety Requirements
 
-Stop and consult the user if any of the following occur:
-
-- **Plan Deviation**: If implementation cannot follow the test plan as specified
-- **Anti-Pattern Detection**: If plan requires tests that violate project principles
-- **Architecture Conflicts**: If tests require monkey-patching internal code
-- **Numbering Conflicts**: If planned test numbering clashes with existing conventions
-- **Missing Dependencies**: If required test fixtures or dependencies are unavailable
-- **Plan Inconsistencies**: If the test plan contains contradictions or unclear instructions
+Stop and consult the user if:
+- No test plan path is provided
+- Test plan cannot be read or is invalid
+- Plan conflicts with project testing principles
+- Implementation deviates from plan without justification
+- Implementation cannot follow the test plan as specified
+- Plan requires tests that violate project principles
+- Tests require monkey-patching internal code
+- Planned test numbering clashes with existing conventions
+- Required test fixtures or dependencies are unavailable
+- Test plan contains contradictions or unclear instructions
 
 **Your responsibilities:**
 - Follow the test plan precisely while adhering to project conventions
