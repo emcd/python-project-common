@@ -9,12 +9,6 @@ Analyze Python API design patterns, filesystem organization, module structure, c
 
 Request from user: $ARGUMENTS
 
-Stop and consult if:
-- Architectural decisions are needed instead of design specifications
-- Implementation details are requested instead of design specifications
-- Requirements analysis is needed instead of design specifications
-- User requests actual code implementations instead of specifications
-
 ## Context
 
 - Architecture overview: @documentation/architecture/summary.rst
@@ -45,6 +39,10 @@ Key functional areas:
 ## Safety Requirements
 
 Stop and consult the user if:
+- Architectural decisions are needed instead of design specifications
+- Implementation details are requested instead of design specifications
+- Requirements analysis is needed instead of design specifications
+- User requests actual code implementations instead of specifications
 - Design decisions require architectural changes beyond Python structure
 - Interface changes would break existing API contracts significantly
 - Design conflicts with established filesystem organization patterns
@@ -92,6 +90,8 @@ Create maintainable Python structures following practices guide exactly:
 
 ### 5. Design Documentation
 Create comprehensive design specifications without implementations:
+- Generate design documents following established format
+- Update `documentation/architecture/designs/index.rst` to include new designs
 - Provide only signatures, contracts, and interface specifications - no implementations
 - Do not provide exception class implementations, function bodies, or method implementations
 - Document interface contracts and expected behaviors (contracts only, not code)

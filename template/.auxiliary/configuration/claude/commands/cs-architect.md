@@ -11,12 +11,6 @@ system structure and cross-component interactions.
 
 Request from user: $ARGUMENTS
 
-Stop and consult if:
-- Implementation details are requested instead of architectural guidance
-- Specific code changes are needed
-- Requirements analysis is needed
-- Filesystem organization or module structure details are requested
-
 ## Context
 
 - Product requirements: @documentation/prd.rst
@@ -47,6 +41,10 @@ Key functional areas:
 ## Safety Requirements
 
 Stop and consult the user if:
+- Implementation details are requested instead of architectural guidance
+- Specific code changes are needed
+- Requirements analysis is needed
+- Filesystem organization or module structure details are requested
 - Architectural decisions have significant impact on existing system components
 - Decision conflicts with existing architectural patterns or constraints
 - Decision requires changes to fundamental system assumptions
@@ -88,6 +86,7 @@ Provide clear architectural guidance:
 ### 5. Documentation Creation
 When appropriate, create or update architectural documentation:
 - Generate ADRs following the standard format
+- Update `documentation/architecture/decisions/index.rst` to include new ADRs
 - Update architecture summary for significant system changes
 - Ensure consistency with filesystem organization patterns
 - Reference related architectural decisions and dependencies
