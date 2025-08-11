@@ -11,12 +11,6 @@ and style guidelines.
 
 Request from user: $ARGUMENTS
 
-Stop and consult if:
-- Design specifications are needed instead of implementation
-- Architectural decisions are required before implementation
-- Requirements are unclear or insufficient for implementation
-- Multiple implementation approaches have significant trade-offs requiring user input
-
 ## Context
 
 - Architecture overview: @documentation/architecture/summary.rst
@@ -48,11 +42,14 @@ Key functional areas:
 ## Safety Requirements
 
 Stop and consult the user if:
+- Design specifications are needed instead of implementation
+- Architectural decisions are required before implementation
+- Requirements are unclear or insufficient for implementation
 - Implementation conflicts with established architectural patterns
 - Code changes would break existing API contracts or interfaces
 - Quality checks reveal significant issues that require design decisions
-- Requirements are ambiguous or incomplete for proper implementation
-- Multiple valid implementation approaches exist with different trade-offs
+- Type checker errors are encountered that cannot be resolved through standard remediation
+- Multiple implementation approaches have significant trade-offs requiring user input
 
 ## Execution
 
@@ -95,12 +92,35 @@ Track progress against requirements:
 - [ ] Documentation requirements are satisfied
 
 ### 5. Quality Assurance
-Validate code quality and conformance:
+Validate code quality and conformance following zero-tolerance policy:
+
+#### Linting Validation
 ```bash
 hatch --env develop run linters
 ```
-Address any linting issues that arise.
+All linting issues must be addressed. Do not use `noqa` pragma comments without explicit user approval.
 
+#### Type Checking Validation  
+Run type checker and analyze results:
+```bash
+hatch --env develop run linters  # Includes Pyright
+```
+
+Type Error Resolution Process:
+1. Code Issues: Fix all type errors in project code immediately
+2. Third-party Stub Issues: If errors are due to missing/incomplete third-party type stubs:
+   - Verify package is listed in `pyproject.toml`
+   - Rebuild environment: `hatch env prune` 
+   - Generate stubs: `hatch --env develop run pyright --createsub <package>`
+   - Complete necessary stub definitions
+   - Re-run type checker to verify resolution
+
+Stop and consult user if:
+- Type errors cannot be categorized as code issues or third-party stub gaps
+- Stub generation fails or requires extensive manual type definitions
+- Multiple conflicting approaches exist for resolving type issues
+
+#### Test Validation
 ```bash
 hatch --env develop run testers
 ```
@@ -118,4 +138,5 @@ Provide concise summary of what was implemented, including:
 - Functions, classes, or modules created or modified
 - Key design decisions and rationale
 - Integration points and dependencies
+- Quality assurance status: Confirm all linters, type checkers, and tests pass
 - Any remaining tasks or follow-up items
