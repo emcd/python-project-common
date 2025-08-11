@@ -32,7 +32,7 @@ Collection of potential custom slash commands to implement based on focused role
 ## Development Workflow
 - `cs-prepare-pr` - Pre-PR checklist (tests, linting, docs, etc.)
 - `cs-update-version` - Handle version bumping with changelog integration
-- `cs-sync-template` - Update project from its Copier template
+- `cs-copier-update` - **IMPLEMENTED** - Update project from its Copier template
 
 ## Documentation
 - `cs-generate-api-docs` - Create API documentation from code
