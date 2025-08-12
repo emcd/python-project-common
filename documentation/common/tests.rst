@@ -163,6 +163,32 @@ Maintain a ``tests/README.md`` file documenting:
 Preferred Testing Patterns
 ===============================================================================
 
+Import Patterns
+-------------------------------------------------------------------------------
+
+**Direct imports (preferred for most cases)**::
+
+    from mypackage import mymodule
+
+    def test_100_basic_functionality():
+        ''' Module function works correctly with valid input. '''
+        result = mymodule.process_data( 'test' )
+        assert result == 'processed: test'
+
+**Dynamic imports for subpackage patterns**:
+
+Use ``cache_import_module`` when working with similar modules across multiple 
+subpackages or when module names are determined at runtime::
+
+    from . import __
+
+    @pytest.mark.parametrize( 'package_name', __.PACKAGES_NAMES )
+    def test_000_sanity( package_name ):
+        ''' Package is sane. '''
+        package = __.cache_import_module( package_name )
+        assert package.__package__ == package_name
+
+
 Dependency Injection
 -------------------------------------------------------------------------------
 
@@ -216,6 +242,21 @@ only when necessary::
             fs.create_file( '/fake/config.toml', contents = '[section]\nkey = "value"' )
             result = process_config_file( Path( '/fake/config.toml' ) )
             assert result.key == 'value'
+
+    # Efficient - lazy-load existing test data at module level for performance
+    @pytest.fixture( scope = 'module' )
+    def test_data_fs( ):
+        ''' Provides fake filesystem with tests/data loaded once per module. '''
+        with Patcher( ) as patcher:
+            # Lazy-load tests/data into fake filesystem for efficiency
+            patcher.fs.add_real_directory( 'tests/data', lazy_read = True )
+            yield patcher.fs
+
+    def test_100_config_processing( test_data_fs ):
+        ''' Configuration files are processed correctly. '''
+        # All files in tests/data are now available in-memory
+        result = process_config_file( Path( 'tests/data/config.toml' ) )
+        assert result.setting == 'expected_value'
 
     # When necessary - use real temp directories for async operations
     @pytest.mark.asyncio
