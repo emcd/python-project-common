@@ -12,7 +12,7 @@ You are tasked with creating Towncrier news fragments for user-facing changes
 since the last release cleanup. This command analyzes recent commits and
 generates appropriate changelog entries.
 
-Special instructions: `$ARGUMENTS`
+Special instructions: $ARGUMENTS
 (If above line is empty, then no special instructions were given by the user.)
 
 ## Context

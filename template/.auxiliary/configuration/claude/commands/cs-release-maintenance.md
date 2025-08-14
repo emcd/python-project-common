@@ -13,7 +13,8 @@ For execution of a fully-automated postrelease patch.
 Below is a validated process to create patch releases with automated monitoring
 and clean integration back to master.
 
-Target release version: `$ARGUMENTS` (e.g., `1.24`, `2.3`)
+Target release version: $ARGUMENTS
+(e.g., `1.24`, `2.3`)
 
 Verify exactly one target release version provided.
 
@@ -29,7 +30,6 @@ Stop and consult if:
 - Current version: !`hatch version`
 - Recent commits: !`git log --oneline -10`
 - Available towncrier fragments: !`ls .auxiliary/data/towncrier/*.rst 2>/dev/null || echo "No fragments found"`
-- Target release branch status: !`git branch -r | grep release-$ARGUMENTS || echo "Release branch not found"`
 
 ## Prerequisites
 
@@ -70,7 +70,7 @@ Stop and consult the user if any of the following occur:
 
 ## Release Process
 
-Execute the following steps for target release version `$ARGUMENTS`:
+Execute the following steps:
 
 ### 1. Pre-Release Quality Check
 Run local quality assurance to catch issues early:

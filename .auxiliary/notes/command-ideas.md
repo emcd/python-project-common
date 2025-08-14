@@ -16,8 +16,8 @@ Collection of potential custom slash commands to implement based on focused role
 
 ### Implementation and Code Quality
 - `cs-code-python` - **IMPLEMENTED** - Python code implementation, refactoring, and quality assurance
-- `cs-conform-python` - **EXISTS** - Review Python code for compliance with project practices
-- `cs-conform-toml` - **EXISTS** - Review TOML files for formatting and standards
+- `cs-conform-python` - **IMPLEMENTED** - Review Python code for compliance with project practices
+- `cs-conform-toml` - **IMPLEMENTED** - Review TOML files for formatting and standards
 
 ### Testing and Validation
 - `cs-plan-pytests` - **IMPLEMENTED** - Plan comprehensive Python test strategies
@@ -27,7 +27,7 @@ Collection of potential custom slash commands to implement based on focused role
 - `cs-analyze-dependencies` - Review and report on dependency health/updates
 - `cs-audit-codebase` - Comprehensive code quality and structure analysis
 - `cs-find-todos` - Collect and organize TODO comments across the project
-- `cs-inquire` - **EXISTS** - Interactive project exploration and analysis
+- `cs-inquire` - **IMPLEMENTED** - Interactive project exploration and analysis
 
 ## Development Workflow
 - `cs-prepare-pr` - Pre-PR checklist (tests, linting, docs, etc.)
@@ -36,7 +36,8 @@ Collection of potential custom slash commands to implement based on focused role
 
 ## Documentation
 - `cs-generate-api-docs` - Create API documentation from code
-- `cs-update-readme` - Refresh README based on current project state
+- `cs-update-readme-rst` - **IMPLEMENTED** - Refresh README based on current project state
+- `cs-document-examples-rst` - **IMPLEMENTED** - Create practical, testable examples documentation
 - `cs-document-changes` - Generate release notes from recent commits
 
 ## Quality Assurance
@@ -45,14 +46,15 @@ Collection of potential custom slash commands to implement based on focused role
 - `cs-coverage-report` - Generate and analyze test coverage
 
 ## Release Management
-- `cs-release-checkpoint` - **EXISTS** - Create release checkpoints
-- `cs-release-final` - **EXISTS** - Handle final release preparation
-- `cs-release-maintenance` - **EXISTS** - Manage maintenance releases
-- `cs-annotate-release` - **EXISTS** - Add release annotations and notes
+- `cs-release-checkpoint` - **IMPLEMENTED** - Create release checkpoints
+- `cs-release-final` - **IMPLEMENTED** - Handle final release preparation
+- `cs-release-maintenance` - **IMPLEMENTED** - Manage maintenance releases
+- `cs-annotate-release` - **IMPLEMENTED** - Add release annotations and notes
 
 ## Utilities
-- `cs-obtain-instructions` - **EXISTS** - Retrieve and display project instructions
-- `cs-create-command` - **EXISTS** - Generate new custom slash commands
+- `cs-obtain-instructions` - **IMPLEMENTED** - Retrieve and display project instructions
+- `cs-create-command` - **IMPLEMENTED** - Generate new custom slash commands
+- `cs-update-command` - **IMPLEMENTED** - Update existing slash commands with improvements
 
 ## Implementation Priority
 

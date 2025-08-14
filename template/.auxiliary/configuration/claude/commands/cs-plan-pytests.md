@@ -54,7 +54,7 @@ Stop and consult the user if:
 
 ## Test Planning Process
 
-Execute the following steps for target: `$ARGUMENTS`
+Execute the following steps for target: $ARGUMENTS
 
 ### 0. Pre-Flight Verification
 Access test-writing guidelines:
