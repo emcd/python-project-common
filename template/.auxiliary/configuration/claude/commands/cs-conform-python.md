@@ -7,7 +7,7 @@ description: Systematically conform Python code to project style and practice st
 
 For bringing existing Python code into full compliance with project standards.
 
-Target code: `$ARGUMENTS`
+Target: $ARGUMENTS
 
 Focus on style/practice conformance, not functionality changes.
 
@@ -297,17 +297,10 @@ Phase 2 Output:
 3. **Files Modified**: Complete list with brief description of changes
 4. **Manual Review Required**: Any issues requiring human judgment
 
-## Tool Preferences
-
-- **Precise coordinates**: Use `rg --line-number --column` for exact line/column positions
-- **File editing**: Prefer `text-editor` MCP tools for line-based edits to avoid conflicts
-- **File synchronization**: Always reread files with `text-editor` tools after modifications by other tools (like `pyright` or `ruff`)
-- **Batch operations**: Group related changes together to minimize file modification conflicts between different MCP tools
-
 ## Conformance Process
 
 ### 1. Analysis Phase (PHASE 1)
-- Examine target files to understand current state  
+- Examine target files to understand current state
 - Run linters to identify specific violations
 - Identify architectural patterns that need updating
 - Generate comprehensive compliance report
@@ -326,7 +319,7 @@ Apply fixes in systematic order:
 8. **Docstrings**: Triple single quotes, narrative mood, proper spacing
 9. **Line Length**: Split at 79 columns using parentheses
 
-**Requirements**: 
+**Requirements**:
 - Maintain exact functionality while improving standards adherence
 - Validate with `hatch --env develop run linters` (must produce clean output)
 - Run `hatch --env develop run testers` to ensure no functionality breaks

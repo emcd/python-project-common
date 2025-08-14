@@ -294,13 +294,6 @@ def _group_documents_by_field(
 3. **Files Modified**: Complete list with brief description of changes
 4. **Manual Review Required**: Any issues requiring human judgment
 
-## TOOL PREFERENCES
-
-- **Precise coordinates**: Use `rg --line-number --column` for exact line/column positions
-- **File editing**: Prefer `text-editor` MCP tools for line-based edits to avoid conflicts
-- **File synchronization**: Always reread files with `text-editor` tools after modifications by other tools (like `pyright` or `ruff`)
-- **Batch operations**: Group related changes together to minimize file modification conflicts between different MCP tools
-
 ## EXECUTION REQUIREMENTS
 
 - **PHASE 1 REQUIRED**: Complete review and report before any remediation
