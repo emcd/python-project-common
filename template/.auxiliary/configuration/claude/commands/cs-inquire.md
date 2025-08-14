@@ -9,7 +9,7 @@ Provide analytical responses, technical opinions, and architectural discussion
 based on user questions. Focus on analysis and reasoning without making code
 modifications.
 
-User question or topic: `$ARGUMENTS`
+User question or topic: $ARGUMENTS
 
 Stop and consult if:
 - The request explicitly asks for code changes or implementation

@@ -135,6 +135,7 @@ dependencies = [
   'sphinx-copybutton',
   'sphinx-inline-tabs',
   'towncrier',
+  'vulture',
   # --- BEGIN: Injected by Copier ---
   {%- if enable_executables %}
   'pyinstaller',
@@ -180,6 +181,7 @@ linters = [
   # TODO: cargo deny # Not installed with Cargo by default.
   {%- endif %}
   # --- END: Injected by Copier ---
+  """vulture sources""",
   """pyright sources""",
 ]
 packagers = [
@@ -393,3 +395,12 @@ showcontent = true
 directory = 'repair'
 name = 'Repairs'
 showcontent = true
+
+[tool.vulture]
+paths = [ 'sources' ]
+min_confidence = 80
+exclude = [
+  '*/imports.py',
+]
+ignore_decorators = [ '@__.cabc.abstractmethod', '@__.typx.overload' ]
+ignore_names = [ ]

@@ -1,24 +1,16 @@
 ---
 allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, WebFetch
-description: Analyze test coverage gaps and create comprehensive test implementation plan
+description: Analyze Python test coverage gaps and create comprehensive test implementation plan
 ---
 
-# Plan Tests
-
-**NOTE: This is an experimental workflow! If anything seems unclear or missing,
-please stop for consultation with the user.**
+# Plan Python Tests
 
 For systematic analysis of test coverage gaps and creation of detailed test
 implementation plans following project testing guidelines.
 
-Target module/functionality: `$ARGUMENTS`
+Target module/functionality: $ARGUMENTS
 
 Focus on analysis and planning only - do not implement tests.
-
-Stop and consult if:
-- No target module or functionality is provided
-- Target code cannot be analyzed
-- Coverage data is unavailable
 
 ## Context
 
@@ -26,7 +18,8 @@ Stop and consult if:
 - Current branch: !`git branch --show-current`
 - Current test coverage: !`hatch --env develop run coverage report --show-missing`
 - Existing test structure: !`find tests -name "*.py" | head -20`
-- Test README status: !`ls tests/README.md 2>/dev/null && echo "Present" || echo "Missing"`
+- Test organization: @documentation/architecture/testplans/summary.rst
+- Test plans index: @documentation/architecture/testplans/index.rst
 
 ## Prerequisites
 
@@ -38,13 +31,15 @@ Ensure that you:
 
 ## Safety Requirements
 
-Stop and consult the user if any of the following occur:
-
-- **Missing Coverage Data**: If coverage reports cannot be generated
-- **Inaccessible Code**: If target modules cannot be read or analyzed
-- **Architecture Conflicts**: If analysis reveals fundamental testability issues
-- **Documentation Access Issues**: If test guidelines cannot be accessed
-- **Network Test Temptation**: NEVER plan tests against real external sites (example.com, httpbin.com, etc.)
+Stop and consult the user if:
+- No target module or functionality is provided
+- Target code cannot be analyzed
+- Coverage data is unavailable
+- Coverage reports cannot be generated
+- Target modules cannot be read or analyzed
+- Analysis reveals fundamental testability issues
+- Test guidelines cannot be accessed
+- Network tests against real external sites are being considered
 
 **Your responsibilities:**
 - Focus entirely on analysis and planning - NO implementation
@@ -153,41 +148,55 @@ Test module vs function numbering:
 - Higher-level functionality gets higher numbers (e.g., `test_500_cli.py`, `test_600_server.py`)
 - Subpackage modules: `test_<M><N>0_<subpackage>_<module>.py` where N advances by 10 within subpackage
 
-**Update tests/README.md:**
-- If missing, create it with test module numbering scheme
-- If present, update it for any new test modules being planned
-- Include project-specific testing conventions
+**Update test organization documentation:**
+- Update `documentation/architecture/testplans/summary.rst` with test module numbering scheme
+- Include project-specific testing conventions and new modules being planned
 - Document rationale for any pattern exceptions
-- **IMPORTANT**: Update this file during planning, not during implementation
+- Update during planning, not during implementation
 
 ### 5. Plan Documentation Creation
 
 **Create comprehensive test plan document:**
 
-Save the plan to `.auxiliary/notes/test-plan-[sanitized-module-name].md` with:
+Save the plan to `documentation/architecture/testplans/[sanitized-module-name].rst` and update `documentation/architecture/testplans/index.rst` to include the new test plan in the toctree.
 
-**Plan Structure:**
-```markdown
-# Test Plan: [Module Name]
+Create the test plan document with:
 
-## Coverage Analysis Summary
+**Plan Structure (reStructuredText format):**
+```rst
+*******************************************************************************
+Test Plan: [Module Name]
+*******************************************************************************
+
+Coverage Analysis Summary
+===============================================================================
+
 - Current coverage: X%
 - Target coverage: 100%
 - Uncovered lines: [specific line numbers]
 - Missing functionality tests: [list]
 
-## Test Strategy
+Test Strategy
+===============================================================================
 
-### Basic Functionality Tests (000-099)
+Basic Functionality Tests (000-099)
+-------------------------------------------------------------------------------
+
 - [List planned tests with brief descriptions]
 
-### Component-Specific Tests (100+ blocks)
-#### Function/Class/Method: [name] (Tests 100-199)
+Component-Specific Tests (100+ blocks)
+-------------------------------------------------------------------------------
+
+Function/Class/Method: [name] (Tests 100-199)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 - [Planned test descriptions including happy path, edge cases, and error handling]
 - [Dependencies needing injection]
 - [Special considerations]
 
-## Implementation Notes
+Implementation Notes
+===============================================================================
+
 - Dependencies requiring injection: [list]
 - Filesystem operations needing pyfakefs: [list]
 - External services requiring mocking: [list - NEVER test against real external sites]
@@ -198,7 +207,9 @@ Save the plan to `.auxiliary/notes/test-plan-[sanitized-module-name].md` with:
 - Test module numbering for new files: [following hierarchy conventions]
 - Anti-patterns to avoid: [specific warnings including external network calls]
 
-## Success Metrics
+Success Metrics
+===============================================================================
+
 - Target line coverage: [percentage]
 - Branch coverage goals: [percentage]
 - Specific gaps to close: [line numbers]
@@ -232,8 +243,9 @@ Planning is complete when:
 - [ ] All testing gaps systematically identified
 - [ ] Test strategy developed for each gap
 - [ ] Test organization and numbering planned
-- [ ] tests/README.md created or updated as needed
-- [ ] Comprehensive plan document created
+- [ ] `documentation/architecture/testplans/summary.rst` updated as needed
+- [ ] Comprehensive plan document created in testplans directory
+- [ ] `documentation/architecture/testplans/index.rst` updated to include new plan
 - [ ] Plan validates against project testing principles
 - [ ] Implementation approach is clear and actionable
 

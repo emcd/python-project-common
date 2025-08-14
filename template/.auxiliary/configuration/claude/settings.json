@@ -19,7 +19,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|MultiEdit|Write|mcp__text-editor__edit_text_file_contents",
+        "matcher": "Edit|MultiEdit|Write",
         "hooks": [
           {
             "type": "command",
@@ -85,8 +85,7 @@
       "mcp__ruff__definition",
       "mcp__ruff__diagnostics",
       "mcp__ruff__hover",
-      "mcp__ruff__references",
-      "mcp__text-editor__get_text_file_contents"
+      "mcp__ruff__references"
     ]
   }
 }

@@ -13,7 +13,8 @@ For execution of an automated alpha checkpoint release on master branch.
 Below is a validated process to create an alpha checkpoint release with automated
 monitoring and version increment.
 
-Target alpha increment: `$ARGUMENTS` (optional - defaults to next alpha)
+Target alpha increment: $ARGUMENTS
+(optional - defaults to next alpha)
 
 Verify current version is alpha format if no arguments provided.
 

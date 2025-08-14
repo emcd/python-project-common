@@ -21,20 +21,20 @@
 ''' Assert basic characteristics of Rust extension module. '''
 
 
-from . import PACKAGE_NAME, cache_import_module
+from . import __
 
 
 def test_000_sanity( ):
     ''' Extension module is sane. '''
-    module = cache_import_module( f"{PACKAGE_NAME}.{{ extension_name }}" )
-    assert module.__package__ == PACKAGE_NAME
-    assert module.__name__ == f"{PACKAGE_NAME}.{{ extension_name }}"
+    module = __.cache_import_module( f"{__.PACKAGE_NAME}.{{ extension_name }}" )
+    assert module.__package__ == __.PACKAGE_NAME
+    assert module.__name__ == f"{__.PACKAGE_NAME}.{{ extension_name }}"
 
 
 def test_010_version_sync( ):
     ''' Extension module version matches package version. '''
-    package = cache_import_module( PACKAGE_NAME )
-    module = cache_import_module( f"{PACKAGE_NAME}.{{ extension_name }}" )
+    package = __.cache_import_module( __.PACKAGE_NAME )
+    module = __.cache_import_module( f"{__.PACKAGE_NAME}.{{ extension_name }}" )
     assert hasattr( module, '__version__' )
     assert isinstance( module.__version__, str )
     assert module.__version__ == package.__version__
