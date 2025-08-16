@@ -144,7 +144,9 @@ functionality.
 **Unacceptable Suppressions (require investigation):**
 - `type: ignore` MUST NOT be used, except in extremely rare circumstances. Such
   suppressions usually indicate missing third-party dependencies or type stubs,
-  inappropriate type variables, or a bad inheritance pattern.
+  inappropriate type variables, or a bad inheritance pattern. For complex type
+  suppression investigation and dependency management, delegate to the
+  `python-annotator` agent.
 - `__.typx.cast` SHOULD NOT be used, except in extremely rare circumstances.
   Such casts suppress normal type checking and usually the same problems as
   `type: ignore`.
@@ -263,7 +265,7 @@ def _group_documents_by_field(
 
 **Violations identified:**
 1. **Narrow parameter types**: `list[dict[...]]` instead of wide `__.cabc.Sequence[__.cabc.Mapping[...]]`
-2. **Type suppression abuse**: `# type: ignore[arg-type]` masks real design issue
+2. **Type suppression abuse**: `# type: ignore[arg-type]` masks real design issue (delegate to `python-annotator` agent for systematic suppression resolution)
 3. **Mutable container return**: Returns `dict` instead of `__.immut.Dictionary`
 4. **Function body blank lines**: Empty lines breaking vertical compactness
 5. **Vertical compactness**: `return { }` could be same line as `if`
@@ -333,4 +335,5 @@ def _group_documents_by_field(
 - **Focus on compliance**: Maintain exact functionality while improving standards adherence
 - **Reference specific lines**: Always include line numbers and concrete examples
 - **Document reasoning**: Explain why each standard matters and how fixes align with project practices
+- **Agent delegation**: When type annotation issues exceed basic compliance scope, consider delegating to the `python-annotator` agent for comprehensive type work
 - **Guide access**: If any prerequisite guide cannot be accessed, stop and inform the user
