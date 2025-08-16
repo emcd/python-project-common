@@ -182,7 +182,7 @@ linters = [
   # TODO: cargo deny # Not installed with Cargo by default.
   {%- endif %}
   # --- END: Injected by Copier ---
-  """isort --check-only sources tests""",
+  """isort --check-only --diff sources tests""",
   """vulture sources""",
   """pyright sources""",
 ]
