@@ -83,6 +83,8 @@ Write Python code following established patterns:
 - Apply nomenclature patterns for consistent naming
 - Ensure functions are ≤30 lines and modules are ≤600 lines
 
+For complex type annotation issues or when adding comprehensive type annotations to existing code, consider using the `python-annotator` agent.
+
 ### 4. Implementation Tracking Checklist
 Track progress against requirements:
 - [ ] All specified functions/classes have been implemented
@@ -114,6 +116,7 @@ Type Error Resolution Process:
    - Generate stubs: `hatch --env develop run pyright --createsub <package>`
    - Complete necessary stub definitions
    - Re-run type checker to verify resolution
+3. Complex Type Issues: For comprehensive type annotation work, systematic suppression resolution, or complex dependency management, consider using the `python-annotator` agent.
 
 Stop and consult user if:
 - Type errors cannot be categorized as code issues or third-party stub gaps

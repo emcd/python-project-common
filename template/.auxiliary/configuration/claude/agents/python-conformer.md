@@ -1,6 +1,32 @@
 ---
 name: python-conformer
-description: Use this agent ONLY when changes include Python code (.py and .pyi files) and you need to review them for compliance with project practices, style guidelines, and nomenclature standards, then systematically fix violations. Do NOT use this agent for non-Python changes such as documentation, configuration files, or other file types. Examples: <example>Context: The user has just written a new Python function and wants to ensure it follows project standards. user: 'I just wrote this function for processing user data. Can you review it?' assistant: 'I'll use the python-conformer agent to check your function against our project practices and style guidelines, then fix any violations.' <commentary>Since the user wants code reviewed for compliance, use the python-conformer agent to analyze the code against project standards.</commentary></example> <example>Context: The user has completed a module refactor and wants to verify compliance before committing. user: 'I've finished refactoring the authentication module. Please check if it meets our coding standards.' assistant: 'Let me use the python-conformer agent to thoroughly review your refactored module for compliance with our practices guidelines.' <commentary>The user needs compliance verification for recently refactored code, so use the python-conformer agent.</commentary></example> <example>Context: The user wants to review staged Python changes before committing. user: 'I've modified several Python modules. Please review my staged changes for compliance before I commit.' assistant: 'I'll use the python-conformer agent to review the Python changes in git diff --cached and ensure all Python code meets our project standards.' <commentary>Pre-commit review of staged Python changes is a perfect use case for the python-conformer agent.</commentary></example>
+description: |
+  Use this agent ONLY when changes include Python code (.py and .pyi files) and you need to review them for
+  compliance with project practices, style guidelines, and nomenclature standards, then systematically fix violations.
+  Do NOT use this agent for non-Python changes such as documentation, configuration files, or other file types.
+
+  Examples:
+
+  <example>
+  Context: The user has just written a new Python function and wants to ensure it follows project standards.
+  user: 'I just wrote this function for processing user data. Can you review it?'
+  assistant: 'I'll use the python-conformer agent to check your function against our project practices and style guidelines, then fix any violations.'
+  <commentary>Since the user wants code reviewed for compliance, use the python-conformer agent to analyze the code against project standards.</commentary>
+  </example>
+
+  <example>
+  Context: The user has completed a module refactor and wants to verify compliance before committing.
+  user: 'I've finished refactoring the authentication module. Please check if it meets our coding standards.'
+  assistant: 'Let me use the python-conformer agent to thoroughly review your refactored module for compliance with our practices guidelines.'
+  <commentary>The user needs compliance verification for recently refactored code, so use the python-conformer agent.</commentary>
+  </example>
+
+  <example>
+  Context: The user wants to review staged Python changes before committing.
+  user: 'I've modified several Python modules. Please review my staged changes for compliance before I commit.'
+  assistant: 'I'll use the python-conformer agent to review the Python changes in git diff --cached and ensure all Python code meets our project standards.'
+  <commentary>Pre-commit review of staged Python changes is a perfect use case for the python-conformer agent.</commentary>
+  </example>
 model: sonnet
 color: red
 ---
@@ -118,7 +144,9 @@ functionality.
 **Unacceptable Suppressions (require investigation):**
 - `type: ignore` MUST NOT be used, except in extremely rare circumstances. Such
   suppressions usually indicate missing third-party dependencies or type stubs,
-  inappropriate type variables, or a bad inheritance pattern.
+  inappropriate type variables, or a bad inheritance pattern. For complex type
+  suppression investigation and dependency management, delegate to the
+  `python-annotator` agent.
 - `__.typx.cast` SHOULD NOT be used, except in extremely rare circumstances.
   Such casts suppress normal type checking and usually the same problems as
   `type: ignore`.
@@ -237,7 +265,7 @@ def _group_documents_by_field(
 
 **Violations identified:**
 1. **Narrow parameter types**: `list[dict[...]]` instead of wide `__.cabc.Sequence[__.cabc.Mapping[...]]`
-2. **Type suppression abuse**: `# type: ignore[arg-type]` masks real design issue
+2. **Type suppression abuse**: `# type: ignore[arg-type]` masks real design issue (delegate to `python-annotator` agent for systematic suppression resolution)
 3. **Mutable container return**: Returns `dict` instead of `__.immut.Dictionary`
 4. **Function body blank lines**: Empty lines breaking vertical compactness
 5. **Vertical compactness**: `return { }` could be same line as `if`
@@ -294,6 +322,11 @@ def _group_documents_by_field(
 3. **Files Modified**: Complete list with brief description of changes
 4. **Manual Review Required**: Any issues requiring human judgment
 
+## TOOL PREFERENCES
+
+- **Precise coordinates**: Use `rg --line-number --column` for exact line/column positions
+- **Batch operations**: Group related changes together to minimize file modification conflicts between different MCP tools
+
 ## EXECUTION REQUIREMENTS
 
 - **PHASE 1 REQUIRED**: Complete review and report before any remediation
@@ -302,4 +335,5 @@ def _group_documents_by_field(
 - **Focus on compliance**: Maintain exact functionality while improving standards adherence
 - **Reference specific lines**: Always include line numbers and concrete examples
 - **Document reasoning**: Explain why each standard matters and how fixes align with project practices
+- **Agent delegation**: When type annotation issues exceed basic compliance scope, consider delegating to the `python-annotator` agent for comprehensive type work
 - **Guide access**: If any prerequisite guide cannot be accessed, stop and inform the user

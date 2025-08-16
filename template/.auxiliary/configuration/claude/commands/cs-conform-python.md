@@ -121,7 +121,9 @@ Acceptable Suppressions:
 Unacceptable Suppressions (require investigation):
 - `type: ignore` MUST NOT be used, except in extremely rare circumstances. Such
   suppressions usually indicate missing third-party dependencies or type stubs,
-  inappropriate type variables, or a bad inheritance pattern.
+  inappropriate type variables, or a bad inheritance pattern. For systematic
+  investigation and resolution of type suppressions, consider using the
+  `python-annotator` agent.
 - `__.typx.cast` SHOULD NOT be used, except in extremely rare circumstances.
   Such casts suppress normal type checking and usually the same problems as
   `type: ignore`.
@@ -312,7 +314,7 @@ Apply fixes in systematic order:
 1. **Module Organization**: Reorder imports, type aliases, functions per practices guide
 2. **Wide/Narrow Types**: Convert function parameters to wide abstract types
 3. **Import Cleanup**: Remove namespace pollution, use private aliases and __ subpackage
-4. **Type Annotations**: Add missing hints, create `TypeAlias` for complex types
+4. **Type Annotations**: Add missing hints, create `TypeAlias` for complex types. For comprehensive type annotation work or complex type checking issues, consider using the `python-annotator` agent.
 5. **Exception Handling**: Narrow try block scope, ensure proper chaining
 6. **Immutability**: Replace mutable with immutable containers where appropriate
 7. **Spacing/Delimiters**: Fix `( )`, `[ ]`, `{ }` patterns
