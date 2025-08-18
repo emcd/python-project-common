@@ -16,6 +16,8 @@ runs:
     - name: Construct Foundation
       if: "${{ 'true' == inputs.needs-clone }}"
       uses: actions/checkout@v4
+      with:
+        lfs: true
 
     - name: Select Python Version
       uses: actions/setup-python@v5

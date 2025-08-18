@@ -9,6 +9,7 @@
 - Current session notes and TODOs: @.auxiliary/notes/
 
 - Use the 'context7' MCP server to retrieve up-to-date documentation for any SDKs or APIs.
+- Use the 'librovore' MCP server to search structured documentation sites with object inventories (Sphinx-based, compatible MkDocs with mkdocstrings). This bridges curated documentation (context7) and raw scraping (firecrawl).
 - Check README files in directories you're working with for insights about architecture, constraints, and TODO items.
 - Update files under `.auxiliary/notes` during conversation, removing completed tasks and adding emergent items.
 

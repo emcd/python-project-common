@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "librovore": {
+      "command": "uvx",
+      "args": [ "librovore", "serve" ]
+    },
     "pyright": {
       "command": "mcp-language-server",
       "args": [
