@@ -26,12 +26,6 @@
          "server",
          "--preview"
       ]
-    },
-    "text-editor": {
-      "command": "uvx",
-      "args": [
-        "mcp-text-editor"
-      ]
     }
   }
 }

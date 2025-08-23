@@ -7,7 +7,7 @@ description: Validate custom slash command functionality with context and permis
 
 Test script to validate custom slash command functionality, permissions, and context interpolation.
 
-Test argument: `$ARGUMENTS`
+Test argument: $ARGUMENTS
 
 ## Context
 

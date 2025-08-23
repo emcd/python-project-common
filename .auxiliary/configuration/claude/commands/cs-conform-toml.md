@@ -7,7 +7,7 @@ description: Systematically conform TOML files to project style and practice sta
 
 For bringing existing TOML configuration files into full compliance with project standards.
 
-Target files: `$ARGUMENTS`
+Target files: $ARGUMENTS
 
 Focus on style/practice conformance, not functionality changes.
 
