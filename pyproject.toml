@@ -145,7 +145,7 @@ linters = [
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
   """isort --check-only --diff sources tests""",
-  """vulture sources""",
+  """vulture""",
   """pyright sources""",
 ]
 packagers = [
@@ -269,6 +269,7 @@ markers = [
 [tool.ruff]
 builtins = [ 'ictr' ]
 cache-dir = '.auxiliary/caches/ruff'
+extend-exclude = [ 'vulturefood.py' ]
 indent-width = 4
 line-length = 79
 [tool.ruff.lint]
@@ -373,10 +374,10 @@ name = 'Repairs'
 showcontent = true
 
 [tool.vulture]
-paths = [ 'sources' ]
-min_confidence = 80
+paths = [ '.auxiliary/configuration/vulturefood.py', 'sources' ]
+min_confidence = 60
 exclude = [
   '*/imports.py',
 ]
 ignore_decorators = [ '@__.cabc.abstractmethod', '@__.typx.overload' ]
-ignore_names = [ ]
+ignore_names = [ 'main' ]
