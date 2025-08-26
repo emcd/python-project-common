@@ -30,7 +30,7 @@ import pytest
 
 from platformdirs import PlatformDirs
 
-from . import PACKAGE_NAME, cache_import_module, create_test_files
+from .__ import PACKAGE_NAME, cache_import_module, create_test_files
 
 
 ictruck.register_module( PACKAGE_NAME )
@@ -80,10 +80,10 @@ def auxdata( application, distribution, state ):
         def __init__( self, name: str, location: Path, editable: bool ):
             self._info = distribution.Information(
                 name = name, location = location, editable = editable )
-            
+
         def __getattr__( self, name: str ):
             return getattr( self._info, name )
-            
+
         def provide_data_location( self, *appendages: str ) -> Path:
             base = Path( '/package/data' )
             if appendages: return base.joinpath( *appendages )
@@ -109,10 +109,10 @@ def auxdata_tmpdir( application, distribution, state, provide_tempdir ):
         def __init__( self, name: str, location: Path, editable: bool ):
             self._info = distribution.Information(
                 name = name, location = location, editable = editable )
-            
+
         def __getattr__( self, name: str ):
             return getattr( self._info, name )
-            
+
         def provide_data_location( self, *appendages: str ) -> Path:
             base = Path( provide_tempdir ) / 'package/data'
             if appendages: return base.joinpath( *appendages )

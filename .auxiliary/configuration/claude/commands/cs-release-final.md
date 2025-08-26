@@ -13,7 +13,7 @@ For execution of a fully-automated final release.
 Below is a validated process to create a final release with automated
 monitoring and next development cycle setup.
 
-Target release version: `$ARGUMENTS`
+Target release version: $ARGUMENTS
 
 Verify exactly one target release version provided.
 
@@ -71,7 +71,7 @@ Stop and consult the user if any of the following occur:
 
 ## Release Process
 
-Execute the following steps for target version `$ARGUMENTS`:
+Execute the following steps:
 
 ### 1. Pre-Release Quality Check
 Run local quality assurance to catch issues early:

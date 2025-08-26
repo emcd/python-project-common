@@ -1,6 +1,8 @@
 {
   "defaultMode": "acceptEdits",
   "env": {
+    "BASH_DEFAULT_TIMEOUT_MS": 1800000,
+    "BASH_MAX_TIMEOUT_MS": 1800000,
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": 1,
     "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": 1,
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": 1
@@ -25,7 +27,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "Edit|MultiEdit|Write|mcp__text-editor__edit_text_file_contents",
+        "matcher": "Edit|MultiEdit|Write",
         "hooks": [
           {
             "type": "command",
@@ -91,8 +93,7 @@
       "mcp__ruff__definition",
       "mcp__ruff__diagnostics",
       "mcp__ruff__hover",
-      "mcp__ruff__references",
-      "mcp__text-editor__get_text_file_contents"
+      "mcp__ruff__references"
     ]
   }
 }

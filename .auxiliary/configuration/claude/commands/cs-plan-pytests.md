@@ -1,12 +1,12 @@
 ---
 allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, WebFetch
-description: Analyze Python test coverage gaps and create comprehensive test implementation plan
+description: Analyze Python test coverage gaps and create focused test plan for uncovered areas and edge cases
 ---
 
 # Plan Python Tests
 
 For systematic analysis of test coverage gaps and creation of detailed test
-implementation plans following project testing guidelines.
+plans following project testing guidelines.
 
 Target module/functionality: $ARGUMENTS
 
@@ -44,16 +44,17 @@ Stop and consult the user if:
 **Your responsibilities:**
 - Focus entirely on analysis and planning - NO implementation
 - Create comprehensive, actionable test plans WITHOUT code snippets of test implementations
+- Focus planning on uncovered areas and edge cases
 - Brief third-party library examples (e.g., httpx mock transport) are acceptable if researched
 - Identify all coverage gaps systematically
-- Consider project testing principles in planning
+- Consider project testing philosophy: doctests for examples, pytest for edge cases
 - Produce clear, structured planning artifacts
 - Acknowledge immutability constraints - modules under test CANNOT be monkey-patched
 - Test private functions/methods via public API - understand why if this fails
 
 ## Test Planning Process
 
-Execute the following steps for target: `$ARGUMENTS`
+Execute the following steps for target: $ARGUMENTS
 
 ### 0. Pre-Flight Verification
 Access test-writing guidelines:
@@ -74,9 +75,26 @@ hatch --env develop run coverage html
 
 Analysis requirements:
 - Identify all uncovered lines in target modules
-- Analyze which functions/classes lack any tests
-- Determine which code paths are partially covered
+- Focus on uncovered lines and untested functionality
+- Determine which edge cases and error paths are untested
 - Note any pragma directives (# pragma: no cover) and their rationale
+
+### 1.5. Example Coverage Analysis
+
+**Review existing documentation examples:**
+
+Survey documentation examples to understand what's already demonstrated:
+- Read relevant example files in `documentation/examples/` if they exist
+- Identify code paths already exercised by user-focused examples
+- Note which functionality is already well-demonstrated through practical scenarios
+- Focus pytest planning on genuinely uncovered areas not addressed by examples
+- Avoid redundant testing of functionality that examples already exercise
+
+**Integration with pytest planning:**
+- Complement rather than duplicate example coverage
+- Target edge cases and error conditions that examples don't demonstrate
+- Focus on defensive code paths and boundary conditions
+- Plan systematic coverage of areas examples don't naturally reach
 
 **For each target module:**
 - Read the source code to understand the public API
@@ -89,8 +107,8 @@ Analysis requirements:
 **Systematically catalog what needs testing:**
 
 **Functionality Gaps:**
-- Functions with zero test coverage
-- Classes with untested methods
+- Public functions with zero test coverage
+- Classes with untested public methods
 - Error handling paths not exercised
 - Edge cases not covered
 

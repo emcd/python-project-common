@@ -5,7 +5,7 @@ description: Python API design, filesystem organization, module structure, and i
 
 # Python Design Analysis
 
-Analyze Python API design patterns, filesystem organization, module structure, class hierarchies, interface definitions, and design patterns to provide guidance on Python-specific structural decisions and project organization.
+Analyze Python API design patterns, filesystem organization, module structure, class hierarchies, interface definitions, and design patterns to provide guidance on Python-specific structural decisions and project organization. Focus exclusively on interface contracts, signatures, and type specifications—never implementation details or method bodies.
 
 Request from user: $ARGUMENTS
 
@@ -22,7 +22,7 @@ Request from user: $ARGUMENTS
 ## Prerequisites
 
 Before providing design analysis, ensure:
-- Understanding of current module organization and class hierarchies
+- Understanding of module organization and class hierarchies
 - Familiarity with Python practices and style guidelines
 - Knowledge of nomenclature conventions and naming patterns
 - @.auxiliary/instructions/practices.rst patterns are followed
@@ -53,16 +53,19 @@ Stop and consult the user if:
 
 Execute the following steps:
 
-### 1. Current Design Analysis
-Examine existing Python structure and patterns:
-- Review current module organization and import patterns
-- Analyze existing class hierarchies and interface definitions
-- Identify design patterns currently in use
+### 1. Design Analysis
+Examine Python structure and patterns:
+- Review module organization and import patterns
+- Analyze class hierarchies and interface definitions
+- Identify design patterns in use
 - Assess alignment with practices and nomenclature guidelines
-- Document current design strengths and improvement opportunities
+- Document design strengths and improvement opportunities
 
 ### 2. Interface Specification
 Define clean API boundaries and contracts following practices guidelines:
+
+Define interfaces through signatures and type annotations only. Avoid specifying how methods should be implemented internally—focus on contracts, not implementation logic.
+
 - All function and class signatures must follow @.auxiliary/instructions/practices.rst patterns exactly
 - Specify public interfaces using wide parameter, narrow return patterns (e.g., __.cabc.Sequence, __.cabc.Mapping for inputs)
 - Return narrow concrete types (list, dict, tuple, __.immut.Dictionary for outputs)
@@ -82,6 +85,9 @@ Apply Python-specific organizational patterns and filesystem structure:
 
 ### 4. Class and Function Design
 Create maintainable Python structures following practices guide exactly:
+
+Design class structures through their public contracts and type relationships. Specify signatures, inheritance patterns, and interface boundaries—never internal implementation logic or method bodies.
+
 - Design class hierarchies with appropriate base classes and mixins (__.immut.Object, __.immut.Protocol, etc.)
 - Specify function signatures using practices guide patterns (wide inputs, narrow outputs, proper spacing)
 - Apply nomenclature patterns for methods, attributes, and functions from nomenclature guidelines
@@ -90,8 +96,11 @@ Create maintainable Python structures following practices guide exactly:
 
 ### 5. Design Documentation
 Create comprehensive design specifications without implementations:
+
+Use atemporal language in all specifications. Avoid temporal terms like 'new', 'current', 'existing', 'future'—designs should read as canonical specifications independent of implementation timeline.
+
 - Generate design documents following established format
-- Update `documentation/architecture/designs/index.rst` to include new designs
+- Update `documentation/architecture/designs/index.rst` to include designs
 - Provide only signatures, contracts, and interface specifications - no implementations
 - Do not provide exception class implementations, function bodies, or method implementations
 - Document interface contracts and expected behaviors (contracts only, not code)

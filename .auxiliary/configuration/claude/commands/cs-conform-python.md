@@ -7,7 +7,7 @@ description: Systematically conform Python code to project style and practice st
 
 For bringing existing Python code into full compliance with project standards.
 
-Target code: `$ARGUMENTS`
+Target: $ARGUMENTS
 
 Focus on style/practice conformance, not functionality changes.
 
@@ -121,7 +121,9 @@ Acceptable Suppressions:
 Unacceptable Suppressions (require investigation):
 - `type: ignore` MUST NOT be used, except in extremely rare circumstances. Such
   suppressions usually indicate missing third-party dependencies or type stubs,
-  inappropriate type variables, or a bad inheritance pattern.
+  inappropriate type variables, or a bad inheritance pattern. For systematic
+  investigation and resolution of type suppressions, consider using the
+  `python-annotator` agent.
 - `__.typx.cast` SHOULD NOT be used, except in extremely rare circumstances.
   Such casts suppress normal type checking and usually the same problems as
   `type: ignore`.
@@ -297,17 +299,10 @@ Phase 2 Output:
 3. **Files Modified**: Complete list with brief description of changes
 4. **Manual Review Required**: Any issues requiring human judgment
 
-## Tool Preferences
-
-- **Precise coordinates**: Use `rg --line-number --column` for exact line/column positions
-- **File editing**: Prefer `text-editor` MCP tools for line-based edits to avoid conflicts
-- **File synchronization**: Always reread files with `text-editor` tools after modifications by other tools (like `pyright` or `ruff`)
-- **Batch operations**: Group related changes together to minimize file modification conflicts between different MCP tools
-
 ## Conformance Process
 
 ### 1. Analysis Phase (PHASE 1)
-- Examine target files to understand current state  
+- Examine target files to understand current state
 - Run linters to identify specific violations
 - Identify architectural patterns that need updating
 - Generate comprehensive compliance report
@@ -319,14 +314,14 @@ Apply fixes in systematic order:
 1. **Module Organization**: Reorder imports, type aliases, functions per practices guide
 2. **Wide/Narrow Types**: Convert function parameters to wide abstract types
 3. **Import Cleanup**: Remove namespace pollution, use private aliases and __ subpackage
-4. **Type Annotations**: Add missing hints, create `TypeAlias` for complex types
+4. **Type Annotations**: Add missing hints, create `TypeAlias` for complex types. For comprehensive type annotation work or complex type checking issues, consider using the `python-annotator` agent.
 5. **Exception Handling**: Narrow try block scope, ensure proper chaining
 6. **Immutability**: Replace mutable with immutable containers where appropriate
 7. **Spacing/Delimiters**: Fix `( )`, `[ ]`, `{ }` patterns
 8. **Docstrings**: Triple single quotes, narrative mood, proper spacing
 9. **Line Length**: Split at 79 columns using parentheses
 
-**Requirements**: 
+**Requirements**:
 - Maintain exact functionality while improving standards adherence
 - Validate with `hatch --env develop run linters` (must produce clean output)
 - Run `hatch --env develop run testers` to ensure no functionality breaks
