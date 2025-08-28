@@ -50,7 +50,7 @@ jobs:
 
       - name: Execute Claude Code
         id: claude
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
           allowed_tools: ${{ inputs.allowed-tools }}
           anthropic_api_key: ${{ secrets.anthropic-api-key }}
