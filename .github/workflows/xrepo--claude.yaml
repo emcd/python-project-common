@@ -56,8 +56,9 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
-          allowed_tools: ${{ inputs.allowed-tools }}
           anthropic_api_key: ${{ secrets.anthropic-api-key }}
-          timeout_minutes: ${{ inputs.timeout-minutes }}
           trigger_phrase: "/claude"
           prompt: ${{ inputs.prompt }}
+          claude_args: |
+            --allowedTools "${{ inputs.allowed-tools }}"
+            --timeout ${{ inputs.timeout-minutes }}

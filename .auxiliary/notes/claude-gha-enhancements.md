@@ -32,7 +32,9 @@ Upgrade Claude GitHub Actions workflow from beta to v1 and add MCP server integr
 ### Step 1: Beta to V1 Upgrade
 - Update `.github/workflows/xrepo--claude.yaml:53`
 - Change `anthropics/claude-code-action@beta` to `anthropics/claude-code-action@v1`
-- No parameter changes needed (already v1-compatible)
+- **CORRECTION**: Parameter changes required for v1:
+  - `allowed_tools` → `claude_args: --allowedTools "${{ inputs.allowed-tools }}"`
+  - `timeout_minutes` → `claude_args: --timeout ${{ inputs.timeout-minutes }}`
 - Commit changes
 
 ### Step 2: Add Manual Triggers
@@ -40,10 +42,11 @@ Upgrade Claude GitHub Actions workflow from beta to v1 and add MCP server integr
 - Commit changes
 - Push master branch
 
-### Step 3: Branch Strategy
-- Checkout `claude-gha` branch
-- Temporarily modify `.github/workflows/claude.yaml` to point to xrepo workflow on this branch
-- Enables isolated testing without affecting production
+### Step 3: Testing Strategy (Revised)
+- Test directly on `master` branch due to GitHub Actions security constraints
+- Temporarily modify `.github/workflows/claude.yaml` to point to xrepo workflow `@master`
+- GitHub Actions validates workflow files must be identical to default branch, preventing branch isolation
+- Will revert to `@gha-1` after successful testing and tag update
 
 ### Step 4: MCP Integration
 Add to xrepo workflow:

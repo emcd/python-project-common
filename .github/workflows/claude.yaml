@@ -35,7 +35,7 @@ jobs:
       id-token: write
       issues: read
       pull-requests: read
-    uses: emcd/python-project-common/.github/workflows/xrepo--claude.yaml@gha-1
+    uses: emcd/python-project-common/.github/workflows/xrepo--claude.yaml@master
     with:
       allowed-tools: 'Bash(git add:*),Bash(git branch:*),Bash(git checkout:*),Bash(git diff:*),Bash(git log:*),Bash(git ls-files:*),Bash(git remote:*),Bash(git reset:*),Bash(git rev-parse:*),Bash(git rm:*),Bash(git status),Bash(hatch:*),Bash(pip:*),Bash(python:*),Edit,Write'
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
