@@ -15,6 +15,10 @@ on:
         default: 20
         required: false
         type: number
+      prompt:
+        description: 'Optional prompt to send to Claude.'
+        required: false
+        type: string
     secrets:
       anthropic-api-key:
         description: 'Anthropic API key for Claude access.'
@@ -56,3 +60,4 @@ jobs:
           anthropic_api_key: ${{ secrets.anthropic-api-key }}
           timeout_minutes: ${{ inputs.timeout-minutes }}
           trigger_phrase: "/claude"
+          prompt: ${{ inputs.prompt }}
