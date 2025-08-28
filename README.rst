@@ -85,7 +85,7 @@ For development guidance and standards, please see the `development guide
 <https://emcd.github.io/python-project-common/stable/sphinx-html/contribution.html#development>`_.
 
 
-`More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
+Additional Indicia
 ===============================================================================
 
 .. image:: https://img.shields.io/github/last-commit/emcd/python-project-common
