@@ -92,14 +92,36 @@ Add to xrepo workflow:
 - Create new `gha-1.*` tag
 - Force-retarget `gha-1` floating tag with preserved message
 
-## Validation Criteria
+## Progress Status
 
-1. ✅ Claude Code action v1 functions correctly
-2. ✅ Manual workflow triggers work
-3. ✅ MCP servers are discoverable by workflow Claude
-4. ✅ Instructions are available at runtime
-5. ✅ Subagents function with downloaded instructions
-6. ✅ No regression in existing workflow functionality
+### Completed ✅
+1. **Claude Code action v1 upgrade** - Fixed parameter conversion to `claude_args`
+2. **Manual workflow triggers** - `workflow_dispatch` with prompt parameter working
+3. **Parameter plumbing** - Prompt flows from dispatch to cross-repo workflow  
+4. **Basic workflow functionality** - All setup steps and Claude execution working
+
+### Current Phase: MCP Server Integration 🔄
+
+#### Step 4A: Add MCP Configuration Generation
+- Add Node.js setup step for context7 
+- Add UV installation step for librovore
+- Create custom `.mcp.json` with context7 and librovore servers
+- Position before "Execute Claude Code" step
+
+#### Step 4B: Add Instructions Download
+- Add step to download/stage instructions to `.auxiliary/instructions`
+- Ensure instructions are available before Claude execution
+- Follow existing pattern from configure-clone.bash
+
+#### Step 4C: Test MCP Integration
+- Test via workflow_dispatch with MCP validation prompt
+- Verify Claude can see context7 and librovore MCP servers
+- Verify subagent availability (depends on instructions)
+
+### Remaining: Production Integration 📋
+1. Update `gha-1` tag with complete working configuration
+2. Revert claude.yaml to point back to `@gha-1` 
+3. Final validation and documentation update
 
 ## Risk Mitigation
 

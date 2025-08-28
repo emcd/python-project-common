@@ -52,6 +52,70 @@ jobs:
           fi
         shell: bash
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install UV
+        run: pip install uv
+
+      - name: Create MCP Configuration
+        run: |
+          cat > .mcp.json << 'EOF'
+          {
+            "mcpServers": {
+              "context7": {
+                "command": "npx",
+                "args": ["-y", "@upstash/context7-mcp"]
+              },
+              "librovore": {
+                "command": "uvx",
+                "args": ["librovore", "serve"]
+              }
+            }
+          }
+          EOF
+          echo "::notice::Created custom MCP configuration with context7 and librovore"
+        shell: bash
+
+      - name: Download Instructions
+        run: |
+          set -eu
+          instructions_dir=".auxiliary/instructions"
+          base_url="https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common"
+          files=("architecture.rst" "nomenclature.rst" "nomenclature-germanic.rst" "practices.rst" "requirements.rst" "style.rst" "tests.rst")
+          
+          # Create instructions directory if it doesn't exist
+          mkdir -p "$instructions_dir"
+          
+          echo "Downloading project documentation guides to .auxiliary/instructions/"
+          
+          success_count=0
+          for file in "${files[@]}"; do
+            url="$base_url/$file"
+            output_path="$instructions_dir/$file"
+            
+            if curl --fail --silent --location --output "$output_path" "$url"; then
+              if [ -s "$output_path" ]; then
+                echo "::notice::Downloaded $file ($(wc -c < "$output_path") bytes)"
+                success_count=$((success_count + 1))
+              else
+                echo "::error::Downloaded $file but file is empty"
+                rm -f "$output_path"
+              fi
+            else
+              echo "::error::Failed to download $file"
+            fi
+          done
+          
+          if [ $success_count -eq ${#files[@]} ]; then
+            echo "::notice::Successfully downloaded all ${#files[@]} documentation guides"
+          else
+            echo "::warning::Only downloaded $success_count of ${#files[@]} documentation guides"
+          fi
+        shell: bash
+
       - name: Execute Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
