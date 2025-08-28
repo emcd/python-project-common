@@ -61,4 +61,3 @@ jobs:
           prompt: ${{ inputs.prompt }}
           claude_args: |
             --allowedTools "${{ inputs.allowed-tools }}"
-            --timeout ${{ inputs.timeout-minutes }}
