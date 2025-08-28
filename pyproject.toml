@@ -379,5 +379,5 @@ min_confidence = 60
 exclude = [
   '*/imports.py',
 ]
-ignore_decorators = [ '@__.cabc.abstractmethod', '@__.typx.overload' ]
+ignore_decorators = [ '@__.abc.abstractmethod', '@__.typx.overload' ]
 ignore_names = [ 'main' ]
