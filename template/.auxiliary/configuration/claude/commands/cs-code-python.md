@@ -16,7 +16,9 @@ Request from user: $ARGUMENTS
 - Architecture overview: @documentation/architecture/summary.rst
 - Filesystem patterns: @documentation/architecture/filesystem.rst
 - Python practices: @.auxiliary/instructions/practices.rst
+- Python practices (detailed): @.auxiliary/instructions/practices-python.rst
 - Code style: @.auxiliary/instructions/style.rst
+- Python style (detailed): @.auxiliary/instructions/style-python.rst
 - Nomenclature: @.auxiliary/instructions/nomenclature.rst
 - Germanic variants: @.auxiliary/instructions/nomenclature-germanic.rst
 - Design documents: !`ls documentation/architecture/designs/`

@@ -15,7 +15,9 @@ Focus on style/practice conformance, not functionality changes.
 
 - Read project documentation guides first:
   - @.auxiliary/instructions/practices.rst
+  - @.auxiliary/instructions/practices-python.rst
   - @.auxiliary/instructions/style.rst
+  - @.auxiliary/instructions/style-python.rst
   - @.auxiliary/instructions/nomenclature.rst
 - Understand target files to be conformed
 - Have read `CLAUDE.md` for project-specific guidance
