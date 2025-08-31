@@ -24,11 +24,11 @@ Code Style
 This guide covers **formatting and visual presentation** of code. For guidance
 on code organization, patterns, and architectural decisions, see :doc:`practices`.
 
-For detailed language-specific style guidance, see:
+For comprehensive language-specific development guidance (including formatting), see:
 
-* :doc:`style-python` - Python-specific formatting and visual presentation
-* :doc:`style-rust` - Rust-specific formatting and visual presentation
-* :doc:`style-toml` - TOML formatting and visual presentation
+* :doc:`practices-python` - Python development guide with formatting standards
+* :doc:`practices-rust` - Rust development guide with formatting standards  
+* :doc:`practices-toml` - TOML configuration guide with formatting standards
 
 This document provides general principles applicable to all languages.
 
@@ -127,12 +127,14 @@ Vertical Compactness
   not have to scroll to read a function.
 
 
-Language-Specific Styles
+Language-Specific Development Guides
 ===============================================================================
 
-* :doc:`style-python` - Python-specific formatting and visual presentation
-* :doc:`style-rust` - Rust-specific formatting and visual presentation
-* :doc:`practices-toml` - TOML configuration practices (includes formatting standards)
+For comprehensive development guidance including formatting standards:
+
+* :doc:`practices-python` - Python development guide 
+* :doc:`practices-rust` - Rust development guide
+* :doc:`practices-toml` - TOML configuration guide
 
 
 Automation

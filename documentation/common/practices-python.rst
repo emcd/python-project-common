@@ -18,12 +18,12 @@
 
 
 *******************************************************************************
-Python Development Practices
+Python Development Guide
 *******************************************************************************
 
-This guide covers **Python-specific code organization, patterns, and architectural decisions**.
-For general guidance applicable to all languages, see the main :doc:`practices`.
-For guidance on code formatting and visual presentation, see the :doc:`style-python`.
+This guide covers **comprehensive Python development guidance including code organization, 
+patterns, architectural decisions, and formatting standards**. For general guidance 
+applicable to all languages, see the main :doc:`practices`.
 
 .. _comprehensive-example:
 
@@ -180,7 +180,37 @@ Import Organization
   3. Third-party imports
   4. First-party (relative) imports
 
-* For visual formatting of multi-line imports, use parentheses with proper indentation.
+Visual Formatting
+-------------------------------------------------------------------------------
+
+* For import sequences that will not fit on one line, use parentheses with
+  hanging indent.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      from third_party.submodule import (
+          FirstClass, SecondClass, ThirdClass )
+
+* For import sequences that will not fit on two lines, list them one per line
+  with a trailing comma after each one and the closing parentheses dedented on a
+  separate line.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      from third_party.other import (
+          ALongClassName,
+          AnotherLongClassName,
+          YetAnotherLongClassName,
+      )
+
+* Imports within a sequence should be sorted lexicographically with uppercase
+  letters coming before lowercase ones (i.e., classes and type aliases before
+  functions). Import aliases are relevant to this ordering rather than the
+  imports which they alias.
 
 Namespace Management
 -------------------------------------------------------------------------------
@@ -206,6 +236,35 @@ Type Annotations
   See the comprehensive :ref:`DataProcessor example <comprehensive-example>` above which demonstrates
   proper type annotation patterns including ``TypeAlias`` declarations for reused types like
   ``Location``, ``UserRecord``, and ``FilterFunction``.
+
+Visual Formatting
+-------------------------------------------------------------------------------
+
+* Type annotations follow the same spacing rules as other code constructs - one
+  space after opening delimiters and one space before closing delimiters.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def process(
+          items: __.cabc.Sequence[ __.cabc.Mapping[ str, int ] ]
+      ) -> dict[ str, bool ]: pass
+      
+      ComplexType: __.typx.TypeAlias = __.typx.Union[
+          dict[ str, __.typx.Any ],
+          list[ str ],
+      ]
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      # Wrong: inconsistent bracket spacing in type annotations
+      def process( items: __.cabc.Sequence[__.cabc.Mapping[str, int]] ) -> dict[str, bool]: pass
+
+Semantic Usage
+-------------------------------------------------------------------------------
 
 * Prefer ``__.Absential`` over ``__.typx.Optional`` for optional function
   arguments when ``None`` has semantic meaning distinct from "not provided".
@@ -292,6 +351,9 @@ Type Annotations
 Function Signatures
 ===============================================================================
 
+Type Principles
+-------------------------------------------------------------------------------
+
 * Accept wide types (abstract base classes) for public function parameters;
   return narrow types (concrete types) from all functions.
 
@@ -299,6 +361,95 @@ Function Signatures
   ``process_user_data`` accepts wide parameter types (``__.cabc.Sequence[ UserRecord ]``
   for maximum caller flexibility) while returning a narrow, specific type 
   (``__.immut.Dictionary[ str, UserRecord ]``) that provides clear guarantees.
+
+Visual Formatting
+-------------------------------------------------------------------------------
+
+* Keep all arguments on one line if they fit within the line limit.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def simple_function( arg1: int, arg2: str = 'default' ) -> bool:
+          return True
+
+* Use spaces around ``=`` for keyword/nominative arguments.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def some_function( magic: int = 42 ) -> int: pass
+      result = process( data, timeout = 30 )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      def some_function(magic=42): pass
+      result = process(data, timeout=30)
+
+* When arguments must be split across lines, prefer to group positional and
+  keyword arguments.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def medium_function(
+          first_pos: str, second_pos: int, third_pos: bool,
+          first_named: str = 'default', second_named: str = 'other'
+      ) -> None: pass
+
+* When grouping would overflow a line, place each argument on its own line.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def complex_function(
+          first_very_long_positional_argument: __.cabc.Mapping[ str, int ],
+          second_very_long_positional_argument: __.cabc.Sequence[ str ],
+          first_named_arg: str = 'some very long default value',
+          second_named_arg: str = 'another long default value',
+      ) -> None: pass
+
+* For multi-line return type annotations using ``Annotated``, place the closing
+  bracket and colon on the final line.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def complex_function(
+          data: UserData
+      ) -> __.typx.Annotated[
+          ProcessedData,
+          __.ddoc.Doc( "Processed user data with validation." ),
+          __.ddoc.Raises( ValueError, "If data validation fails." ),
+      ]:
+          ''' Process user data with comprehensive validation. '''
+          pass
+
+* When a single-line form would overflow, always go to a three-or-more-line form
+  with the arguments on indented lines between the first and last lines. There
+  is no two-line form.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def semicomplex_function(
+          argument_1: int, argument_2: int, argument_3: str
+      ) -> bool: return True
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      def semicomplex_function( argument_1: int, argument_2: int, argument_3: str
+      ) -> bool: return True
 
 Immutability
 ===============================================================================
@@ -387,6 +538,9 @@ Exceptional Conditions
 Documentation
 ===============================================================================
 
+Content Standards
+-------------------------------------------------------------------------------
+
 * Documentation must be written as Sphinx reStructuredText. The docstrings for
   functions must not include parameter or return type documentation. Parameter
   and return type documentation is handled via PEP 727 annotations. Pull
@@ -397,6 +551,64 @@ Documentation
 * Function docstrings should use narrative mood (third person) rather than
   imperative mood (second person). The docstring describes what the function
   does, not what the caller should do.
+
+Visual Formatting
+-------------------------------------------------------------------------------
+
+* Use triple single-quotes for all docstrings with proper spacing.
+
+* For single-line docstrings, include one space after the opening quotes and
+  before the closing quotes.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      def example_function( ) -> str:
+          ''' An example function. '''
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      def example_function( ):
+          """An example function."""
+
+      def example_function( ):
+          '''An example function.'''
+
+* For multi-line docstrings, include a newline after the heading and before the
+  closing quotes. Indent continuation lines to match the opening quotes. Place
+  the closing triple quotes on their own line for multi-line docstrings,
+  indented to match the opening quotes.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      class ExampleClass:
+          ''' An example class.
+
+              This class demonstrates proper docstring formatting
+              with multiple lines of documentation.
+          '''
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      class ExampleClass:
+          """An example class.
+
+          This class demonstrates proper docstring formatting
+          with multiple lines of documentation.
+          """
+
+      class ExampleClass:
+          """An example class.
+
+          This class demonstrates proper docstring formatting
+          with multiple lines of documentation."""
 
   **❌ Avoid:**
 
@@ -421,6 +633,220 @@ Documentation
           data: __.cabc.Sequence[ __.typx.Any ]
       ) -> dict[ str, __.typx.Any ]:
           ''' Processes input data and returns results. '''  # Narrative mood
+
+Formatting Standards
+===============================================================================
+
+Lines and Spaces
+-------------------------------------------------------------------------------
+
+* One space after opening delimiters ( ``(``, ``[``, ``{`` ) and one space
+  before closing delimiters ( ``)``, ``]``, ``}`` ), *except* inside of
+  f-strings and strings to which ``.format`` is applied.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      func( arg1, arg2 )
+      data = [ 1, 2, 3 ]
+      config = { 'key': 'value' }
+
+      # Exception: f-strings and .format
+      message = f"Hello {name}."
+      template = "Value: {value}".format( value = 42 )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      func(arg1, arg2)
+      data = [1, 2, 3]
+      config = {"key": "value"}
+
+      # Wrong: spaces in f-strings
+      message = f"Hello { name }."
+
+* Empty collection literals have a single space between delimiters, ``( )``,
+  ``[ ]``, ``{ }``. This includes function definitions and invocations with no
+  arguments.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      empty_list = [ ]
+      empty_dict = { }
+
+      def no_args_function( ) -> None: pass
+      result = some_function( )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      empty_list = []
+      empty_dict = {}
+
+      def no_args_function(): pass
+      result = some_function()
+
+Collections
+-------------------------------------------------------------------------------
+
+* For short collections, keep them on one line.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      points = [ ( 1, 2 ), ( 3, 4 ), ( 5, 6 ) ]
+      config = { 'name': 'example', 'value': 42 }
+
+* For longer collections, split elements one per line with a trailing comma
+  after the last element.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      matrix = [
+          [ 1, 2, 3, 4 ],
+          [ 5, 6, 7, 8 ],
+          [ 9, 10, 11, 12 ],
+      ]
+
+      settings = {
+          'name': 'example',
+          'description': 'A longer example that needs multiple lines',
+          'values': [ 1, 2, 3, 4, 5 ],
+          'nested': {
+              'key1': 'value1',
+              'key2': 'value2',
+          },
+      }
+
+Line Continuation
+-------------------------------------------------------------------------------
+
+* Use parentheses for line continuation. Split at natural points such as dots,
+  operators, or after commas. Keep the closing parenthesis on the same line as
+  the last element unless the collection has a trailing comma.
+
+* For operator splits, place the operator at the beginning of the split-off
+  line, not at the end of the line being split.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      # Dot operator splits
+      result = (
+          very_long_object_name.first_method_call( )
+          .second_method_call( )
+          .final_method_call( ) )
+
+      # Operator splits - operators at beginning of continuation lines
+      total = (
+          first_long_value * second_long_value
+          + third_long_value * fourth_long_value
+          - adjustment_factor )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      # Using backslash continuation
+      result = very_long_object_name.first_method_call( ) \
+               .second_method_call( ) \
+               .final_method_call( )
+
+      # Operators at end of line being split
+      total = (
+          first_long_value * second_long_value +
+          third_long_value * fourth_long_value )
+
+Function Invocations
+-------------------------------------------------------------------------------
+
+* For function invocations, generally omit trailing commas after the final
+  argument, keeping the closing parenthesis on the same line as the final
+  argument.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      # Single line invocations
+      result = process_data( input_file, output_file, strict = True )
+
+      # Multi-line invocations without trailing comma
+      result = complex_processing_function(
+          very_long_input_parameter,
+          another_long_parameter,
+          final_parameter = computed_value )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      # Unnecessary trailing comma in function call
+      result = process_data(
+          input_file,
+          output_file,
+          strict = True, )
+
+Strings
+-------------------------------------------------------------------------------
+
+* Use single quotes for plain data strings unless they contain single quotes.
+  Use double quotes for f-strings, ``.format`` strings, exception messages,
+  and log messages.
+
+* Exception messages and log messages should end with periods for consistency
+  and proper sentence structure.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      name = 'example'
+      path = 'C:\\Program Files\\Example'
+
+      message = f"Processing {name} at {path}."
+      count = "Number of items: {count}".format( count = len( items ) )
+
+      raise ValueError( "Invalid configuration value." )
+      logger.error( "Failed to process item." )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      name = "example"
+      path = "C:\\Program Files\\Example"
+
+      message = f'Processing {name} at {path}'
+      count = "Number of items: {len(items)}"
+
+      raise ValueError( 'Invalid configuration value' )
+      logger.error( 'Failed to process item' )
+
+* Do not use function calls or subscripts inside of f-string expressions. These
+  can be opaque to some linters and syntax highlighters. Instead, use strings
+  with the ``.format`` method for these cases.
+
+  **✅ Prefer:**
+
+  .. code-block:: python
+
+      "Values: {values}".format( values = ', '.join( values ) )
+
+  **❌ Avoid:**
+
+  .. code-block:: python
+
+      f"Values: {', '.join(values)}"
 
 Quality Assurance
 ===============================================================================

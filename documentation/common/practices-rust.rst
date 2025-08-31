@@ -18,12 +18,12 @@
 
 
 *******************************************************************************
-Rust Development Practices
+Rust Development Guide
 *******************************************************************************
 
-This guide covers **Rust-specific code organization, patterns, and architectural decisions**.
-For general guidance applicable to all languages, see the main :doc:`practices`.
-For guidance on code formatting and visual presentation, see the :doc:`style-rust`.
+This guide covers **comprehensive Rust development guidance including code organization, 
+patterns, architectural decisions, and formatting standards**. For general guidance 
+applicable to all languages, see the main :doc:`practices`.
 
 Module Organization
 ===============================================================================
@@ -38,9 +38,25 @@ Module Organization
 * Apply project nomenclature guidelines from :doc:`nomenclature` when naming
   modules, following Rust's ``snake_case`` convention for module names.
 
+Naming Conventions
+===============================================================================
+
+* Follow standard Rust naming conventions as defined in the Rust API Guidelines:
+
+  - **Types, traits, enums**: ``PascalCase``
+  - **Functions, variables, modules**: ``snake_case``  
+  - **Constants, statics**: ``SCREAMING_SNAKE_CASE``
+  - **Macros**: ``snake_case`` (by convention, though not enforced)
+
+* Apply project nomenclature guidelines from :doc:`nomenclature` when naming
+  types, functions, and variables.
+
 
 Documentation
 ===============================================================================
+
+Content Standards
+-------------------------------------------------------------------------------
 
 * Write documentation comments in narrative mood (third person) consistent with
   project documentation standards.
@@ -63,6 +79,48 @@ Documentation
       pub fn validate_config(config: &Config) -> Result<(), CrateError> {
           // implementation
       }
+
+Visual Formatting
+-------------------------------------------------------------------------------
+
+* Use standard Rust documentation comments (``///`` for items, ``//!`` for modules).
+
+* Write documentation in narrative mood (third person) consistent with project
+  documentation conventions.
+
+  **✅ Prefer:**
+
+  .. code-block:: rust
+
+      /// Validates the configuration data.
+      /// 
+      /// Returns the validated configuration or an error if validation fails.
+      pub fn validate_configuration(config: &Config) -> Result<Config, ConfigError> {
+          // implementation
+      }
+
+  **❌ Avoid:**
+
+  .. code-block:: rust
+
+      /// Validate the configuration data.
+      pub fn validate_configuration(config: &Config) -> Result<Config, ConfigError> {
+          // implementation  
+      }
+
+Formatting Standards
+===============================================================================
+
+* Follow the standard Rust formatting conventions enforced by ``rustfmt``.
+  The project's ``.rustfmt.toml`` configuration defines the specific formatting rules.
+
+* Use ``cargo fmt`` to automatically format code according to project standards.
+
+* Maximum line length follows the general project standard of 79 columns,
+  which may be configured in ``.rustfmt.toml`` if different from Rust defaults.
+
+Future Development
+===============================================================================
 
 .. todo::
 
