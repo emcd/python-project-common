@@ -241,8 +241,102 @@ Eliminate redundancy through strategic cross-referencing rather than content dup
 
 The hybrid architecture proves that smart reorganization can be more valuable than simple line reduction.
 
-## Next Work Item: Optimize Instruction Distribution
+## Phase 3 Strategy: Linguistic Factoring vs. Reference Extraction
 
-**Goal**: After completing the documentation refactor, create `template/.auxiliary/scripts/obtain-instructions` to help projects stay synchronized with documentation restructures while optimizing context window usage.
+### 📊 Current State Analysis
 
-**Rationale**: Extract instruction-pulling logic from `gh-repositor/configure-clone.bash`, add RST preprocessing to strip licensing boilerplate (first 19 lines), and integrate into the template so all projects can benefit from automated synchronization and context optimization.
+**nomenclature.rst (550 lines):**
+- Core patterns (~50 lines): `<verb>_<noun>`, preposition prefixes
+- Noun placeholders (~30 lines): `<attribute>`, `<resource>`, etc. 
+- **Verb prefix catalog (~125 lines)**: Detailed Latin-derived definitions by semantic cluster
+- Function suffixes (~15 lines): `_default`, `_maximum`, etc.
+- Environment variables, linguistic notes (~25 lines)
+
+**nomenclature-germanic.rst (121 lines):** Pure reference table mapping Latin → Germanic alternatives
+
+### 🔀 Proposed Reorganization: Factor by Natural Language
+
+**Problem**: Current structure mixes universal naming patterns with vocabulary catalogs, forcing all users to load exhaustive verb lists regardless of need.
+
+**Solution**: Separate structural patterns (universally needed) from vocabulary choices (reference material).
+
+#### Proposed Structure:
+
+**`nomenclature.rst` (Core - ~125 lines)**
+- Universal patterns: `<verb>_<noun>`, `<preposition>_<noun>`
+- Noun placeholders: `<resource>`, `<component>`, etc.
+- Function suffixes: `_default`, `_maximum`, etc.
+- Environment variables: Naming conventions
+- References to language-specific verb catalogs
+
+**`nomenclature-latin.rst` (Reference - ~140 lines)**
+- Comprehensive verb catalog organized by semantic clusters
+- Detailed definitions with usage examples
+- "Latin-derived terms as project default" guidance
+
+**`nomenclature-germanic.rst` (Enhanced Reference - ~150+ lines)**
+- Restructured to match Latin guide's semantic organization
+- Focus on verb semantics rather than just Latin mappings
+- Germanic-specific usage philosophy and patterns
+
+### 🎯 Impact Analysis
+
+**Context Window Benefits:**
+- **All language tasks**: 550 → 125 lines (**425 line reduction, 77%!**)
+- **Latin-specific tasks**: nomenclature.rst + nomenclature-latin.rst (265 lines total, 52% reduction)
+- **Germanic-preference tasks**: nomenclature.rst + nomenclature-germanic.rst (275 lines total, 50% reduction)
+
+**User Experience:**
+- ✅ **Human readers**: Cleaner organization, easier navigation to relevant guidance
+- ✅ **LLM tasks**: Most consultations need patterns, not exhaustive vocabulary
+- ✅ **Consistency**: Users can focus on their preferred linguistic style
+- ✅ **Scalability**: Framework supports future language preferences
+
+### 🏆 Recommendation: Linguistic Factoring
+
+**Key insight**: Most nomenclature consultations are about **patterns** ("How do I name this function?") not **vocabulary** ("What's the difference between `assess` and `examine`?").
+
+**Linguistic factoring provides:**
+- **Massive context reduction** (77% for basic tasks)
+- **Better separation of concerns** (structure vs. vocabulary)
+- **Enhanced maintainability** for both human and LLM users
+- **Preservation of comprehensive guidance** when actually needed
+
+### ✅ Implementation Completed (Phase 3)
+
+**Completed Work:**
+1. **Extracted core patterns** from nomenclature.rst (550 → 433 lines, 21% reduction) 
+2. **Created nomenclature-latin.rst** (235 lines) with comprehensive verb catalog organized by semantic clusters
+3. **Restructured nomenclature-germanic.rst** (121 → 234 lines) with semantic organization and detailed usage guidance
+4. **Updated cross-references** throughout documentation
+
+**Final Context Impact:**
+- **Basic nomenclature tasks**: nomenclature.rst only (433 lines vs. original 550) = **117 line reduction (21%)**
+- **Latin-specific tasks**: nomenclature.rst + nomenclature-latin.rst (433 + 235 = 668 lines vs. original 550) = **+118 lines for comprehensive guidance**  
+- **Germanic-preference tasks**: nomenclature.rst + nomenclature-germanic.rst (433 + 234 = 667 lines vs. original 550) = **+117 lines for comprehensive guidance**
+
+**Key Achievement**: While comprehensive guidance is now larger than the original monolithic file, **most nomenclature consultations need only the core patterns** (21% reduction). Advanced users requiring detailed vocabulary catalogs get significantly enhanced guidance with semantic organization and detailed usage notes.
+
+**Post-review refinements**: Applied alphabetization, updated philosophy section, and removed redundant mapping table from Germanic guide after verification of completeness.
+
+## Future Work Items
+
+### Next: Optimize Instruction Distribution
+
+**Goal**: Create `template/.auxiliary/scripts/obtain-instructions` to help projects stay synchronized with documentation restructures while optimizing context window usage.
+
+**Current State**: `gh-repositor/configure-clone.bash` contains hardcoded logic to download common documentation files for LLM access (lines 90-124).
+
+**Proposed Solution**: 
+1. **Extract and enhance**: Move instruction-pulling logic from `configure-clone.bash` into `template/.auxiliary/scripts/obtain-instructions`
+2. **Context optimization**: Strip licensing boilerplate (first 19 lines) from each downloaded RST file to reduce context window consumption
+3. **Template integration**: Make script available to all projects generated from the template
+4. **Sync advantage**: Projects can easily update their local copies when documentation evolves
+
+**Benefits**:
+- **Automated synchronization** with documentation changes
+- **Context window optimization** by removing boilerplate (19 lines × N files)
+- **Template standardization** across all projects  
+- **Maintenance reduction** by centralizing update logic
+
+**Implementation**: Extract from lines 90-124 of `configure-clone.bash`, add RST preprocessing, integrate into template structure.
