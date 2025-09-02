@@ -16,6 +16,7 @@ Request from user: $ARGUMENTS
 - Architecture overview: @documentation/architecture/summary.rst
 - Filesystem patterns: @documentation/architecture/filesystem.rst
 - Python practices: @.auxiliary/instructions/practices.rst
+- Python development guide: @.auxiliary/instructions/practices-python.rst
 - Code style: @.auxiliary/instructions/style.rst
 - Nomenclature: @.auxiliary/instructions/nomenclature.rst
 - Germanic variants: @.auxiliary/instructions/nomenclature-germanic.rst
@@ -26,9 +27,24 @@ Request from user: $ARGUMENTS
 
 Before implementing Python code, ensure:
 - Understanding of implementation requirements and expected behavior
-- Familiarity with project practices, style, and nomenclature guidelines
-- Knowledge of existing codebase structure and patterns
+- Knowledge of existing codebase structure and patterns  
 - Clear design specifications or existing design documents if referenced
+
+### Guide Consultation Requirements
+
+Before implementing Python code, you MUST:
+1. Read @.auxiliary/instructions/practices.rst for general development principles
+2. Read @.auxiliary/instructions/practices-python.rst for Python-specific patterns
+3. In a step on your TODO list, please attest that you have read the general and Python-specific practices guides and demonstrate your knowledge by writing one-sentence summaries on any three of the following topics:
+
+- the comprehensive examples showing multiple principles cohesively
+- proper module organization content order
+- import organization and centralized import patterns
+- wide parameter, narrow return type patterns for robust interfaces
+- immutability preferences for data structures and containers
+- exception handling with narrow try blocks and proper chaining
+- documentation formatting requirements including narrative mood
+- quality assurance principles including linter compliance
 
 ## Process Summary
 
@@ -147,16 +163,11 @@ Before session end:
 - [ ] Record next steps for continuation
 
 ### 3. Implementation
-Write Python code following established patterns:
-- Implement functions, classes, or modules as specified
-- Apply centralized import patterns via `__` subpackage
-- Use proper type annotations with `__.typx.TypeAlias` for complex types
-- Follow style guidelines for spacing, formatting, and structure
-- Implement proper exception handling with narrow try blocks
-- Apply nomenclature patterns for consistent naming
-- Ensure functions are ≤30 lines and modules are ≤600 lines
 
-For complex type annotation issues or when adding comprehensive type annotations to existing code, consider using the `python-annotator` agent.
+**Write Python code following established patterns**:
+- Apply comprehensive guide patterns for module organization, imports, annotations, immutability, exception handling, and documentation
+- Consult the comprehensive guides when you need specific implementation details
+- For complex annotation work or systematic annotation issues, consider using the `python-annotator` agent
 
 ### 4. Progress Tracking Requirements
 Maintain dual tracking systems:
@@ -166,49 +177,49 @@ Maintain dual tracking systems:
 - **Context Preservation**: Record all reference files and design decisions in persistent file for future session continuity
 
 ### 5. Quality Assurance
-Validate code quality and conformance following zero-tolerance policy:
 
-#### Linting Validation
+Before proceeding, add this quality verification checklist to your TODO list:
+- [ ] Code follows proper module organization patterns
+- [ ] Imports follow organization rules with centralized patterns
+- [ ] Type annotations use wide parameter, narrow return patterns
+- [ ] Functions ≤30 lines, modules ≤600 lines
+- [ ] Immutability preferences applied to data structures
+- [ ] Exception handling uses narrow try blocks with proper chaining
+- [ ] Documentation follows narrative mood requirements
+- [ ] Quality assurance principles applied
+
+#### Validation Commands
+**Linting Validation** (zero-tolerance policy):
 ```bash
 hatch --env develop run linters
 ```
-All linting issues must be addressed. Do not use `noqa` pragma comments without explicit user approval.
+All issues must be addressed per comprehensive guide principles. Do not use `noqa` without explicit approval.
 
-#### Type Checking Validation  
-Run type checker and analyze results:
+**Type Checking** (systematic resolution):
 ```bash
 hatch --env develop run linters  # Includes Pyright
 ```
 
-Type Error Resolution Process:
-1. Code Issues: Fix all type errors in project code immediately
-2. Third-party Stub Issues: If errors are due to missing/incomplete third-party type stubs:
-   - Verify package is listed in `pyproject.toml`
-   - Rebuild environment: `hatch env prune` 
-   - Generate stubs: `hatch --env develop run pyright --createsub <package>`
-   - Complete necessary stub definitions
-   - Re-run type checker to verify resolution
-3. Complex Type Issues: For comprehensive type annotation work, systematic suppression resolution, or complex dependency management, consider using the `python-annotator` agent.
+**Type Error Resolution Process**:
+1. **Code Issues**: Fix immediately using comprehensive guide type annotation patterns
+2. **Third-party Stubs**: Follow guidance in Python-specific practices guide (ensure dependency in `pyproject.toml`, prune Hatch environment, Pyright `createstub`, manage stubs)
+3. **Complex Issues**: Use `python-annotator` agent for systematic resolution
 
-Stop and consult user if:
-- Type errors cannot be categorized as code issues or third-party stub gaps
-- Stub generation fails or requires extensive manual type definitions
-- Multiple conflicting approaches exist for resolving type issues
+Stop and consult user if type errors cannot be categorized or require architectural decisions.
 
-#### Test Validation
+**Test Validation**:
 ```bash
 hatch --env develop run testers
 ```
-Ensure all tests pass, including any new tests created.
+All tests must pass, including new implementations.
 
 ### 6. Documentation and Summary
-Provide implementation documentation:
-- Update persistent tracking file with final implementation state
-- Document any non-obvious design decisions or trade-offs in decision log
-- Create or update relevant docstrings following narrative mood guidelines
-- Complete handoff notes with current state and next steps
-- Note any TODO items for future enhancements
-- Verify alignment with filesystem organization patterns
+
+**Provide implementation documentation**:
+- Update persistent tracking file with implementation state
+- Document design decisions and trade-offs in decision log
+- Complete handoff notes for session continuity
+- Note TODO items for future work
 
 ### 7. Summarize Implementation
 Provide concise summary of what was implemented, including:
@@ -216,4 +227,5 @@ Provide concise summary of what was implemented, including:
 - Key design decisions and rationale
 - Integration points and dependencies
 - Quality assurance status: Confirm all linters, type checkers, and tests pass
+- Checklist of principles and patterns applied during implementation
 - Any remaining tasks or follow-up items
