@@ -59,10 +59,11 @@ Execute the following steps for target: $ARGUMENTS
 ### 0. Pre-Flight Verification
 Access test-writing guidelines:
 
-Read and understand the complete testing guidelines:
-@.auxiliary/instructions/tests.rst
+Read and understand the complete project guidelines:
+- Testing: @.auxiliary/instructions/tests.rst
+- Python Practices: @.auxiliary/instructions/practices-python.rst
 
-You must successfully access and understand the guide before proceeding. If the guide cannot be accessed, stop and inform the user.
+You must successfully access and understand both guides before proceeding. If any guide cannot be accessed, stop and inform the user.
 
 ### 1. Coverage Analysis Phase
 

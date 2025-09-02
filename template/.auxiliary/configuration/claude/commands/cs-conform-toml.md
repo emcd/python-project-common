@@ -14,10 +14,10 @@ Focus on style/practice conformance, not functionality changes.
 ## Prerequisites
 
 - Read project documentation guides first:
-  - @documentation/common/practices.rst
-  - @documentation/common/practices-toml.rst
-  - @documentation/common/style.rst
-  - @documentation/common/nomenclature.rst
+  - @.auxiliary/instructions/practices.rst
+  - @.auxiliary/instructions/practices-toml.rst
+  - @.auxiliary/instructions/style.rst
+  - @.auxiliary/instructions/nomenclature.rst
 - Understand target files to be conformed
 - Have read `CLAUDE.md` for project-specific guidance
 
