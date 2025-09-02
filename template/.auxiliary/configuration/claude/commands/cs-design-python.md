@@ -13,12 +13,11 @@ Request from user: $ARGUMENTS
 
 - Architecture overview: @documentation/architecture/summary.rst
 - Filesystem patterns: @documentation/architecture/filesystem.rst
-- Python practices: @.auxiliary/instructions/practices.rst
+- General practices: @.auxiliary/instructions/practices.rst
 - Python development guide: @.auxiliary/instructions/practices-python.rst
 - Code style: @.auxiliary/instructions/style.rst
 - Nomenclature: @.auxiliary/instructions/nomenclature.rst
-- Germanic variants: @.auxiliary/instructions/nomenclature-germanic.rst
-- Design documents: !`ls documentation/architecture/designs/`
+- Design documents: @documentation/architecture/designs/
 
 ## Prerequisites
 

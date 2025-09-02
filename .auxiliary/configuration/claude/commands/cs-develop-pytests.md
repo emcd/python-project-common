@@ -80,10 +80,11 @@ Verify access to project guidelines:
 
 Read and confirm you can access the complete project guidelines:
 - Testing: @.auxiliary/instructions/tests.rst
-- Practices: @.auxiliary/instructions/practices.rst
+- Python Practices: @.auxiliary/instructions/practices-python.rst
+- General Practices: @.auxiliary/instructions/practices.rst
 - Style: @.auxiliary/instructions/style.rst
 
-You must successfully access and read all three guides before proceeding. If any guide cannot be accessed, stop and inform the user.
+You must successfully access and read all four guides before proceeding. If any guide cannot be accessed, stop and inform the user.
 
 ### 1. Test Plan Reading and Validation
 Read and validate the provided test plan:
