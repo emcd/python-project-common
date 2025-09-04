@@ -1,5 +1,5 @@
 ---
-allowed-tools: Bash(hatch --env develop run:*), Bash(git:*), LS, Read, Glob, Grep, Edit, MultiEdit, Write, WebFetch
+allowed-tools: Bash(hatch --env develop run:*), Bash(git:*), LS, Read, Glob, Grep, Edit, MultiEdit, Write, WebFetch, mcp__pyright__diagnostics, mcp__pyright__edit_file, mcp__pyright__hover, mcp__pyright__references, mcp__pyright__rename_symbol, mcp__pyright__definition
 description: Systematically conform Python code to project style and practice standards
 ---
 
