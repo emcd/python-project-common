@@ -1,5 +1,4 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash, TodoWrite, mcp__ruff__diagnostics, mcp__ruff__edit_file, mcp__ruff__hover, mcp__ruff__references, mcp__ruff__rename_symbol, mcp__ruff__definition, mcp__pyright__diagnostics, mcp__pyright__edit_file, mcp__pyright__hover, mcp__pyright__references, mcp__pyright__rename_symbol, mcp__pyright__definition, mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
 description: Python implementation following established patterns and practices
 ---
 
@@ -15,19 +14,17 @@ Request from user: $ARGUMENTS
 
 - Architecture overview: @documentation/architecture/summary.rst
 - Filesystem patterns: @documentation/architecture/filesystem.rst
-- Python practices: @.auxiliary/instructions/practices.rst
+- General practices: @.auxiliary/instructions/practices.rst
 - Python development guide: @.auxiliary/instructions/practices-python.rst
 - Code style: @.auxiliary/instructions/style.rst
 - Nomenclature: @.auxiliary/instructions/nomenclature.rst
-- Germanic variants: @.auxiliary/instructions/nomenclature-germanic.rst
-- Design documents: !`ls documentation/architecture/designs/`
-- Current package structure: !`ls sources/`
+- Design documents: @documentation/architecture/designs/
 
 ## Prerequisites
 
 Before implementing Python code, ensure:
 - Understanding of implementation requirements and expected behavior
-- Knowledge of existing codebase structure and patterns  
+- Knowledge of existing codebase structure and patterns
 - Clear design specifications or existing design documents if referenced
 
 ### Guide Consultation Requirements

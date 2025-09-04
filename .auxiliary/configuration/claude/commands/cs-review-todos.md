@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(wc:*)]
+allowed-tools: Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(wc:*)
 description: Systematically find, categorize, and analyze TODO comments for technical debt management
 ---
 

@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(hatch --env develop run:*), Bash(git status), Bash(git diff), mcp__pyright__references, mcp__pyright__hover, mcp__pyright__diagnostics]
+allowed-tools: Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(hatch --env develop run:*), Bash(git status), Bash(git diff), mcp__pyright__references, mcp__pyright__hover, mcp__pyright__diagnostics
 description: Analyze Vulture dead code findings and remediate through selective removal or vulturefood.py whitelisting
 ---
 

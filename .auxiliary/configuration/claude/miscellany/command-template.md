@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Tool1, Tool2, Tool3]
+allowed-tools: Tool1, Tool2, Tool3
 description: Brief description of what this command does
 ---
 
