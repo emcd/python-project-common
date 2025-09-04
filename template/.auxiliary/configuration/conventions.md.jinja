@@ -17,6 +17,8 @@
 
 - Use `rg --line-number --column` to get precise coordinates for MCP tools that require line/column positions.
 - Choose appropriate editing tools based on the task complexity and your familiarity with the tools.
+- Consider `mcp__pyright__edit_file` for more reliable line-based editing than context-based `Edit`/`MultiEdit` when making complex changes.
+- Use pyright MCP tools where appropriate: `rename_symbol` for refactors, `hover` for getting function definitions without searching through code, `references` for precise symbol analysis.
 - Batch related changes together when possible to maintain consistency.
 - Use relative paths rather than absolute paths when possible.
 - Do not write to paths outside the current project unless explicitly requested.

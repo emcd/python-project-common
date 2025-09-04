@@ -52,6 +52,13 @@ Update environment.rst with:
 - **Alternative tooling** options (ruff vs flake8, uv vs pip)
 - **Troubleshooting** common setup issues
 
+### 6.1. MCP Server Troubleshooting (from language-server-cleanup analysis)
+Add user-facing documentation about MCP language server issues:
+- **MCP server state problems** - when tools freeze or become unresponsive
+- **Version compatibility issues** - between mcp-language-server and language servers
+- **Manual restart procedures** - how users can reconnect MCP servers in Claude Code
+- **Alternative workflows** - fallback approaches when MCP tools aren't working
+
 ## Documentation Quality
 
 ### 7. Cross-Reference Integration

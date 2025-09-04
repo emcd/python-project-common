@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep]
+allowed-tools: Read, Write, Edit, MultiEdit, LS, Glob, Grep
 description: Manage product requirements documents and feature planning
 ---
 

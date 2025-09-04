@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(tree:*)]
+allowed-tools: Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(tree:*)
 description: Architectural analysis, system design decisions, and ADR creation
 ---
 

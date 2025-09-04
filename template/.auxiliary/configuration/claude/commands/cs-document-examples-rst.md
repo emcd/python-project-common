@@ -1,5 +1,4 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, Glob, Grep, LS, Bash(ls:*), Bash(find:*), Bash(hatch --env develop run:*), mcp__pyright__definition, mcp__pyright__references]
 description: Creates practical, testable examples documentation
 ---
 

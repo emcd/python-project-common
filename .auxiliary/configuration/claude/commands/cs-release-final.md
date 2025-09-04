@@ -1,6 +1,7 @@
 ---
 allowed-tools: Bash(git status), Bash(git pull:*), Bash(git checkout:*), Bash(git add:*), Bash(git commit:*), Bash(git tag:*), Bash(git rm:*), Bash(git cherry-pick:*), Bash(git log:*), Bash(git branch:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(hatch version:*), Bash(hatch --env develop run:*), Bash(echo:*), Bash(ls:*), Bash(grep:*), LS, Read
 description: Execute automated final release with QA monitoring and development cycle setup
+argument-hint: "major.minor"
 ---
 
 # Release Final
