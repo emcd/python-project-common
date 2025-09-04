@@ -1,5 +1,4 @@
 ---
-allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, MultiEdit, WebFetch, mcp__pyright__diagnostics, mcp__pyright__edit_file, mcp__pyright__hover, mcp__pyright__references, mcp__pyright__rename_symbol, mcp__pyright__definition
 description: Implement comprehensive Python tests following an existing test plan and project guidelines
 ---
 

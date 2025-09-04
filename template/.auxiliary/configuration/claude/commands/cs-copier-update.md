@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(copier:*), Bash(git status), Bash(git add:*), Bash(git rm:*), Bash(rg:*), Bash(grep:*), Bash(hatch --env develop run make-all), TodoWrite]
+allowed-tools: Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(copier:*), Bash(git status), Bash(git add:*), Bash(git rm:*), Bash(rg:*), Bash(grep:*), Bash(hatch --env develop run make-all), TodoWrite
 description: Synchronize project with Copier template updates, intelligently resolving merge conflicts
 ---
 

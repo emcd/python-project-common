@@ -1,5 +1,4 @@
 ---
-allowed-tools: Bash(hatch --env develop run:*), Bash(git status), Bash(git log:*), Bash(echo:*), Bash(ls:*), Bash(find:*), LS, Read, Glob, Grep, Write, Edit, WebFetch
 description: Analyze Python test coverage gaps and create focused test plan for uncovered areas and edge cases
 ---
 
