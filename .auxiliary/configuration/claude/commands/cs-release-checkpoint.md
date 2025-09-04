@@ -1,6 +1,7 @@
 ---
 allowed-tools: Bash(git status), Bash(git pull:*), Bash(git add:*), Bash(git commit:*), Bash(git tag:*), Bash(git push:*), Bash(gh run list:*), Bash(gh run watch:*), Bash(hatch version:*), Bash(hatch --env develop run:*), Bash(echo:*), Bash(ls:*), Bash(grep:*), Bash(date:*), LS, Read
 description: Execute automated alpha checkpoint release with QA monitoring
+argument-hint: "[alpha]"
 ---
 
 # Release Checkpoint
