@@ -1,5 +1,4 @@
 ---
-allowed-tools: Bash(hatch --env develop run:*), Bash(git:*), LS, Read, Glob, Grep, Edit, MultiEdit, Write, WebFetch
 description: Systematically conform Python code to project style and practice standards
 ---
 

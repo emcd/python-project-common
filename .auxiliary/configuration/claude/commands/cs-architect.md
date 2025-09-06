@@ -1,5 +1,5 @@
 ---
-allowed-tools: [Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(tree:*)]
+allowed-tools: Read, Write, Edit, MultiEdit, LS, Glob, Grep, Bash(find:*), Bash(ls:*), Bash(tree:*)
 description: Architectural analysis, system design decisions, and ADR creation
 ---
 
@@ -18,8 +18,6 @@ Request from user: $ARGUMENTS
 - Filesystem patterns: @documentation/architecture/filesystem.rst
 - Architecture guidelines: @.auxiliary/instructions/architecture.rst
 - Nomenclature standards: @.auxiliary/instructions/nomenclature.rst
-- Germanic naming variants: @.auxiliary/instructions/nomenclature-germanic.rst
-- Current project state: !`ls documentation/architecture/`
 
 ## Prerequisites
 

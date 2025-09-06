@@ -2,11 +2,14 @@
 .claude
 .gemini
 .mcp.json
+.opencode
 .*.swp
 AGENTS.md
 CLAUDE.md
 CONVENTIONS.md
 GEMINI.md
+opencode.jsonc
 __pycache__/
 bugs/
 build/
+dist/

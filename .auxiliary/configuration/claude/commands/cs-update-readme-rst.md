@@ -1,5 +1,4 @@
 ---
-allowed-tools: [Read, Edit, MultiEdit, LS, Glob, Grep, Bash(hatch --env develop run:*), Bash(git status), Bash(ls:*), Bash(find:*), WebFetch]
 description: Analyze current project state and refresh manually-maintained sections of README.rst while preserving template content
 ---
 
