@@ -54,6 +54,11 @@ create_symlinks() {
 
     create_symlink_if_needed ".auxiliary/configuration/conventions.md" "CLAUDE.md"
     create_symlink_if_needed ".auxiliary/configuration/conventions.md" "AGENTS.md"
+    create_symlink_if_needed ".auxiliary/configuration/mcp-servers.json" ".mcp.json"
+    create_symlink_if_needed ".auxiliary/configuration/claude" ".claude"
+    create_symlink_if_needed ".auxiliary/configuration/gemini" ".gemini"
+    create_symlink_if_needed ".auxiliary/configuration/opencode" ".opencode"
+    create_symlink_if_needed ".auxiliary/configuration/opencode.jsonc" "opencode.jsonc"
 
     popd >/dev/null
 
@@ -112,6 +117,54 @@ echo "Symlinks created successfully"
 
 download_instructions
 
+copy_claude_commands() {
+    local claude_commands_dir="$repo_root/.auxiliary/configuration/claude/commands"
+    local opencode_commands_dir="$repo_root/.auxiliary/configuration/opencode/command"
+    
+    if [[ ! -d "$claude_commands_dir" ]]; then
+        eecho "Warning: Claude commands directory not found at $claude_commands_dir"
+        return
+    fi
+    
+    mkdir -p "$opencode_commands_dir"
+    
+    echo "Copying Claude commands to Opencode format..."
+    
+    local copied_count=0
+    for claude_command in "$claude_commands_dir"/*.md; do
+        if [[ ! -f "$claude_command" ]]; then
+            continue
+        fi
+        
+        local command_name="$(basename "$claude_command")"
+        local opencode_command="$opencode_commands_dir/$command_name"
+        
+        if cat "$claude_command" | grep -vE '^(argument-hints|allowed-tools):.*$' > "$opencode_command"; then
+            echo "  ✓ Copied $command_name"
+            copied_count=$((copied_count + 1))
+        else
+            eecho "  ✗ Failed to copy $command_name"
+            rm -f "$opencode_command"
+        fi
+    done
+    
+    if [[ $copied_count -gt 0 ]]; then
+        echo "Successfully copied $copied_count command(s) to Opencode format"
+    else
+        echo "No commands were copied"
+    fi
+}
+
+copy_claude_commands
+
 echo ""
-echo "LLM instruction synchronization complete!"
-echo "- Created symlinks: CLAUDE.md and AGENTS.md → .auxiliary/configuration/conventions.md"
+echo "Agent environment preparation complete!"
+echo "- Created symlinks:"
+echo "  - CLAUDE.md and AGENTS.md → .auxiliary/configuration/conventions.md"
+echo "  - .mcp.json → .auxiliary/configuration/mcp-servers.json"
+echo "  - .claude → .auxiliary/configuration/claude"
+echo "  - .gemini → .auxiliary/configuration/gemini"
+echo "  - .opencode → .auxiliary/configuration/opencode"
+echo "  - opencode.jsonc → .auxiliary/configuration/opencode.jsonc"
+echo "- Downloaded project documentation guides"
+echo "- Copied Claude commands to Opencode format (filtered for compatibility)"
