@@ -1,8 +1,2 @@
 # Pip constraints file for Hatch installation
-#
-# Click 8.3.0 introduced breaking changes that broke Hatch
-# See: https://github.com/pypa/hatch/issues/2050
-#
-# Remove this constraint once Hatch releases a fix
-
-click<8.3.0
+click<8.3.0 # https://github.com/pypa/hatch/issues/2050
