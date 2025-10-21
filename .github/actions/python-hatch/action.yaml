@@ -29,5 +29,10 @@ runs:
       shell: bash
 
     - name: Install hatch
-      run: python -m pip install hatch
+      run: |
+        set -eu -o pipefail
+        if [[ -f '.auxiliary/configuration/hatch-constraints.pip' ]]; then
+          constraints='--constraint .auxiliary/configuration/hatch-constraints.pip'
+        else constraints=''; fi
+        python -m pip install ${constraints} hatch
       shell: bash

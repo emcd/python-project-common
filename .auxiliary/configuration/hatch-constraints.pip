@@ -1,0 +1,2 @@
+# Pip constraints file for Hatch installation
+click<8.3.0 # https://github.com/pypa/hatch/issues/2050
