@@ -24,7 +24,7 @@ dependencies = [
   'packaging',
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
-  'tyro',
+  'emcd-appcore[cli]~=1.6',
   # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers

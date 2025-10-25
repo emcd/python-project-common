@@ -1,5 +1,8 @@
 # TODO Items
 
+- Suppress PyPy 3.11 with Rust extension until Maturin supports it.
+- Suppress Python 3.13 and 3.14 with Rust extension until Maturin supports it.
+
 ## Future Enhancements
 
 ### Documentation URL Support for docs-* Tags
@@ -17,65 +20,22 @@
 
 **Priority:** Future enhancement - current `/stable/` approach is functional for immediate needs.
 
-## Post-1.29 Development Ideas
-
-### High Priority
-
-#### Create tests/README.rst
-**Goal:** Document testing conventions and architecture for contributors.
-**Details:** Create comprehensive README consistent with write-tests command and documentation/common/tests.rst guidance. Include coverage expectations, test organization, and examples.
-**Why:** Complements our new write-tests command and improves developer experience.
-
-#### Add Github Release Poller to Release Workflow
+### Add Github Release Poller to Release Workflow
 **Goal:** Improve release workflow reliability by ensuring Github release is registered before artifact publication.
 **Details:** Add polling step to wait for Github API to register new release before attempting to publish artifacts. Current workflow occasionally fails due to API delays.
 **Why:** Solves real production reliability issue we've experienced.
 
-### Medium Priority
-
-#### Improve Test Coverage
+### Improve Test Coverage
 **Goal:** Increase test coverage while avoiding integration test hazards.
 **Details:** Carefully add tests for uncovered code paths, being mindful of integration tests that might clobber production state. Focus on unit tests and safe integration scenarios.
 **Challenges:** Need to identify safe vs. risky integration test scenarios.
 
-#### Add MCP Server Support to Claude GitHub Workflow
+### Add MCP Server Support to Claude GitHub Workflow
 **Goal:** Enhance automated code analysis and testing capabilities.
-**Details:** Add useful MCP servers (text-editor, ruff, pyright, context7) to the claude GitHub workflow to improve code quality and analysis automation.
+**Details:** Add useful MCP servers (text-editor, pyright, context7) to the claude GitHub workflow to improve code quality and analysis automation.
 **Why:** Could significantly improve automated testing and code analysis capabilities.
 
-### Lower Priority
-
-#### Enhance Write-Tests Command
-**Goal:** Improve write-tests command based on usage experience.
-**Details:** Add features like coverage gap analysis, test template generation, or integration with specific testing frameworks based on real usage patterns.
-
-#### Add More Custom Slash Commands
-**Goal:** Expand Claude Code integration with project-specific workflows.
-**Ideas:** 
-- `/analyze-coverage` - Deep dive into coverage gaps
-- `/update-template` - Streamlined copier template updates
-- `/validate-release` - Pre-release validation checklist
-
-#### Claude Code Architectural Agents
-**Goal:** Create specialized Claude Code agents for architectural work and Python design.
-**Ideas:**
-- `architect` - For making architectural decisions, creating ADRs, reviewing system design
-- `python-designer` - For Python-specific design decisions, API design, module structure
-- `requirements-analyst` - For PRD creation, requirements gathering, user story development
-- Integration with the new architecture documentation framework
-
-#### Project Structure Documentation
-**Goal:** Add template/documentation/architecture/structure.rst with starter outline.
-**Details:** Document the standard project structure pattern generated from our template to help new contributors understand the architectural conventions.
-**Why:** Provides immediate context for the consistent patterns across template-generated projects.
-
-#### Documentation Improvements
-**Goal:** Enhance project documentation and developer experience.
-**Ideas:**
-- API documentation improvements
-- Tutorial content for template usage
-
-#### Release Workflow Enhancements
+### Release Workflow Enhancements
 **Goal:** Further improve release automation and reliability.
 **Ideas:**
 - Automated release notes generation improvements
