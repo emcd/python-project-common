@@ -25,6 +25,11 @@ requires-python = '>= {{ python_version_min }}'
 dependencies = [
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
+  {%- if inject_foundations %}
+  'absence~=1.1',
+  'dynadoc~=1.4',
+  'frigid~=4.2',
+  {%- endif %}
   {%- if enable_cli %}
   'emcd-appcore[cli]~=1.6',
   {%- endif %}
