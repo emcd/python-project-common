@@ -94,5 +94,11 @@
     "prettier": {
       "disabled": true
     }
+  },
+
+  "lsp": {
+    "pyright": {
+      "disabled": true
+    }
   }
 }
