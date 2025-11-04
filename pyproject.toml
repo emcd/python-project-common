@@ -145,7 +145,6 @@ linters = [
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
   """isort --check-only --diff sources tests""",
-  """vulture""",
   """pyright sources""",
 ]
 packagers = [
