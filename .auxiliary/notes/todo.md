@@ -2,6 +2,8 @@
 
 - Suppress PyPy 3.11 with Rust extension until Maturin supports it.
 - Suppress Python 3.13 and 3.14 with Rust extension until Maturin supports it.
+- Remove Vulture from `linters` command, but leave it defined.
+  Have the Claude Code pre-commit hook run it separately.
 
 ## Future Enhancements
 
