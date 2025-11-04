@@ -23,12 +23,22 @@
 # ruff: noqa: F401
 
 
-import collections.abc as cabc
+import collections.abc as   cabc
 import types
 
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
+{%- if inject_foundations %}
+import dynadoc as           ddoc
+import frigid as            immut
+{%- endif %}
 {%- if enable_cli %}
 import tyro
+{%- endif %}
+# --- END: Injected by Copier ---
+
+# --- BEGIN: Injected by Copier ---
+{%- if inject_foundations %}
+from absence import Absential, absent, is_absent
 {%- endif %}
 # --- END: Injected by Copier ---

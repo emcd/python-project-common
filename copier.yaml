@@ -147,20 +147,9 @@ enable_publication:
     help: 'Enable package and documentation publication?'
     default: false
 
-enable_cli:
-    type: bool
-    help: 'Include command-line interface support?'
-    default: false
-
-enable_executables:
-    type: bool
-    help: 'Generate standalone executables for the CLI?'
-    default: false
-    when: "{{ enable_cli }}"
-
 inject_foundations:
     type: bool
-    help: 'Include foundational constructs?'
+    help: 'Include foundational constructs and packages?'
     default: false
 
 inject_exceptions:
@@ -168,6 +157,18 @@ inject_exceptions:
     help: 'Include base exceptions for package?'
     when: "{{ inject_foundations }}"
     default: false
+
+enable_cli:
+    type: bool
+    help: 'Include command-line interface support?'
+    when: "{{ inject_foundations }}"
+    default: false
+
+enable_executables:
+    type: bool
+    help: 'Generate standalone executables for the CLI?'
+    default: false
+    when: "{{ enable_cli }}"
 
 gh_owner:
     type: str
