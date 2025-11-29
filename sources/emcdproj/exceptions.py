@@ -24,12 +24,8 @@
 from . import __
 
 
-class Omniexception( __.immut.Object, BaseException ):
+class Omniexception( __.immut.exceptions.Omniexception ):
     ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment.
-
-    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
-        frozenset( ( '__cause__', '__context__', ) ) )
 
 
 class Omnierror( Omniexception, Exception ):

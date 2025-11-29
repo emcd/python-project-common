@@ -127,6 +127,7 @@ strict-naming = false
 python = '{{ python_version_min }}'
 [tool.hatch.envs.develop]
 description = ''' Development environment. '''
+builder = true
 dependencies = [
   'Jinja2',
   'coverage[toml]',
