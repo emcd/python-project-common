@@ -106,6 +106,7 @@ strict-naming = false
 python = '3.10'
 [tool.hatch.envs.develop]
 description = ''' Development environment. '''
+builder = true
 dependencies = [
   'Jinja2',
   'coverage[toml]',
@@ -149,7 +150,7 @@ linters = [
   """pyright sources""",
 ]
 packagers = [
-  """env -u HATCH_ENV_ACTIVE hatch build""",
+  """hatch build""",
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
 ]
