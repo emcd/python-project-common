@@ -93,7 +93,7 @@ linkcheck_ignore = [
     r'https://github\.com/{{ gh_owner }}/{{ project_name }}',
     r'https://github\.com/{{ gh_owner }}/{{ project_name }}/.*',
     # Package does not exist during initial development.
-    r'https://pypi.org/project/{{ package_name }}/',
+    r'https://pypi.org/project/{{ distribution_name }}/',
     # Github aggressively rate-limits access to certain blobs.
     r'https://github\.com/.*/.*/blob/.*',
     # Avoid timeouts for slow sites.
