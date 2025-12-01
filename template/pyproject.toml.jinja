@@ -131,6 +131,7 @@ builder = true
 dependencies = [
   'Jinja2',
   'coverage[toml]',
+  'emcd-vibe-linter',
   'furo',
   'isort',
   'packaging',
@@ -179,6 +180,7 @@ docsgen = [
 ]
 linters = [
   """ruff check --quiet sources documentation tests""",
+  """vibelinter check""",
   # --- BEGIN: Injected by Copier ---
   {%- if enable_rust_extension %}
   # TODO: Use '-C' flag, which is only on nightly, as of 2024-12-11.
@@ -422,6 +424,10 @@ showcontent = true
 directory = 'repair'
 name = 'Repairs'
 showcontent = true
+
+[tool.vibelinter]
+context = 3
+exclude_paths = [ '.auxiliary/**', '.venv/**', 'tests/**',  ]
 
 [tool.vulture]
 paths = [ '.auxiliary/configuration/vulturefood.py', 'sources' ]
