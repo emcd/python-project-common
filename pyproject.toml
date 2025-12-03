@@ -108,12 +108,11 @@ python = '3.10'
 description = ''' Development environment. '''
 builder = true
 dependencies = [
-  'Jinja2',
   'coverage[toml]',
   'emcd-vibe-linter',
   'furo',
   'isort',
-  'packaging',
+  'myst-parser',
   'pre-commit',
   'pyfakefs',
   'pyright',
