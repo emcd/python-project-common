@@ -1,8 +1,9 @@
 # Changes here will be overwritten by Copier
-_commit: v1.0a5-4-gcc854e0
+_commit: v1.0a6-25-g53b92c9
 _src_path: gh:emcd/agents-common
 coders:
 - claude
+- gemini
 - opencode
 instructions_sources:
 -   files:

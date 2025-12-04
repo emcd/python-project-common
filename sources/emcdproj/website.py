@@ -154,8 +154,6 @@ def survey(
         available documentation types and highlighting the latest version.
     '''
     locations = Locations.from_project_anchor( auxdata, project_anchor )
-
-    # Handle --use-extant flag: fetch publication branch and checkout tarball
     if use_extant:
         _fetch_publication_branch_and_tarball( locations )
         # Extract the fetched tarball to view published versions
@@ -166,7 +164,6 @@ def survey(
             locations.website.mkdir( exist_ok = True, parents = True )
             with tarfile_open( locations.archive, 'r:xz' ) as archive:
                 archive.extractall( path = locations.website ) # noqa: S202
-
     if not locations.versions.is_file( ):
         context = "published" if use_extant else "local"
         print( f"No versions manifest found for {context} website. "
