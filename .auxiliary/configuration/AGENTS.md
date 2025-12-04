@@ -30,6 +30,16 @@ Keep this managed block so 'openspec update' can refresh the instructions.
 
 <!-- OPENSPEC:END -->
 
+# Development Standards
+
+Before implementing code changes, consult these files in `.auxiliary/instructions/`:
+- `practices.rst` - General development principles (robustness, immutability, exception chaining)
+- `practices-python.rst` - Python-specific patterns (module organization, type annotations, wide parameter/narrow return)
+- `practices-rust.rst` - Rust-specific patterns (error handling, trait design, module organization)
+- `nomenclature.rst` - Naming conventions for variables, functions, classes, exceptions
+- `style.rst` - Code formatting standards (spacing, line length, documentation mood)
+- `validation.rst` - Quality assurance requirements (linters, type checkers, tests)
+
 # Operation
 
 - Use `rg --line-number --column` to get precise coordinates for MCP tools that require line/column positions.
