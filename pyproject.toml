@@ -379,7 +379,7 @@ showcontent = true
 
 [tool.vibelinter]
 context = 3
-exclude_paths = [ '.auxiliary/**', '.venv/**', 'tests/**',  ]
+exclude_paths = [ '.auxiliary/**', '.venv/**', 'template/tests/**', 'tests/**',  ]
 
 [tool.vulture]
 paths = [ '.auxiliary/configuration/vulturefood.py', 'sources' ]
