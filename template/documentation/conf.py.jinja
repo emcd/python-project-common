@@ -56,7 +56,12 @@ extensions = [
 
 templates_path = [ '_templates' ]
 
-exclude_patterns = [ ]
+exclude_patterns = [
+    # Openspec workflow/meta files (not documentation)
+    'architecture/openspec/AGENTS.md',
+    'architecture/openspec/project.md',
+    'architecture/openspec/changes/**',
+]
 
 rst_prolog = f'''
 .. |project| replace:: {project}
