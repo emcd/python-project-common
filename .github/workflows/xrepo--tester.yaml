@@ -32,6 +32,10 @@ jobs:
         with:
           python-version: '${{ fromJSON(inputs.python-versions)[0] }}'
 
+      - name: Install External Linters
+        run: |
+          pipx install emcd-vibe-linter
+
       - name: Lint
         run: |
           hatch --env develop run linters
