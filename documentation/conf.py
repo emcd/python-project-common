@@ -56,11 +56,21 @@ extensions = [
 
 templates_path = [ '_templates' ]
 
-exclude_patterns = [ ]
+exclude_patterns = [
+    # Openspec workflow/meta files (not documentation)
+    'architecture/openspec/AGENTS.md',
+    'architecture/openspec/project.md',
+    'architecture/openspec/changes/**',
+]
 
 rst_prolog = f'''
 .. |project| replace:: {project}
 '''
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 nitpicky = True
 nitpick_ignore = [
@@ -107,7 +117,7 @@ linkcheck_ignore = [
     r'https://github\.com/emcd/python-project-common',
     r'https://github\.com/emcd/python-project-common/.*',
     # Package does not exist during initial development.
-    r'https://pypi.org/project/emcdproj/',
+    r'https://pypi.org/project/emcd-projects/',
     # Github aggressively rate-limits access to certain blobs.
     r'https://github\.com/.*/.*/blob/.*',
     # Avoid timeouts for slow sites.
