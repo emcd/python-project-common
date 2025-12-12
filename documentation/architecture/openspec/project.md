@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The **emcd-projects** project addresses the complete lifecycle of Python projects, from creation to maintenance. It provides:
+The project addresses the complete lifecycle of Python projects, from creation to maintenance. It provides:
 
 1.  **Project Template**: A Copier-based template for rapid scaffolding of new Python projects with consistent structure and configuration.
 2.  **Runtime Management**: A Python package (`emcdproj`) for ongoing project maintenance, including static site generation and badge management.
