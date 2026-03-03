@@ -21,51 +21,27 @@
 Environment
 *******************************************************************************
 
+This guide provides language-neutral environment preparation guidance. For
+Python-specific setup and commands, see :doc:`environment-python`.
+
 Initial Installation
 ===============================================================================
-
-Commands
--------------------------------------------------------------------------------
 
 1. Ensure that you have installed `Git LFS <https://git-lfs.com/>`_.
 
 2. Clone your fork of the repository.
 
-3. Install Git LFS Git hooks in this repository:
+3. Install Git LFS hooks in the repository:
    ::
 
         git lfs install
 
-4. Ensure that you have installed either `pipx <https://pipx.pypa.io/stable/>`_
-   or `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_ for managing
-   Python tools.
+4. Install language- and stack-specific tooling required by the project. The
+   exact tools vary by repository and should be documented in project-specific
+   overlays (for example, :doc:`environment-python`).
 
-   .. note::
-
-      If installing Pipx via ``pip``, you will want to use your system Python
-      rather than the current global Python provided by Asdf, Mise, Pyenv,
-      etc.... This is to ensure that a change of global version does not break
-      ``pipx`` later.
-
-5. Ensure that you have installed
-   `Copier <https://copier.readthedocs.io/en/stable/>`_ and
-   `Hatch <https://github.com/pypa/hatch/blob/master/README.md>`_.
-
-   If using Pipx:
-   ::
-
-        pipx install copier hatch
-
-   If using uv:
-   ::
-
-        uv tool install copier
-        uv tool install hatch
-
-6. Install Git pre-commit and pre-push hooks:
-   ::
-
-        hatch --env develop run pre-commit install --config .auxiliary/configuration/pre-commit.yaml
+5. Install Git pre-commit and pre-push hooks using the workflow documented by
+   the project.
 
 Git Commit Signatures
 -------------------------------------------------------------------------------
@@ -84,28 +60,15 @@ integrity and authenticity.
 Installation Updates
 ===============================================================================
 
-1. Run:
+1. Pull the latest changes:
    ::
 
         git pull
 
-2. Remove the Hatch virtual environments:
-   ::
+2. Refresh local development environments and tool caches according to the
+   stack-specific guidance for the project.
 
-        hatch env prune
-
-Python Interpreter
+Language-Specific Overlays
 ===============================================================================
 
-1. Run:
-   ::
-
-        hatch --env develop run python
-
-Shell
-===============================================================================
-
-1. Run:
-   ::
-
-        hatch --env develop shell
+* :doc:`environment-python` - Python tooling and Hatch workflow.

@@ -18,42 +18,72 @@
 
 
 *******************************************************************************
-Validation
+Environment (Python)
 *******************************************************************************
 
-Code validation ensures quality, consistency, and correctness before submitting
-contributions.
+This guide provides Python-specific environment setup guidance for projects
+using the Python template toolchain. For shared baseline setup, see
+:doc:`environment`.
 
-This guide defines language-neutral validation expectations. For Python command
-wrappers and toolchain specifics, see :doc:`validation-python`.
-
-Validation Outcomes
+Tooling
 ===============================================================================
 
-Project validation should cover the following outcomes:
+1. Ensure that you have installed either
+   `pipx <https://pipx.pypa.io/stable/>`_ or
+   `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_ for managing
+   Python tools.
 
-* **Code Quality**: Linting and static quality checks pass.
-* **Static Analysis**: Type and semantic checks pass where configured.
-* **Automated Tests**: Fast local tests and comprehensive suites both pass.
-* **Documentation Quality**: Documentation builds cleanly, including configured
-  link and doctest checks.
-* **Packaging/Distribution**: Build and packaging steps pass for projects that
-  publish artifacts.
+   .. note::
 
-Workflow
+      If installing Pipx via ``pip``, use your system Python rather than a
+      mutable global version managed by Asdf, Mise, or Pyenv. This reduces the
+      risk that subsequent global version changes break ``pipx``.
+
+2. Ensure that you have installed
+   `Copier <https://copier.readthedocs.io/en/stable/>`_ and
+   `Hatch <https://github.com/pypa/hatch/blob/master/README.md>`_.
+
+   If using Pipx:
+   ::
+
+        pipx install copier hatch
+
+   If using uv:
+   ::
+
+        uv tool install copier
+        uv tool install hatch
+
+Git Hooks
 ===============================================================================
 
-1. **During Development**: Run the fastest test and lint checks available for
-   quick feedback loops.
-2. **Before Committing**: Run language-specific quality and type checks.
-3. **Before Pull Requests**: Run the project's comprehensive validation suite,
-   including packaging and documentation checks where applicable.
+Install Git pre-commit and pre-push hooks with the Python development
+environment:
+::
 
-Language-Specific Overlays
+    hatch --env develop run pre-commit install --config .auxiliary/configuration/pre-commit.yaml
+
+Refreshing Environments
 ===============================================================================
 
-* :doc:`validation-python` - Python validation commands and workflow.
+Remove and rebuild Hatch virtual environments after dependency or interpreter
+changes:
+::
 
-All required validation commands must pass before contributions can be accepted.
-If Git pre-commit and pre-push hooks are installed for a project, they should
-automatically enforce a portion of this workflow.
+    hatch env prune
+
+Interpreter
+===============================================================================
+
+Run Python inside the development environment:
+::
+
+    hatch --env develop run python
+
+Shell
+===============================================================================
+
+Open a shell inside the development environment:
+::
+
+    hatch --env develop shell

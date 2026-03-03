@@ -120,12 +120,14 @@ Resources
    architecture/index
    devapi
    common/environment
+   common/environment-python
    common/practices
    common/style
    common/tests
    common/nomenclature
    common/nomenclature-germanic
    common/validation
+   common/validation-python
    common/releases
    common/maintenance
    common/architecture

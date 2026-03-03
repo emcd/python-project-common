@@ -18,42 +18,48 @@
 
 
 *******************************************************************************
-Validation
+Validation (Python)
 *******************************************************************************
 
-Code validation ensures quality, consistency, and correctness before submitting
-contributions.
+This guide provides Python-specific validation commands for projects using
+Hatch environments. For shared validation expectations, see
+:doc:`validation`.
 
-This guide defines language-neutral validation expectations. For Python command
-wrappers and toolchain specifics, see :doc:`validation-python`.
-
-Validation Outcomes
+Commands
 ===============================================================================
 
-Project validation should cover the following outcomes:
+Run validation commands with:
+``hatch --env develop run <command>``.
 
-* **Code Quality**: Linting and static quality checks pass.
-* **Static Analysis**: Type and semantic checks pass where configured.
-* **Automated Tests**: Fast local tests and comprehensive suites both pass.
-* **Documentation Quality**: Documentation builds cleanly, including configured
-  link and doctest checks.
-* **Packaging/Distribution**: Build and packaging steps pass for projects that
-  publish artifacts.
+**linters**
+  Runs code quality checks including Ruff linting, Pyright type checking, and
+  optional language-specific linting configured by the project.
+
+**pytest**
+  Runs quick tests for rapid development feedback.
+
+**testers**
+  Runs the full test suite with coverage reporting. Coverage artifacts are
+  typically written under ``.auxiliary/artifacts/coverage-pytest/``.
+
+**packagers**
+  Builds distribution packages using Hatch. Projects with executable outputs
+  may also run PyInstaller in this stage.
+
+**docsgen**
+  Builds project documentation and link checks. Artifacts are typically written
+  under ``.auxiliary/artifacts/sphinx-html/``.
+
+**make-all**
+  Runs the full quality sequence (linters, testers, packagers, docsgen).
 
 Workflow
 ===============================================================================
 
-1. **During Development**: Run the fastest test and lint checks available for
-   quick feedback loops.
-2. **Before Committing**: Run language-specific quality and type checks.
-3. **Before Pull Requests**: Run the project's comprehensive validation suite,
-   including packaging and documentation checks where applicable.
+1. **During Development**: Use ``pytest`` for quick feedback.
+2. **Before Committing**: Run ``linters`` to catch quality and type issues.
+3. **Before Pull Requests**: Run ``make-all`` for comprehensive validation.
 
-Language-Specific Overlays
-===============================================================================
-
-* :doc:`validation-python` - Python validation commands and workflow.
-
-All required validation commands must pass before contributions can be accepted.
-If Git pre-commit and pre-push hooks are installed for a project, they should
-automatically enforce a portion of this workflow.
+All required validation commands must pass before contributions can be
+accepted. If Git hooks are installed, they will run part of this workflow
+automatically.
