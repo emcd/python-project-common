@@ -1,8 +1,9 @@
 # Changes here will be overwritten by Copier
-_commit: v1.0a7-25-gbb445ee
+_commit: v1.0a8-17-gdc6991f
 _src_path: gh:emcd/agents-common
 coders:
 - claude
+- codex
 - gemini
 - opencode
 instructions_sources:
@@ -16,3 +17,4 @@ languages:
 - rust
 project_name: python-project-common
 provide_instructions: true
+support_local_models: true

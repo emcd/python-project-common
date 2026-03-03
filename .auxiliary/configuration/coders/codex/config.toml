@@ -1,0 +1,16 @@
+model = "gpt-5.3-codex"
+model_reasoning_effort = "high"
+personality = "friendly"
+
+# approval_policy = "on-request"
+# sandbox_mode = "workspace-write"
+trust_level = "trusted"
+# web_search = "cached"
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+
+[mcp_servers.nb]
+command = "nb-mcp"
+args = ["--notebook", "python-project-common", "--no-commit-signing"]
