@@ -21,247 +21,81 @@
 Releases
 *******************************************************************************
 
-The project follows `semantic versioning <https://semver.org/>`_ for releases.
+This guide defines language-neutral release expectations and lifecycle
+checkpoints. For Python-specific release commands and changelog mechanics, see
+:doc:`releases-python`.
 
-Release Process
+The project follows `semantic versioning <https://semver.org/>`_ for release
+versioning.
+
+Release Lifecycle
 ===============================================================================
 
-Pre-Release Quality Check
--------------------------------------------------------------------------------
+Plan releases as explicit phases:
 
-Run local quality assurance before any release process::
+1. **Preparation**: Confirm branch hygiene, quality gates, and pending release
+   notes.
+2. **Candidate**: Produce a release candidate and validate artifacts.
+3. **Finalization**: Promote candidate to final release and publish.
+4. **Follow-Up**: Clean up release metadata and merge release-only changes back
+   into the main development line.
 
-    git status && git pull origin master
-    hatch --env develop run make-all
-
-Also, ensure that at least one news fragment exists under
-``.auxiliary/data/towncrier``.
-
-Initial Release Candidate
--------------------------------------------------------------------------------
-
-1. **Branch Setup**: Checkout ``master`` branch and ensure it's up to date::
-
-        git checkout master
-        git pull origin master
-
-2. **Create Release Branch**: Checkout new release branch::
-
-        git checkout -b release-<major>.<minor>
-
-3. **Version Bump**: Bump alpha to release candidate and commit::
-
-        hatch version rc
-        git commit -am "Version: $(hatch version)"
-
-4. **Tag Release Candidate**::
-
-        git tag -m "Release candidate v$(hatch version)." v$(hatch version)
-
-5. **Push Branch and Tag**: Push release branch and tag to upstream::
-
-        git push -u origin release-<major>.<minor>
-        git push --tags
-
-6. **Setup Next Development Cycle**: Return to ``master`` and prepare for next
-   version::
-
-        git checkout master
-        hatch version minor,alpha
-        next_release="$(hatch version | sed 's/a[0-9]*$//')"
-        git commit -am "Start of development for release ${next_release}."
-        git tag -m "Start of development for release ${next_release}." "i${next_release}"
-        git push origin master --tags
-
-Final Release
--------------------------------------------------------------------------------
-
-1. **Branch Setup**: Checkout and update the release branch::
-
-        git checkout release-<major>.<minor>
-        git pull origin release-<major>.<minor>
-
-2. **Version Finalization**: Bump release candidate to final release::
-
-        hatch version release
-        git commit -am "Version: $(hatch version)"
-
-3. **Changelog Generation**: Run Towncrier to build final changelog::
-
-        hatch --env develop run towncrier build --keep --version $(hatch version)
-        git commit -am "Update changelog for v$(hatch version)."
-
-4. **Release Tag**: Create signed release tag::
-
-        git tag -m "<description>" v$(hatch version)
-
-5. **Push Release**: Push release branch and tag to upstream::
-
-        git push origin release-<major>.<minor>
-        git push --tags
-
-6. **Monitor Release**: Wait for the release workflow to complete successfully.
-   Check the GitHub Actions tab to monitor progress.
-
-7. **Post-Release Cleanup**: Clean up news fragments and push::
-
-        git rm .auxiliary/data/towncrier/*.rst
-        git commit -m "Clean up news fragments."
-        git push origin release-<major>.<minor>
-
-8. **Master Integration**: Cherry-pick release commits back to ``master``::
-
-        git checkout master
-        git pull origin master
-        git cherry-pick <changelog-commit-hash>
-        git cherry-pick <cleanup-commit-hash>
-        git push origin master
-
-   Use ``git log --oneline`` on the release branch to identify commit hashes.
-
-Postrelease Patch
--------------------------------------------------------------------------------
-
-1. **Branch Setup**: Checkout and update the release branch::
-
-        git checkout release-<major>.<minor>
-        git pull origin release-<major>.<minor>
-
-2. **Patch Development**: Develop and test patch against branch.
-   Add Towncrier entry and commit changes.
-
-3. **Pre-Patch Validation**: Run quality checks to catch issues early::
-
-        hatch --env develop run linters
-
-   **Important**: Fix any linting errors before proceeding.
-
-4. **Version Bump**: Bump to patch version and commit::
-
-        hatch version patch
-        git commit -am "Version: $(hatch version)"
-
-5. **Changelog Generation**: Run Towncrier to build patch changelog::
-
-        hatch --env develop run towncrier build --keep --version $(hatch version)
-        git commit -am "Update changelog for v$(hatch version)."
-
-6. **Patch Tag**: Create signed patch tag::
-
-        git tag -m "<description>" v$(hatch version)
-
-7. **Push Patch**: Push release branch and tag to upstream::
-
-        git push origin release-<major>.<minor>
-        git push --tags
-
-8. **Monitor Release**: Wait for the release workflow to complete successfully.
-   Check the GitHub Actions tab to monitor progress.
-
-9. **Post-Release Cleanup**: Clean up news fragments and push::
-
-        git rm .auxiliary/data/towncrier/*.rst
-        git commit -m "Clean up news fragments."
-        git push origin release-<major>.<minor>
-
-10. **Master Integration**: Cherry-pick patch commits back to ``master``::
-
-        git checkout master
-        git pull origin master
-        git cherry-pick <patch-commit-hash>
-        git cherry-pick <changelog-commit-hash>
-        git cherry-pick <cleanup-commit-hash>
-        git push origin master
-
-    Use ``git log --oneline`` on the release branch to identify commit hashes.
-    Resolve any conflicts as necessary during cherry-picking.
-
-Changelog Entries
+Pre-Release Quality Gate
 ===============================================================================
 
-The project uses `Towncrier <https://towncrier.readthedocs.io/en/stable/>`_ to
-manage its changelog. When making changes that should be noted in the
-changelog, add a file ("fragment") to the ``.auxiliary/data/towncrier``
-directory with of ``<issue_number>.<type>.rst``, for changes with a Github
-issue, or ``+<title>.<type>.rst``, for changes without an associated issue
-number.
+Before creating or promoting a release candidate:
 
-The entries will be collected and organized when a release is made, as
-described in the release process sections above.
+* Ensure the branch is current and clean.
+* Run the project's full validation workflow.
+* Confirm release notes/changelog entries are complete.
+* Confirm automation credentials and publishing workflows are healthy.
 
-Available Types
--------------------------------------------------------------------------------
+Branching and Tagging
+===============================================================================
 
-* ``enhance``: features and other improvements (documentation, platform
-  support, etc...)
-* ``notify``: deprecations and other notices
-* ``remove``: removals of feature or platform support
-* ``repair``: bug fixes
+* Use a stable branching convention for release and patch flows.
+* Apply consistent annotated tags for release versions.
+* Keep tag names and branch names machine-friendly and predictable.
+* Record release metadata in commit history to support traceability.
 
-Format
--------------------------------------------------------------------------------
+Patch Releases
+===============================================================================
 
-The file should contain a concise description of the change written in present
-tense. For example:
+For post-release fixes:
 
-.. code-block:: rst
-   :caption: .auxiliary/data/towncrier/+immutable-modules.enhance.rst
+1. Branch from the supported release line.
+2. Apply and validate the patch.
+3. Update release notes/changelog metadata.
+4. Tag and publish the patch release.
+5. Integrate patch-only commits back to the primary development branch.
 
-   Add support for immutable module reclassification.
+Changelog Discipline
+===============================================================================
 
-The description should:
+* Maintain release notes as part of normal development.
+* Keep entries concise and user-centered.
+* Describe what changed and why it matters.
+* Acknowledge contributors where appropriate.
+
+A changelog entry should generally:
 
 * Start with a capital letter.
 * End with a period.
-* For multi-component or multi-faceted projects, a topic followed by colon may
-  be used to introduce the content. (E.g., "Github Actions: ", "Copier
-  Template: ").
-* Use present tense verbs in the imperative/subjunctive mood (e.g., "Add",
-  "Fix", "Update") or simple noun phrases (e.g., "Support for <x>") in the
-  introductory sentence.
-* If explanatory content is necessary, then it may be provided in the
-  indicative mood using whatever verb tense is most natural to provide
-  historical context or other rationale.
-* Focus on the what and why, not the how.
-* Be understandable by users, not just developers.
-* Acknowledge contributors.
+* Use present-tense imperative/subjunctive phrasing in the lead sentence.
+* Avoid implementation-only details unless user impact requires them.
 
-Examples
--------------------------------------------------------------------------------
+Post-Release Checklist
+===============================================================================
 
-Enhance:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/457.enhance.rst
+After publication:
 
-       Improve release process documentation with Towncrier details.
+* Verify release automation completion and artifact availability.
+* Clean up temporary release-only metadata.
+* Synchronize release branch deltas back to the main branch.
+* Update internal tracking for the next development cycle.
 
-Enhance:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/458.enhance.rst
+Language-Specific Overlays
+===============================================================================
 
-       Add recursive module reclassification support.
-
-Enhance:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/459.enhance.rst
-
-       Support for Python 3.13.
-
-Notice:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/+exceptions.notify.rst
-
-       Deprecate ``OvergeneralException``. Package now raises more specific
-       exceptions.
-
-Remove:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/460.remove.rst
-
-       Remove deprecated ``make_immutable`` function.
-
-Repair:
-    .. code-block:: rst
-       :caption: .auxiliary/data/towncrier/456.repair.rst
-
-       Fix attribute visibility in immutable modules.
+* :doc:`releases-python` - Python-specific release commands and changelog
+  workflow.
