@@ -21,16 +21,9 @@
 Practices
 *******************************************************************************
 
-This guide covers **code organization, patterns, and architectural decisions**.
-For guidance on code formatting and visual presentation, see the :doc:`style`.
-
-For detailed language-specific practices, see:
-
-* :doc:`practices-python` - Python-specific development practices
-* :doc:`practices-rust` - Rust-specific development practices
-* :doc:`practices-toml` - TOML configuration practices
-
-This document provides general principles applicable to all languages.
+This guide covers language-neutral code organization, design patterns, and
+architectural principles. For formatting and visual presentation guidance, see
+:doc:`style`.
 
 General Principles
 ===============================================================================
@@ -65,24 +58,42 @@ Command Examples
 Quality Assurance
 -------------------------------------------------------------------------------
 
-* Be sure to install the Git hooks, as mentioned in the :doc:`environment`
-  section. This will save you turnaround time from pull request validation
-  failures.
+* Install project Git hooks as described in :doc:`environment` to reduce
+  turnaround from avoidable validation failures.
+
+* Run the validation workflow documented in :doc:`validation` before opening
+  pull requests.
 
 * Consider maintaining or improving code coverage when practical. Even if code
-  coverage is at 100%, consider cases which are not explicitly tested.
+  coverage is already high, continue adding tests for unaddressed behavioral
+  paths.
 
 Architectural Principles
 -------------------------------------------------------------------------------
 
-* **Robustness Principle (Postel's Law)**: "Be conservative in what you send; be liberal in what you accept."
-* **Immutability First**: Prefer immutable data structures when internal mutability is not required
-* **Dependency Injection**: Functions should provide injectable parameters with sensible defaults
-* **Exception Chaining**: Never swallow exceptions; chain or properly handle them
+* **Robustness Principle (Postel's Law)**: Be conservative in what you emit and
+  liberal in what you accept.
+* **Immutability First**: Prefer immutable structures when internal mutability
+  is not required.
+* **Dependency Injection**: Prefer explicit dependencies with sensible defaults
+  over hidden globals.
+* **Exception Chaining**: Never silently swallow exceptions; chain or handle
+  them explicitly with context.
 
-Language-Specific Practices
+Language-Specific Overlays
 ===============================================================================
 
-* :doc:`practices-python` - Python-specific development practices
-* :doc:`practices-rust` - Rust-specific development practices  
-* :doc:`practices-toml` - TOML configuration practices
+* :doc:`practices-python` - Python-specific development patterns.
+* :doc:`practices-rust` - Rust-specific development patterns.
+* :doc:`practices-toml` - TOML-specific configuration patterns.
+* :doc:`environment-python` - Python tooling and environment workflow.
+* :doc:`validation-python` - Python validation command wrappers.
+* :doc:`tests-python` - Python testing patterns and commands.
+* :doc:`releases-python` - Python release workflow and changelog mechanics.
+
+.. toctree::
+   :hidden:
+
+   practices-python
+   practices-rust
+   practices-toml

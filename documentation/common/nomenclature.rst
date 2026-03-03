@@ -431,3 +431,9 @@ For detailed verb catalogs with comprehensive definitions and usage guidance:
 
 - :doc:`nomenclature-latin`: Complete Latin-derived verb vocabulary (project default)
 - :doc:`nomenclature-germanic`: Germanic alternatives organized by semantic clusters
+
+.. toctree::
+   :hidden:
+
+   nomenclature-latin
+   nomenclature-germanic

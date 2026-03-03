@@ -637,6 +637,9 @@ Visual Formatting
 Formatting Standards
 ===============================================================================
 
+For approximate autoformatter profiles aligned with these conventions, see
+:doc:`python-autoformat`.
+
 Lines and Spaces
 -------------------------------------------------------------------------------
 

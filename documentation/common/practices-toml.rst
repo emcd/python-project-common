@@ -23,7 +23,8 @@ TOML Configuration Practices
 
 This guide covers **TOML-specific configuration design patterns and organizational decisions**.
 For general guidance applicable to all languages, see the main :doc:`practices`.
-For guidance on TOML formatting and visual presentation, see the :doc:`style-toml`.
+For cross-language formatting and visual presentation principles, see
+:doc:`style`.
 
 Configuration Design
 ===============================================================================

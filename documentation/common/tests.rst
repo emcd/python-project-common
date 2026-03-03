@@ -110,3 +110,8 @@ Language-Specific Overlays
 ===============================================================================
 
 * :doc:`tests-python` - Python-specific test patterns and commands.
+
+.. toctree::
+   :hidden:
+
+   tests-python

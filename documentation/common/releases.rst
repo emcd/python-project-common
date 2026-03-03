@@ -99,3 +99,8 @@ Language-Specific Overlays
 
 * :doc:`releases-python` - Python-specific release commands and changelog
   workflow.
+
+.. toctree::
+   :hidden:
+
+   releases-python

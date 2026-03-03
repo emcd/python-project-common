@@ -21,16 +21,9 @@
 Code Style
 *******************************************************************************
 
-This guide covers **formatting and visual presentation** of code. For guidance
-on code organization, patterns, and architectural decisions, see :doc:`practices`.
-
-For comprehensive language-specific development guidance (including formatting), see:
-
-* :doc:`practices-python` - Python development guide with formatting standards
-* :doc:`practices-rust` - Rust development guide with formatting standards  
-* :doc:`practices-toml` - TOML configuration guide with formatting standards
-
-This document provides general principles applicable to all languages.
+This guide covers language-neutral formatting and visual presentation
+principles. For broader design and architecture guidance, see
+:doc:`practices`.
 
 General
 ===============================================================================
@@ -127,25 +120,22 @@ Vertical Compactness
   not have to scroll to read a function.
 
 
-Language-Specific Development Guides
+Language-Specific Overlays
 ===============================================================================
 
-For comprehensive development guidance including formatting standards:
-
-* :doc:`practices-python` - Python development guide 
-* :doc:`practices-rust` - Rust development guide
-* :doc:`practices-toml` - TOML configuration guide
+* :doc:`practices-python` - Python formatting and style details.
+* :doc:`practices-rust` - Rust formatting and style details.
+* :doc:`practices-toml` - TOML formatting and style details.
 
 
 Automation
 ===============================================================================
 
-* Currently, there are no tools which can automatically enforce compliance with
-  the above style guidance. However, if you politely ask an LLM, which is good
-  at instruction following, to make your code conform to the guidance, results
-  will generally be good. If you are familiar with ``isort`` and ``yapf``, you
-  can also look at :doc:`python-autoformat` for approximate formatter
-  configurations for these tools.
+* Use language-appropriate formatters and linters where available. These tools
+  reduce routine style drift and let reviews focus on behavior and design.
+
+* When automatic formatting support is incomplete, apply these conventions
+  manually and keep formatting decisions consistent within each file.
 
 * Cases where manual intervention may be needed:
 
