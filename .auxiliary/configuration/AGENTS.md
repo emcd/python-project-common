@@ -45,6 +45,7 @@ Before implementing code changes, consult these files in `.auxiliary/instruction
 
 - Use `rg --line-number --column` to get precise coordinates for MCP tools that require line/column positions.
 - Choose appropriate editing tools based on the task complexity and your familiarity with the tools.
+- If instruction files mention multiple language ecosystems, prefer tools and commands that match the project's configured languages; ignore language-inapplicable tooling unless the user explicitly requests it.
 - Use a README-first discovery workflow to reduce token churn:
   - Start at the repository root `README.{md,rst}`, then read the nearest relevant subtree README.
   - After reading the nearest README, scope code searches to that subtree before considering repo-wide searches.
