@@ -95,6 +95,11 @@ Guidance and Standards
 * Although unncessary for non-maintainer contributions, additional background
   can be found in the :doc:`maintenance guide <common/maintenance>`.
 
+* For shared documentation under ``documentation/common``, follow the stable
+  anchor contract in :doc:`ADR 003
+  <architecture/decisions/003-common-doc-anchor-contract>`. Treat anchor IDs as
+  part of the docs major-line compatibility contract (for example, ``docs-2``).
+
 Artificial Intelligence
 -------------------------------------------------------------------------------
 
