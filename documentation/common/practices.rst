@@ -80,16 +80,24 @@ Architectural Principles
 * **Exception Chaining**: Never silently swallow exceptions; chain or handle
   them explicitly with context.
 
-Language-Specific Overlays
+Language And Workflow Overlays
 ===============================================================================
+
+Use language-specific practice guides when available:
 
 * :doc:`practices-python` - Python-specific development patterns.
 * :doc:`practices-rust` - Rust-specific development patterns.
 * :doc:`practices-toml` - TOML-specific configuration patterns.
+
+Use workflow overlays only when they match your language/toolchain:
+
 * :doc:`environment-python` - Python tooling and environment workflow.
 * :doc:`validation-python` - Python validation command wrappers.
 * :doc:`tests-python` - Python testing patterns and commands.
 * :doc:`releases-python` - Python release workflow and changelog mechanics.
+
+Use the language-neutral core guides alongside language-specific overlays:
+:doc:`environment`, :doc:`validation`, :doc:`tests`, and :doc:`releases`.
 
 .. toctree::
    :hidden:

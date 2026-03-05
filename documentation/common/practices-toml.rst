@@ -25,6 +25,8 @@ This guide covers **TOML-specific configuration design patterns and organization
 For general guidance applicable to all languages, see the main :doc:`practices`.
 For cross-language formatting and visual presentation principles, see
 :doc:`style`.
+For shared workflow guidance, see :doc:`environment`, :doc:`validation`,
+:doc:`tests`, and :doc:`releases`.
 
 Configuration Design
 ===============================================================================

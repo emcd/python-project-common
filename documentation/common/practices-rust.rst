@@ -24,6 +24,8 @@ Rust Development Guide
 This guide covers **comprehensive Rust development guidance including code organization, 
 patterns, architectural decisions, and formatting standards**. For general guidance 
 applicable to all languages, see the main :doc:`practices`.
+For cross-language formatting and shared workflow guidance, see :doc:`style`,
+:doc:`environment`, :doc:`validation`, :doc:`tests`, and :doc:`releases`.
 
 Module Organization
 ===============================================================================

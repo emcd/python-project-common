@@ -24,6 +24,9 @@ Python Development Guide
 This guide covers **comprehensive Python development guidance including code organization, 
 patterns, architectural decisions, and formatting standards**. For general guidance 
 applicable to all languages, see the main :doc:`practices`.
+For shared workflow guidance, use the core guides :doc:`environment`,
+:doc:`validation`, :doc:`tests`, and :doc:`releases`, then layer Python
+overlays where needed.
 
 .. _comprehensive-example:
 
