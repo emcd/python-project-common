@@ -23,6 +23,8 @@ Architecture Documentation
 
 This guide covers architectural documentation practices, including
 architectural decision records (ADRs) and design documentation standards.
+For Python-specific package-structure patterns, see
+:doc:`architecture-python`.
 
 Architectural Decision Records
 ===============================================================================
@@ -171,120 +173,24 @@ other project artifacts:
 
 Essential project files remain at the top level for immediate visibility:
 
-* ``LICENSE.txt``, ``README.rst``, ``pyproject.toml`` provide project overview
+* ``LICENSE.txt``, ``README.{md,rst}``, and the primary build/configuration
+  manifest provide project overview
 * ``documentation/`` contains all documentation source
 * ``tests/`` mirrors source structure for test organization
 * ``.auxiliary/`` provides development workspace (excluded from distributions)
 
-The `__` Subpackage Pattern
+Language-Specific Structure Patterns
 -------------------------------------------------------------------------------
 
-The double underscore (``__``) subpackage serves as a centralized import hub,
-providing consistent namespace management across all project modules.
-
-**Core Concept**
-
-Each Python package includes a ``__`` subdirectory containing:
-
-* ``__init__.py``: Re-exports commonly used imports
-* ``imports.py``: Raw imports from external libraries
-* ``nomina.py``: Project-specific naming constants and conventions
-
-**Primary Benefits**
-
-**Namespace Management:**
-- Prevents pollution of individual module namespaces
-- Provides consistent access to common dependencies
-- Reduces import statement duplication and maintenance overhead
-
-**Performance Optimization:**
-- Centralizes import costs to package initialization time
-- Enables strategic use of direct imports for performance-critical code
-- Supports lazy loading patterns where beneficial
-
-**Maintenance Efficiency:**
-- Changes to common imports propagate automatically to all modules
-- Clear separation between common and module-specific imports
-- Reduces cognitive load when reading module code
-
-**Usage Pattern**
-
-All modules use the same import pattern regardless of package depth:
-
-.. code-block:: python
-
-    # In any module at any package level
-    from . import __
-
-    # Usage throughout the module
-    def process_data( items: __.cabc.Sequence[ str ] ) -> __.immut.Dictionary:
-        ''' Processes sequence items into immutable dictionary. '''
-        return __.immut.Dictionary( processed = True, count = len( items ) )
-
-**Cascading Import Hierarchy**
-
-When projects grow to include subpackages, the pattern extends naturally:
-
-**Hierarchical Inheritance:**
-- Each subpackage maintains its own ``__.py`` file
-- Subpackages inherit all parent imports with ``from ..__ import *``
-- Each level adds specialized imports without duplicating parent imports
-- Deep subpackages have access to all imports in their hierarchy
-
-**Consistent Interface:**
-- All modules use identical ``from . import __`` regardless of package depth
-- New subpackages require minimal import configuration
-- Subpackages automatically inherit all parent functionality
-
-**Import Resolution Chain:**
-- Nested imports resolve through the hierarchy: ``nested/__.py`` → ``parent/__.py`` → ``root/__/imports.py``
-- Each level adds to the namespace without overriding parent imports
-- Provides natural import scoping based on package hierarchy
-
-**Naming Rationale**
-
-The double underscore naming convention:
-
-* Short and distinctive to minimize visual noise in import statements
-* Uses Python's existing convention for special/internal names
-* Easily distinguishable from regular module names
-* Consistent across all project modules
-
-**Subpackage Implementation Pattern**
-
-When projects grow to include subpackages, each implements the cascading pattern:
-
-.. code-block:: python
-
-    # package/subpackage/__.py
-    ''' Internal imports for subpackage functionality. '''
-
-    # ruff: noqa: F403,F401
-
-    # Additional specialized imports as needed
-    import specialized_library
-
-    from ..__ import *  # Inherit all parent imports
-    from ..exceptions import *  # Package exceptions (if available)
-
-All subpackage modules maintain the consistent interface:
-
-.. code-block:: python
-
-    # package/subpackage/module.py
-    from . import __
-
-    def specialized_function(
-        data: __.cabc.Sequence[ __.typx.Any ]
-    ) -> __.immut.Dictionary:
-        ''' Processes specialized data using inherited imports. '''
-        return __.immut.Dictionary( processed = True, specialized = True )
+Language-specific package-layout and import-hub patterns should be documented
+in overlays so the core architecture guidance remains broadly applicable.
+For Python-specific details (including the ``__`` import-hub pattern), see
+:doc:`architecture-python`.
 
 Tests Organization
 -------------------------------------------------------------------------------
 
-The test structure follows what is documented in the `tests guide
-<https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/tests.rst>`_.
+The test structure should follow the guidance in :doc:`tests`.
 
 Data Resources Organization
 -------------------------------------------------------------------------------
@@ -353,3 +259,13 @@ implementation-level specifications:
 * Include enough detail for implementation without over-specifying.
 * Use diagrams and examples to illustrate complex concepts.
 * Version design documents when significant changes occur.
+
+Language-Specific Overlays
+===============================================================================
+
+* :doc:`architecture-python` - Python package structure and import-hub pattern.
+
+.. toctree::
+   :hidden:
+
+   architecture-python
