@@ -120,20 +120,32 @@ Resources
 .. toctree::
    :maxdepth: 2
 
-   common/conduct
+   Code of Conduct <common/conduct>
    specifications/index
    architecture/index
    devapi
-   common/environment
-   common/environment-python
-   common/practices
-   common/style
-   common/tests
-   common/nomenclature
-   common/nomenclature-germanic
-   common/validation
-   common/validation-python
-   common/releases
-   common/maintenance
-   common/architecture
-   common/requirements
+   Environment Guide <common/environment>
+   Practices Guide <common/practices>
+   Code Style Guide <common/style>
+   Testing Guide <common/tests>
+   Nomenclature Guide <common/nomenclature>
+   Germanic Nomenclature Guide <common/nomenclature-germanic>
+   Validation Guide <common/validation>
+   Release Guide <common/releases>
+   Maintenance Guide <common/maintenance>
+   Architecture Guide <common/architecture>
+   Requirements Guide <common/requirements>
+
+.. Language-specific guides stay in a hidden toctree so Sphinx includes them
+   in the site graph without adding renderer-specific navigation glue to the
+   portable common Markdown sources.
+.. toctree::
+   :hidden:
+
+   Python Environment Guide <common/environment-python>
+   Python Development Guide <common/practices-python>
+   Rust Development Guide <common/practices-rust>
+   TOML Configuration Practices <common/practices-toml>
+   Python Testing Guide <common/tests-python>
+   Python Validation Guide <common/validation-python>
+   Python Release Guide <common/releases-python>
