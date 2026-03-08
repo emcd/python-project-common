@@ -17,7 +17,7 @@
 
 This guide defines language-neutral testing expectations and patterns.
 For Python-specific commands and examples, see the
-[Python testing guide](tests-python.rst).
+[Python testing guide](tests-python.md).
 
 <a id="core-testing-principles"></a>
 ## Core Testing Principles
@@ -103,5 +103,5 @@ When tests are hard to write or unstable:
 <a id="language-specific-overlays"></a>
 ## Language-Specific Overlays
 
-- [Python testing guide](tests-python.rst) - Python-specific test patterns and
+- [Python testing guide](tests-python.md) - Python-specific test patterns and
   commands.

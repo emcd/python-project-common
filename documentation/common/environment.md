@@ -17,7 +17,7 @@
 
 This guide provides language-neutral environment preparation guidance. For
 Python-specific setup and commands, see the
-[Python environment guide](environment-python.rst).
+[Python environment guide](environment-python.md).
 
 <a id="initial-installation"></a>
 ## Initial Installation
@@ -33,7 +33,7 @@ Python-specific setup and commands, see the
 4. Install language- and stack-specific tooling required by the project. The
    exact tools vary by repository and should be documented in project-specific
    overlays (for example, the
-   [Python environment guide](environment-python.rst)).
+   [Python environment guide](environment-python.md)).
 5. Install Git pre-commit and pre-push hooks using the workflow documented by
    the project.
 
@@ -63,5 +63,5 @@ integrity and authenticity.
 <a id="language-specific-overlays"></a>
 ## Language-Specific Overlays
 
-- [Python environment guide](environment-python.rst) - Python tooling and Hatch
+- [Python environment guide](environment-python.md) - Python tooling and Hatch
   workflow.

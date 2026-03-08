@@ -20,7 +20,7 @@ contributions.
 
 This guide defines language-neutral validation expectations. For Python command
 wrappers and toolchain specifics, see the
-[Python validation guide](validation-python.rst).
+[Python validation guide](validation-python.md).
 
 <a id="validation-outcomes"></a>
 ## Validation Outcomes
@@ -47,7 +47,7 @@ Project validation should cover the following outcomes:
 <a id="language-specific-overlays"></a>
 ## Language-Specific Overlays
 
-- [Python validation guide](validation-python.rst) - Python validation commands
+- [Python validation guide](validation-python.md) - Python validation commands
   and workflow.
 
 All required validation commands must pass before contributions can be accepted.

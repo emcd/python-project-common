@@ -17,7 +17,7 @@
 
 This guide defines language-neutral release expectations and lifecycle
 checkpoints. For Python-specific release commands and changelog mechanics, see
-the [Python release guide](releases-python.rst).
+the [Python release guide](releases-python.md).
 
 The project follows [semantic versioning](https://semver.org/) for release
 versioning.
@@ -91,5 +91,5 @@ After publication:
 <a id="language-specific-overlays"></a>
 ## Language-Specific Overlays
 
-- [Python release guide](releases-python.rst) - Python-specific release commands
+- [Python release guide](releases-python.md) - Python-specific release commands
   and changelog workflow.

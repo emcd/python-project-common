@@ -17,7 +17,7 @@
 
 This guide covers language-neutral code organization, design patterns, and
 architectural principles. For formatting and visual presentation guidance, see
-the [code style guide](style.rst).
+the [code style guide](style.md).
 
 <a id="general-principles"></a>
 ## General Principles
@@ -80,22 +80,22 @@ the [code style guide](style.rst).
 
 Use language-specific practice guides when available:
 
-- [Python development guide](practices-python.rst) - Python-specific development
+- [Python development guide](practices-python.md) - Python-specific development
   patterns.
-- [Rust development guide](practices-rust.rst) - Rust-specific development
+- [Rust development guide](practices-rust.md) - Rust-specific development
   patterns.
-- [TOML configuration practices](practices-toml.rst) - TOML-specific
+- [TOML configuration practices](practices-toml.md) - TOML-specific
   configuration patterns.
 
 Use workflow overlays only when they match your language/toolchain:
 
-- [Python environment guide](environment-python.rst) - Python tooling and
+- [Python environment guide](environment-python.md) - Python tooling and
   environment workflow.
-- [Python validation guide](validation-python.rst) - Python validation command
+- [Python validation guide](validation-python.md) - Python validation command
   wrappers.
-- [Python testing guide](tests-python.rst) - Python testing patterns and
+- [Python testing guide](tests-python.md) - Python testing patterns and
   commands.
-- [Python release guide](releases-python.rst) - Python release workflow and
+- [Python release guide](releases-python.md) - Python release workflow and
   changelog mechanics.
 
 Use the language-neutral core guides alongside language-specific overlays:

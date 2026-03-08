@@ -143,9 +143,12 @@ Resources
    :hidden:
 
    Python Environment Guide <common/environment-python>
+   Python Architecture Guide <common/architecture-python>
    Python Development Guide <common/practices-python>
    Rust Development Guide <common/practices-rust>
    TOML Configuration Practices <common/practices-toml>
+   Latin-derived Verb Vocabulary <common/nomenclature-latin>
+   Python Automatic Formatting <common/python-autoformat>
    Python Testing Guide <common/tests-python>
    Python Validation Guide <common/validation-python>
    Python Release Guide <common/releases-python>
