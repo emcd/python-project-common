@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v1.0a9-2-g90470cb
+_commit: v1.0a10-1-gee4eb93
 _src_path: gh:emcd/agents-common
 coders:
 - claude
@@ -15,6 +15,7 @@ instructions_target: .auxiliary/instructions
 languages:
 - python
 - rust
+project_bundle_name: infrastructure
 project_name: python-project-common
 provide_instructions: true
 support_local_models: true

@@ -47,16 +47,30 @@
     "build": {
       "mode": "primary",
       // "model": "zai-coding-plan/glm-4.7"
-      "model": "deepseek/deepseek-chat"
+      // "model": "deepseek/deepseek-chat"
+      "model": "minimax-coding-plan/MiniMax-M2.7"
     },
     "plan": {
       "mode": "primary",
       // "model": "zai-coding-plan/glm-4.7"
-      "model": "deepseek/deepseek-chat"
+      // "model": "deepseek/deepseek-chat"
+      "model": "minimax-coding-plan/MiniMax-M2.7"
     }
   },
 
   "mcp": {
+    "agentmux": {
+      "type": "local",
+      "command": [
+        "agentmux",
+        "host",
+        "mcp",
+        "--bundle",
+        "infrastructure"
+      ],
+      "enabled": true,
+      "timeout": 900000
+    },
     "context7": {
       "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],

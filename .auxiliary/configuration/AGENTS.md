@@ -71,17 +71,17 @@ Before implementing code changes, consult these files in `.auxiliary/instruction
 - Avoid logging routine, immediately completed mechanical actions in separate notes.
 - Create new notes/todos when information is likely to be useful across sessions or for other collaborators.
 
-### Tagging Conventions (for multi-LLM coordination)
+### Tagging Conventions
 Use consistent tags for discoverability:
-- **LLM Collaborator**: `#llm-<name>` (e.g., `#llm-claude`, `#llm-gpt`)
 - **Project Component**: `#component-<name>` (e.g., `#component-data-models`)
 - **Task Type**: `#task-<type>` (e.g., `#task-design`, `#task-bug`)
 - **Status**: `#status-<state>` (e.g., `#status-in-progress`, `#status-review`)
 - **Coordination**: `#handoff`, `#coordination`
+- **Assignment**: Avoid owner tags (for example `#llm-*`) for task ownership. Use lane/folder ownership and explicit owner text in the note body when needed.
 
 ### Common Patterns
 - Check for handoffs: `nb.search` with `#handoff` and `#status-review` tags.
-- Find work by specific LLM: `nb.search` with `#llm-<name>` tag.
+- Find active component work: `nb.search` with `#component-<name>` and `#status-in-progress` tags.
 - Track todos: Use `nb.todo`, `nb.tasks`, `nb.do`, `nb.undo`.
 - Organize with folders: `nb.folders`, `nb.mkdir`.
 
@@ -89,25 +89,36 @@ Use consistent tags for discoverability:
 - Prefer a folder taxonomy of `<issue-type>/<component>` (max depth 2) and avoid mixing top-level component folders with top-level issue-type folders.
 - Recommended top-level issue types are:
     - `todos/`
-    - `handoffs/`
     - `coordination/`
     - `decisions/` (optional for durable rationale notes)
 - Example component names include `engine`, `mcp`, `tui`, `web`, `handbook`, and `data-models`.
 - This project should define and document its specific component-folder conventions in the **Project Notes** section.
 - For cross-component work, prefer `coordination/general` and use multiple `#component-*` tags.
+- For per-component rolling handoffs, prefer `coordination/<component>` (single continuously updated note) instead of creating history chains under `handoffs/*`.
 - Keep notebook lifecycle hygiene:
     - prune completed todos quickly,
-    - keep only active/near-term handoffs,
+    - keep only active/near-term coordination checkpoints,
     - delete stale history-only notes with no owner or action.
 
 ### `nb` vs OpenSpec Rubric
 - Use **OpenSpec proposals** for cross-cutting changes, contract-shaping work, architecture shifts, or work that needs explicit design discussion.
 - Use **`nb` todos/notes** for scoped, self-contained implementation tasks where the path is straightforward.
+- When in doubt about whether work needs an OpenSpec proposal or only `nb` execution tracking, prefer OpenSpec first for design clarity.
 - For each active OpenSpec proposal, keep **exactly one** linked `nb` todo as the tracking anchor (with proposal reference), rather than duplicating full task trees in both systems.
-- When in doubt, prefer OpenSpec first for design clarity, then track execution updates in the linked `nb` todo.
+
+### OpenSpec Draft and Handoff Hygiene
+- Draft OpenSpec proposal text in a dedicated `nb` note first so collaborators can review without local file access barriers; share the note id when requesting feedback.
+- Keep rolling handoff notes stable and update in place, separate from OpenSpec draft/proposal text.
+- Do not repurpose or overwrite rolling handoff notes with proposal content.
+- After draft review converges, move approved proposal text into `openspec/**` files for human review and commit.
+
+## Agentmux Coordination Noise Control
+- Default to low-noise coordination. Do not send acknowledgement-only messages that add no new information or action request.
+- Send messages when you are blocked and need input, when requesting concrete review, when handing off completed work with validation, or when reporting material risk/scope change.
+- Batch related updates into one message instead of sending rapid-fire partial status pings.
+- Use `Cc` only for agents who need to act or review.
 
 ## Tests Development
-
 - Prefer tests under `tests/unit` and `tests/integration` over inline `#[cfg(test)]` modules in `src/**`, unless there is a strong locality reason to keep tests adjacent to implementation.
 - Prefer tests that exercise public interfaces; avoid source-inclusion patterns used only to reach private internals.
 
