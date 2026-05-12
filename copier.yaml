@@ -74,10 +74,8 @@ pypy_versions:
     help: Supported PyPy Python versions
     multiselect: true
     choices:
-        - '3.10'
         - '3.11'
     default:
-        - '3.10'
         - '3.11'
 
 python_version_min:
