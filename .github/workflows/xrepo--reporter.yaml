@@ -19,7 +19,7 @@ jobs:
           python-version: '${{ inputs.python-version }}'
 
       - name: Restore Coverage Results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: coverage-results--*--${{ github.run_id }}
           path: .auxiliary/caches/pytest
@@ -35,7 +35,7 @@ jobs:
         shell: bash
 
       - name: Preserve Coverage Reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-reports--${{ github.run_id }}
           path: .auxiliary/artifacts/coverage-pytest
