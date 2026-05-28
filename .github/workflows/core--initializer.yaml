@@ -65,8 +65,6 @@ jobs:
             hatch: "py3.13"
           "3.14":
             hatch: "py3.14"
-          "pypy3.10":
-            hatch: "pypy3.10"
           "pypy3.11":
             hatch: "pypy3.11"
           EOF
@@ -80,13 +78,9 @@ jobs:
         id: matrix-exclusions
         run: |
           set -eu
-          # TEMP: Exclude all PyPy versions until Hatch/Zstandard issue is resolved.
           # PyPy has slow I/O, even slower on Windows.
           items="$(jq --compact-output <<EOF
           [
-            {"platform": "macos-latest", "python-version": "pypy3.10"},
-            {"platform": "ubuntu-latest", "python-version": "pypy3.10"},
-            {"platform": "windows-latest", "python-version": "pypy3.10"},
             {"platform": "windows-latest", "python-version": "pypy3.11"}
           ]
           EOF
