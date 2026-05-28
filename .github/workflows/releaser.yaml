@@ -65,7 +65,7 @@ jobs:
     steps:
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
@@ -127,7 +127,7 @@ jobs:
     steps:
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
@@ -162,7 +162,7 @@ jobs:
           python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
