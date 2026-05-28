@@ -26,6 +26,7 @@ Architectural Decision Records
 
    001-three-tier-architecture
    002-centralized-import-pattern
+   003-common-doc-anchor-contract
 
 Additional ADRs will be created as the system evolves and new architectural decisions are required.
 

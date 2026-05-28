@@ -90,7 +90,8 @@ class CommandDispatcher(
 def copy_template( answers_file: __.Path, projectdir: __.Path ) -> None:
     ''' Copies template to target directory using answers. '''
     _subprocess.run( # noqa: S603
-        (   'copier', 'copy', '--data-file', str( answers_file ),
+        (   'copier', 'copy', # noqa: S607
+            '--data-file', str( answers_file ),
             '--defaults', '--overwrite', '--vcs-ref', 'HEAD',
             '.', str( projectdir ) ),
         cwd = __.Path( ), check = True )

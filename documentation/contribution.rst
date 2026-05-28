@@ -95,6 +95,11 @@ Guidance and Standards
 * Although unncessary for non-maintainer contributions, additional background
   can be found in the :doc:`maintenance guide <common/maintenance>`.
 
+* For shared documentation under ``documentation/common``, follow the stable
+  anchor contract in :doc:`ADR 003
+  <architecture/decisions/003-common-doc-anchor-contract>`. Treat anchor IDs as
+  part of the docs major-line compatibility contract (for example, ``docs-2``).
+
 Artificial Intelligence
 -------------------------------------------------------------------------------
 
@@ -115,18 +120,35 @@ Resources
 .. toctree::
    :maxdepth: 2
 
-   common/conduct
+   Code of Conduct <common/conduct>
    specifications/index
    architecture/index
    devapi
-   common/environment
-   common/practices
-   common/style
-   common/tests
-   common/nomenclature
-   common/nomenclature-germanic
-   common/validation
-   common/releases
-   common/maintenance
-   common/architecture
-   common/requirements
+   Environment Guide <common/environment>
+   Practices Guide <common/practices>
+   Code Style Guide <common/style>
+   Testing Guide <common/tests>
+   Nomenclature Guide <common/nomenclature>
+   Germanic Nomenclature Guide <common/nomenclature-germanic>
+   Validation Guide <common/validation>
+   Release Guide <common/releases>
+   Maintenance Guide <common/maintenance>
+   Architecture Guide <common/architecture>
+   Requirements Guide <common/requirements>
+
+.. Language-specific guides stay in a hidden toctree so Sphinx includes them
+   in the site graph without adding renderer-specific navigation glue to the
+   portable common Markdown sources.
+.. toctree::
+   :hidden:
+
+   Python Environment Guide <common/environment-python>
+   Python Architecture Guide <common/architecture-python>
+   Python Development Guide <common/practices-python>
+   Rust Development Guide <common/practices-rust>
+   TOML Configuration Practices <common/practices-toml>
+   Latin-derived Verb Vocabulary <common/nomenclature-latin>
+   Python Automatic Formatting <common/python-autoformat>
+   Python Testing Guide <common/tests-python>
+   Python Validation Guide <common/validation-python>
+   Python Release Guide <common/releases-python>

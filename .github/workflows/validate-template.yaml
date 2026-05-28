@@ -34,6 +34,10 @@ jobs:
         with:
           python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
 
+      - name: Install External Linters
+        run: |
+          pipx install emcd-vibe-linter
+
       - name: Install Copier
         run: pip install copier
 
