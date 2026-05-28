@@ -70,7 +70,7 @@ jobs:
     steps:
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
@@ -132,7 +132,7 @@ jobs:
     steps:
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
@@ -230,7 +230,7 @@ jobs:
           python-version: {% raw %}${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}{% endraw %}
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
@@ -238,7 +238,7 @@ jobs:
       {%- if enable_executables %}
 
       - name: Restore Executables
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: executables--*--{% raw %}${{ github.run_id }}{% endraw %}
           path: {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}

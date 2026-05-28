@@ -77,7 +77,7 @@ jobs:
       # TODO: Optional Rust testing.
 
       - name: Preserve Coverage Results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-results--${{ matrix.platform }}--${{ matrix.python-version }}--${{ github.run_id }}
           path: .auxiliary/caches/pytest/coverage.sqlite3.*
