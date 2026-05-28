@@ -28,8 +28,17 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
-Copier Template 1.58
-====================
+Copier Template 1.58.1 (2026-05-27)
+====================================
+
+Repairs
+-------
+
+- Upgrade Github actions to versions which do not depend on Node.js 20.
+
+
+Copier Template 1.58 (2026-05-27)
+==================================
 
 Removals
 --------
