@@ -14,7 +14,7 @@ instructions_target: .auxiliary/instructions
 languages:
 - python
 - rust
-project_bundle_name: infrastructure
+project_bundle_name: python-foundation
 project_name: python-project-common
 provide_instructions: true
 support_local_models: true
