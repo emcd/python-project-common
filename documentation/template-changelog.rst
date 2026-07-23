@@ -28,6 +28,31 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.59 (2026-07-23)
+==================================
+
+Removals
+--------
+
+- Remove generated PRD, architecture, and specifications scaffolding.
+  Requirements and specifications should be managed through OpenSpec;
+  subsystem architecture belongs in source-near ``sources/**/README.md``
+  files.
+
+Enhancements
+------------
+
+- Mark prerelease GitHub releases with ``--prerelease --latest=false`` for
+  alpha, beta, and release candidate tags.
+- Expand Sphinx ``exclude_patterns`` to all of ``architecture/`` to cover
+  OpenSpec content placed by ``agents-common``.
+
+Repairs
+-------
+
+- Fix the generated ``pipx`` installation URL.
+
+
 Copier Template 1.58.2 (2026-05-27)
 ====================================
 
