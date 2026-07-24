@@ -7,37 +7,11 @@
     "CLAUDE_CODE_DISABLE_TERMINAL_TITLE": 1,
     "DISABLE_NON_ESSENTIAL_MODEL_CALLS": 1
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/scripts/pre-bash-python-check",
-            "timeout": 10
-          },
-          {
-            "type": "command",
-            "command": ".claude/scripts/pre-bash-git-commit-check",
-            "timeout": 300
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|MultiEdit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": ".claude/scripts/post-edit-linter",
-            "timeout": 60
-          }
-        ]
-      }
-    ]
-  },
+  "enabledMcpjsonServers": [
+    "agentmux",
+    "context7",
+    "nb"
+  ],
   "permissions": {
     "auto_allow": [
       "mcp__agentmux__list",
@@ -52,6 +26,9 @@
       "Bash(cargo build *)",
       "Bash(cargo check *)",
       "Bash(cargo clippy *)",
+      "Bash(cargo fmt)",
+      "Bash(cargo fmt *)",
+      "Bash(cargo nextest *)",
       "Bash(cargo test *)",
       "Bash(awk *)",
       "Bash(cat *)",
@@ -78,21 +55,33 @@
       "Bash(gh status *)",
       "Bash(git add *)",
       "Bash(git branch *)",
+      "Bash(git cat-file *)",
       "Bash(git checkout *)",
       "Bash(git diff *)",
       "Bash(git fetch *)",
+      "Bash(git grep *)",
       "Bash(git log *)",
+      "Bash(git ls-files)",
+      "Bash(git ls-files *)",
+      "Bash(git ls-tree *)",
+      "Bash(git merge-base *)",
+      "Bash(git range-diff *)",
       "Bash(git rebase *)",
       "Bash(git restore *)",
+      "Bash(git rev-list *)",
       "Bash(git rev-parse *)",
       "Bash(git show *)",
       "Bash(git stash list)",
       "Bash(git stash list *)",
       "Bash(git status *)",
+      "Bash(git worktree list)",
+      "Bash(git worktree list *)",
       "Bash(grep *)",
       "Bash(head *)",
       "Bash(ls *)",
       "Bash(mkdir *)",
+      "Bash(npm run *)",
+      "Bash(openspec *)",
       "Bash(ps *)",
       "Bash(pwd *)",
       "Bash(rg *)",
