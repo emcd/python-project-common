@@ -28,6 +28,24 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.59.1 (2026-07-24)
+====================================
+
+Enhancements
+------------
+
+- Standardize generated contribution guidance with a Requirements and Design
+  subsection. Direct accepted requirements to ``openspec/specs/`` and new
+  capabilities or breaking changes to ``openspec/changes/``. Direct subsystem
+  architecture to source-near ``sources/**/README.md`` files.
+
+Repairs
+-------
+
+- Fix ``unncessary`` typo to ``unnecessary`` in generated contribution
+  guidance.
+
+
 Copier Template 1.59 (2026-07-23)
 ==================================
 
