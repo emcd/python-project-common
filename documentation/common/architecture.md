@@ -190,41 +190,49 @@ This workspace is excluded from package distributions but provides session conti
 <a id="architecture-documentation-beyond-adrs"></a>
 ## Architecture Documentation Beyond ADRs
 
-<a id="system-summary"></a>
-### System Summary
+Architecture documentation lives in two places rather than a centralized
+`documentation/architecture/` scaffold:
 
-The system summary (`architecture/summary.rst`) should provide a high-level overview of the system architecture including:
+<a id="subsystem-readmes"></a>
+### Source-Near READMEs
 
-- **Major components**: Key system modules, services, or subsystems.
-- **Component relationships**: How components interact and depend on each other.
-- **Data flow**: Major data paths through the system.
-- **Deployment architecture**: How components are distributed and deployed.
-- **Key architectural patterns**: Major patterns employed (MVC, microservices, event-driven, etc.).
+Stable subsystem architecture, design rationale, and local constraints belong
+in the nearest source-near README, normally `sources/**/README.md`. Update the
+affected README when implementation structure or operational patterns change
+rather than recreating centralized architecture mirrors under
+`documentation/`.
 
-<a id="filesystem-documentation"></a>
-### Filesystem Documentation
+Source-near READMEs should cover:
 
-The filesystem documentation (`architecture/filesystem.rst`) implements the standard patterns documented above for the specific project configuration:
+- **Subsystem purpose**: What the module or package provides.
+- **Internal structure**: Key modules, their responsibilities, and relationships.
+- **Integration contracts**: How the subsystem interacts with other components.
+- **Design rationale**: Why the current structure was chosen, including
+  constraints and trade-offs.
 
-- **Project-specific structure**: Shows actual package names and feature-specific organization
-- **Integration patterns**: Shows how optional components (CLI, Rust extensions, etc.) integrate with the standard structure
+<a id="openspec-specs"></a>
+### OpenSpec Specifications
+
+Accepted capability requirements and behavioral contracts live in
+`openspec/specs/` as scenario-based specifications. New capabilities, breaking
+changes, architectural shifts, and substantial performance or security work
+should be managed through OpenSpec changes in `openspec/changes/`.
+
+OpenSpec specs should cover:
+
+- **Capability requirements**: What the system does, expressed as SHALL/MUST
+  statements with WHEN/THEN scenarios.
+- **Behavioral contracts**: How the system responds under specific conditions
+  and configurations.
+- **Scope boundaries**: What is explicitly out of scope for the capability.
 
 <a id="design-documents"></a>
 ### Design Documents
 
-Detailed design documents (under `architecture/designs/`) capture implementation-level specifications:
-
-- **Interface specifications**: API contracts, service interfaces, module APIs.
-- **Data schemas**: Database schemas, message formats, configuration structures.
-- **Algorithm specifications**: Detailed algorithmic approaches for complex processing.
-- **Protocol definitions**: Communication protocols between components.
-
-**Design Document Guidelines**
-
-- Reference the architectural decisions that informed the design.
-- Include enough detail for implementation without over-specifying.
-- Use diagrams and examples to illustrate complex concepts.
-- Version design documents when significant changes occur.
+Detailed design documents for proposed or in-progress work live in OpenSpec
+changes (`openspec/changes/<id>/design.md`). After completion, design
+rationale should be captured in the relevant subsystem README rather than
+accumulating in a separate design archive.
 
 <a id="language-specific-overlays"></a>
 ## Language-Specific Overlays

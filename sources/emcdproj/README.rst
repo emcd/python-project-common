@@ -133,3 +133,57 @@ Features
 .. image:: https://img.shields.io/pypi/wheel/emcd-projects
    :alt: PyPI - Wheel
    :target: https://pypi.org/project/emcd-projects/
+
+
+Architecture
+===============================================================================
+
+The ``emcdproj`` package provides maintenance tooling for projects generated
+from the ``python-project-common`` Copier template. It is one component of a
+larger repository that also contains the template itself, reusable GitHub
+Actions workflows, and shared documentation.
+
+Package Modules
+-------------------------------------------------------------------------------
+
+::
+
+    emcdproj/
+    ├── __/                      # Centralized import hub
+    │   ├── __init__.py          # Re-exports core utilities
+    │   ├── imports.py           # External library imports
+    │   └── nomina.py            # emcd-projects-specific naming constants
+    ├── __init__.py              # Package entry point and version
+    ├── __main__.py              # CLI entry point for `python -m emcdproj`
+    ├── cli.py                   # Command-line interface implementation
+    ├── exceptions.py            # Package exception hierarchy
+    ├── filesystem.py            # File system operations
+    ├── interfaces.py            # Common interface definitions
+    ├── template.py              # Template survey and validation utilities
+    ├── website.py               # Static website generation and maintenance
+    └── _typedecls/              # Type declaration stubs
+
+Modules generally use the standard ``__`` import pattern for external
+dependencies, with exceptions for entry points (``__main__.py``) and
+subsystems with direct import requirements.
+
+Key Subsystem Contracts
+-------------------------------------------------------------------------------
+
+**Static Site Publisher** (``website.py``)
+
+Generates and maintains a static documentation site with versioned content,
+coverage badges, and stable/development aliases. Invoked by the release
+workflow after documentation and coverage artifacts are available.
+
+**Template Utilities** (``template.py``)
+
+Provides template survey and validation capabilities. Template application
+(Copier copy/update) is an external workflow invoked by maintainers; this
+package does not drive template synchronization directly.
+
+**Integration with Reusable Workflows**
+
+The ``xrepo--documenter`` workflow invokes ``emcdproj website update`` as part
+of documentation publication. The ``xrepo--reporter`` workflow produces
+coverage artifacts consumed by the site publisher.
