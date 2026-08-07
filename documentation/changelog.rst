@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+emcdproj 1.60 (2026-08-06)
+==========================
+
+Removals
+--------
+
+- CLI: Remove ``emcdproj template`` subcommand. Template survey and validation are now handled by ``copiertv``.
+
+
 Emcdproj 1.36 (2025-08-07)
 ==========================
 
