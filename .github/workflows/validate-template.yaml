@@ -4,14 +4,18 @@ on:
   pull_request:
     branches: ['*']
     paths:
-      - 'template/**'
+      - '.auxiliary/configuration/copiertv/**'
       - 'copier.yaml'
+      - 'data/copier/**'
+      - 'template/**'
   push:
     branches:
       - master
     paths:
-      - 'template/**'
+      - '.auxiliary/configuration/copiertv/**'
       - 'copier.yaml'
+      - 'data/copier/**'
+      - 'template/**'
   workflow_dispatch: {}
 
 jobs:
@@ -38,8 +42,8 @@ jobs:
         run: |
           pipx install emcd-vibe-linter
 
-      - name: Install Copier
-        run: pip install copier
+      - name: Install Copiertv
+        run: pip install copiertv
 
       - name: Validate Variant
-        run: hatch run emcdproj template validate ${{ matrix.variant }}
+        run: copiertv validate ${{ matrix.variant }}

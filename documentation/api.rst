@@ -37,12 +37,6 @@ Module ``emcdproj.website``
 .. automodule:: emcdproj.website
 
 
-Module ``emcdproj.template``
--------------------------------------------------------------------------------
-
-.. automodule:: emcdproj.template
-
-
 Module ``emcdproj.filesystem``
 -------------------------------------------------------------------------------
 

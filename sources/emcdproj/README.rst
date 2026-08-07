@@ -159,7 +159,6 @@ Package Modules
     ├── exceptions.py            # Package exception hierarchy
     ├── filesystem.py            # File system operations
     ├── interfaces.py            # Common interface definitions
-    ├── template.py              # Template survey and validation utilities
     ├── website.py               # Static website generation and maintenance
     └── _typedecls/              # Type declaration stubs
 
@@ -175,12 +174,6 @@ Key Subsystem Contracts
 Generates and maintains a static documentation site with versioned content,
 coverage badges, and stable/development aliases. Invoked by the release
 workflow after documentation and coverage artifacts are available.
-
-**Template Utilities** (``template.py``)
-
-Provides template survey and validation capabilities. Template application
-(Copier copy/update) is an external workflow invoked by maintainers; this
-package does not drive template synchronization directly.
 
 **Integration with Reusable Workflows**
 

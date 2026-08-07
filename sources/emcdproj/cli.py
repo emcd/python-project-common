@@ -23,7 +23,6 @@
 
 from . import __
 from . import interfaces as _interfaces
-from . import template as _template
 from . import website as _website
 
 
@@ -50,10 +49,6 @@ class Cli(
     # configfile: __.typx.Optional[ str ] = None
     display: _interfaces.ConsoleDisplay
     command: __.typx.Union[
-        __.typx.Annotated[
-            _template.CommandDispatcher,
-            __.tyro.conf.subcommand( 'template', prefix_name = False ),
-        ],
         __.typx.Annotated[
             _website.CommandDispatcher,
             __.tyro.conf.subcommand( 'website', prefix_name = False ),

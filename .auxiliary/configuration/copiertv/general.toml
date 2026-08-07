@@ -1,0 +1,18 @@
+# Copier template validation configuration.
+#
+# Source-of-truth configuration consumed by copiertv to validate that this
+# repository's Copier template renders cleanly for each declared variant.
+# CI invokes ``copiertv validate <variant>`` against this file in place of
+# the previous in-tree ``emcdproj template validate`` implementation.
+#
+# Variant answer files live at ``data/copier/answers-*.yaml``. They
+# are consumed by copiertv, via the ``[answers] directory`` key below
+# (for template rendering validation).
+
+[answers]
+directory = "data/copier"
+
+[options]
+template-directory = "template"
+preserve = false
+unsafe = false
