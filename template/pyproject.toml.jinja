@@ -176,6 +176,9 @@ docsgen = [
   """sphinx-build -a -d .auxiliary/caches/sphinx --quiet \
       documentation .auxiliary/artifacts/sphinx-html""",
 ]
+fragments = [
+  """python .auxiliary/scripts/validate-fragments.py""",
+]
 linters = [
   """ruff check --quiet sources documentation tests""",
   """vibelinter check""",
@@ -190,6 +193,7 @@ linters = [
   # --- END: Injected by Copier ---
   """isort --check-only --diff sources tests""",
   """pyright sources""",
+  'fragments',
 ]
 packagers = [
   """hatch build""",
