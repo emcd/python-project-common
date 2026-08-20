@@ -22,12 +22,48 @@ For Python-specific commands and examples, see the
 <a id="core-testing-principles"></a>
 ## Core Testing Principles
 
-- Test observable behavior, not implementation details.
+- Test observable behavior through public contracts, not private structure.
 - Prefer dependency injection and explicit interfaces over global state
   mutation.
 - Keep tests deterministic and isolated from external mutable systems.
 - Design tests to run quickly in normal development loops.
 - Target comprehensive line and branch coverage where practical.
+- Align tests with capability contracts so they remain stable when internal
+  organization changes.
+
+<a id="public-contracts-and-internal-visibility"></a>
+## Public Contracts and Internal Visibility
+
+Prefer tests that exercise the same surface callers use in production:
+
+- Call public APIs, CLI entry points, library exports, and other observable
+  interfaces.
+- Assert on return values, errors, side effects, and externally visible
+  state rather than private helpers or module layout.
+- When behavior is hard to reach through the public surface, treat that as a
+  design signal first. Introduce a narrow dependency-injection seam or
+  reconsider the boundary before reaching for test-only access.
+
+Do not distort the product API for coverage:
+
+- Do not widen internal visibility, export test-only helpers, or add
+  documentation-hidden public escape hatches merely so tests can reach
+  implementation details.
+- Do not restructure modules solely to make private names importable from
+  external test packages when a cleaner seam would preserve the intended
+  boundary.
+
+Narrow exceptions remain valid:
+
+- Genuinely private algorithms may need focused unit tests when no public
+  path exercises the same behavior and widening the API would leak
+  implementation surface.
+- Such exceptions should stay small, local, and justified. Prefer a clean
+  injection point over permanent visibility changes.
+- Language-specific overlays describe how to express these exceptions
+  without turning them into a convenience default. See the
+  [Rust development guide](practices-rust.md#testing) for Rust
+  `#[cfg(test)]` policy.
 
 <a id="anti-patterns-to-avoid"></a>
 ## Anti-Patterns to Avoid
@@ -36,6 +72,9 @@ For Python-specific commands and examples, see the
   cloud, and other remote dependencies.
 - **Over-mocking internal logic**: Excessive mocking can hide real
   integration and contract failures.
+- **API distortion for tests**: Widening visibility or exporting test-only
+  helpers solely to reach internals couples tests to private structure and
+  grows unintended public surface.
 - **Hidden global coupling**: Tests should not rely on implicit ordering,
   process-global state, or residue from previous tests.
 - **Broad exception suppression**: Avoid swallowing failures in tests. Keep
@@ -105,3 +144,5 @@ When tests are hard to write or unstable:
 
 - [Python testing guide](tests-python.md) - Python-specific test patterns and
   commands.
+- [Rust development guide](practices-rust.md#testing) - Rust test layout and
+  `#[cfg(test)]` boundaries.
