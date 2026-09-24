@@ -108,6 +108,61 @@ workflow guidance, see the [code style guide](style.md),
 - Use `cargo fmt` to automatically format code according to project standards.
 - Maximum line length follows the general project standard of 79 columns, which may be configured in `.rustfmt.toml` if different from Rust defaults.
 
+<a id="testing"></a>
+## Testing
+
+Language-neutral public-contract rules live in the
+[testing guide](tests.md#public-contracts-and-internal-visibility). This
+section states how those rules apply in Rust crates.
+
+<a id="test-layout"></a>
+### Test Layout
+
+- Prefer tests under `tests/unit` and `tests/integration` over inline
+  `#[cfg(test)]` modules in `src/**`.
+- Prefer tests that exercise public interfaces. Avoid source-inclusion
+  patterns used only to reach private internals.
+- External unit tests are still unit tests. Requiring public contracts does
+  not mean every test must be a multi-crate integration or end-to-end check.
+
+<a id="inline-cfg-test"></a>
+### Inline `#[cfg(test)]` Modules
+
+Inline `#[cfg(test)]` modules used to access crate-private items are a last
+resort for behavior that cannot reasonably be tested through public
+contracts or a clean injection seam. They are not a convenience escape
+hatch.
+
+Permit an inline `#[cfg(test)]` block only when **all** of the following
+hold:
+
+1. The tested item is crate-private **by design** (not by oversight or
+   laziness), and making it testable externally would require widening its
+   visibility or adding a `#[doc(hidden)] pub` escape hatch that would
+   itself become unintended API surface.
+2. No existing public interface exercises the same code path.
+3. The inline test block contains at most **one** `#[test]` function.
+
+If a candidate inline test fails any of these conditions, move it to
+`tests/unit` and introduce a narrow seam, restructure ownership, or
+otherwise keep the public surface intentional. Do not default to inline
+access to avoid that conversation; the friction is intentional.
+
+<a id="private-algorithms"></a>
+### Private Algorithms
+
+Genuinely private algorithms may still deserve focused coverage. Prefer, in
+order:
+
+1. Exercise the algorithm through the public capability that owns it.
+2. Inject a narrow collaborator or strategy so the private path becomes
+   reachable without exporting internals.
+3. Only then use a tightly scoped inline `#[cfg(test)]` test that meets the
+   criteria above.
+
+Do not widen `pub` visibility or add test-only re-exports merely to satisfy
+coverage tooling.
+
 <a id="future-development"></a>
 ## Future Development
 
@@ -121,6 +176,5 @@ TODO: Expand Rust practices with comprehensive coverage including:
 - Macro definition patterns
 - FFI and unsafe code guidelines
 - Performance optimization patterns
-- Testing strategies and patterns
 - Concurrent programming patterns
 -->
