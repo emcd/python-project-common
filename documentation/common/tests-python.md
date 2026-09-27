@@ -38,7 +38,9 @@ examples. For language-neutral testing principles, see the
 
 - **Excessive Mocking**: Over-mocking leads to tests that pass but don't catch real bugs.
 
-- **Testing Implementation Details**: Tests should verify behavior, not internal implementation specifics.
+- **Testing Implementation Details**: Tests should verify behavior through
+  public contracts, not internal implementation specifics. See the
+  [public-contract guidance](tests.md#public-contracts-and-internal-visibility).
 
 - **External Network Testing**: NEVER test against real external sites. Use mocks or test doubles instead:
 
