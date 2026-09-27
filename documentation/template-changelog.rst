@@ -28,6 +28,64 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.61 (2026-09-27)
+=================================
+
+Repairs
+-------
+
+- Pin generated ``actions/upload-artifact`` to ``v7``. ``v8`` fails in the
+  releaser workflow.
+
+Enhancements
+------------
+
+- Add Towncrier fragment validation and wire it into the generated
+  ``linters`` chain. The script checks fragment names against the
+  ``pyproject.toml`` type vocabulary before parsing reST.
+
+Notes
+-----
+
+- This tag exists so Copier's default PEP 440 selection sorts above package
+  tag ``v1.60``. Template tag ``v1.59.4`` has the same ``template/`` tree and
+  remains valid, but it sorts below ``v1.60``.
+
+
+Copier Template 1.59.4 (2026-09-27)
+===================================
+
+Repairs
+-------
+
+- Pin generated ``actions/upload-artifact`` to ``v7``.
+
+Enhancements
+------------
+
+- Add Towncrier fragment validation and wire it into the generated
+  ``linters`` chain.
+
+
+Copier Template 1.59.3 (2026-07-24)
+===================================
+
+Repairs
+-------
+
+- Anchor generated ``.auxiliary/.gitignore`` entries and ignore
+  ``.auxiliary/temporary/``.
+
+
+Copier Template 1.59.2 (2026-07-24)
+===================================
+
+Repairs
+-------
+
+- Bump the generated Ruff pre-commit hook from ``v0.15.9`` to ``v0.16.0``.
+
+
 Copier Template 1.59.1 (2026-07-24)
 ====================================
 
