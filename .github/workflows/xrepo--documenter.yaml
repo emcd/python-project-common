@@ -16,6 +16,12 @@ jobs:
 
   generate:
     runs-on: ubuntu-latest
+    # Destination-scoped serialization: concurrent publications queue
+    # rather than clobber the publication branch. Cancellation of a
+    # queued run must not kill the active promotion.
+    concurrency:
+      group: publication-${{ github.repository }}
+      cancel-in-progress: false
     steps:
 
       - name: Prepare Python

@@ -127,6 +127,14 @@ class TrackConfigurationInvalidity( _exceptions.Omnierror, ValueError ):
             f"Invalid track configuration for '{track}': {issue}." )
 
 
+class PublicationSourceInvalidity( _exceptions.Omnierror, ValueError ):
+    ''' Invalid publication source or tree. '''
+
+    def __init__( self, source: str, issue: str ):
+        super( ).__init__(
+            f"Invalid publication source '{source}': {issue}." )
+
+
 class Locations( __.immut.DataclassObject ):
     ''' Locations associated with website maintenance. '''
 
@@ -256,20 +264,11 @@ def update(  # noqa: PLR0913
     # --production implies --use-extant to prevent clobbering existing versions
     if use_extant or production:
         _fetch_publication_branch_and_tarball( locations )
-    _restore_publication_tree( locations )
-    available_species = _update_available_species( locations, version )
-    j2context = _jinja2.Environment(
-        loader = _jinja2.FileSystemLoader( locations.templates ),
-        autoescape = True )
-    index_data = _update_versions_json( locations, version, available_species )
-    _enhance_index_data_with_stable_dev( index_data )
-    _create_stable_dev_directories( locations, index_data )
-    _promote_docs_alias( locations, version, tracks )
-    _update_index_html( locations, j2context, index_data )
-    if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
-        _update_coverage_badge( locations, j2context )
-        _update_version_coverage_badge( locations, j2context, version )
-    ( locations.website / '.nojekyll' ).touch( )
+    try:
+        _build_publication_tree( locations, version, tracks )
+    except Exception:
+        _restore_publication_tree( locations )
+        raise
     from tarfile import open as tarfile_open
     from .filesystem import chdir
     with chdir( locations.website ): # noqa: SIM117
@@ -367,6 +366,29 @@ def _validate_alias( alias: str ) -> None:
         raise TrackConfigurationInvalidity( alias, 'traversal rejected' )
     if not re.match( r'^[a-z0-9][a-z0-9-]*$', normalized ):
         raise TrackConfigurationInvalidity( alias, 'must be kebab-case' )
+
+
+def _build_publication_tree(
+    locations: Locations, version: str, tracks: TrackConfiguration
+) -> None:
+    ''' Builds version tree, aliases, and indexes for publication. '''
+    _restore_publication_tree( locations )
+    available_species = _update_available_species( locations, version )
+    j2context = _jinja2.Environment(
+        loader = _jinja2.FileSystemLoader( locations.templates ),
+        autoescape = True )
+    index_data = _update_versions_json(
+        locations, version, available_species )
+    _enhance_index_data_with_stable_dev( index_data )
+    _create_stable_dev_directories( locations, index_data )
+    _promote_docs_alias( locations, version, tracks )
+    _update_index_html( locations, j2context, index_data )
+    if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
+        _update_coverage_badge( locations, j2context )
+        _update_version_coverage_badge( locations, j2context, version )
+    ( locations.website / '.nojekyll' ).touch( )
+    _record_provenance( locations, version, tracks )
+    _validate_publication_tree( locations, version, tracks, index_data )
 
 
 def _create_docs_alias_directories(
@@ -543,6 +565,41 @@ def _selector_claims( tag: str, selector: str ) -> bool:
     return version.is_prerelease
 
 
+def _record_provenance(
+    locations: Locations, version: str, tracks: TrackConfiguration
+) -> None:
+    ''' Records tag-to-commit provenance for publication. '''
+    import datetime
+    commit = ''
+    with __.ctxl.suppress( Exception ):
+        result = __.subprocess.run(
+            [ 'git', 'rev-parse', 'HEAD' ],
+            cwd = locations.project,
+            check = False, capture_output = True, text = True )
+        commit = result.stdout.strip( )
+    aliases: list[ str ] = [ ]
+    for name, track in tracks.items( ):
+        alias = track.get( 'alias', name )
+        if alias not in aliases: aliases.append( alias )
+    data: dict[ str, __.typx.Any ] = {
+        'version': version,
+        'commit': commit,
+        'timestamp': datetime.datetime.now(
+            datetime.timezone.utc ).isoformat( ),
+        'aliases': sorted( aliases ),
+    }
+    with ( locations.website / 'provenance.json' ).open( 'w' ) as file:
+        __.json.dump( data, file, indent = 4 )
+
+
+def _reject_symlinks_in_tree( root: __.Path ) -> None:
+    ''' Rejects symlinks anywhere under publication tree. '''
+    for path in sorted( root.rglob( '*' ) ):
+        if path.is_symlink( ):
+            raise PublicationSourceInvalidity(
+                str( path ), 'symlink rejected' )
+
+
 def _restore_publication_tree( locations: Locations ) -> None:
     ''' Restores prior publication tree from archive, if present. '''
     from tarfile import open as tarfile_open
@@ -550,7 +607,49 @@ def _restore_publication_tree( locations: Locations ) -> None:
     locations.website.mkdir( exist_ok = True, parents = True )
     if locations.archive.is_file( ):
         with tarfile_open( locations.archive, 'r:xz' ) as archive:
-            archive.extractall( path = locations.website ) # noqa: S202
+            _safe_extractall( archive, locations.website )
+
+
+def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
+    ''' Extracts archive after rejecting dangerous members. '''
+    for member in archive.getmembers( ):
+        name = member.name
+        if name.startswith( '/' ) or name.startswith( '\\' ):
+            raise PublicationSourceInvalidity( name, 'absolute path rejected' )
+        parts = name.replace( '\\', '/' ).split( '/' )
+        if '..' in parts:
+            raise PublicationSourceInvalidity( name, 'traversal rejected' )
+        if member.issym( ) or member.islnk( ):
+            raise PublicationSourceInvalidity( name, 'link rejected' )
+    archive.extractall( path = destination ) # noqa: S202
+
+
+def _validate_publication_tree(
+    locations: Locations,
+    version: str,
+    tracks: TrackConfiguration,
+    index_data: dict[ __.typx.Any, __.typx.Any ],
+) -> None:
+    ''' Validates built tree before alias promotion and archiving. '''
+    version_dir = locations.website / version
+    if not version_dir.is_dir( ):
+        raise PublicationSourceInvalidity( version, 'version tree absent' )
+    for requisite in ( locations.index, locations.versions ):
+        if not requisite.is_file( ):
+            raise PublicationSourceInvalidity(
+                str( requisite ), 'requisite absent' )
+    expected_aliases: list[ str ] = [ ]
+    if index_data.get( 'stable_version' ):
+        expected_aliases.append( 'stable' )
+    if index_data.get( 'development_version' ):
+        expected_aliases.append( 'development' )
+    docs_alias = select_docs_alias( version, tracks )
+    if not __.is_absent( docs_alias ):
+        expected_aliases.append( docs_alias )  # type: ignore[arg-type]
+    for alias in expected_aliases:
+        if not ( locations.website / alias ).is_dir( ):
+            raise PublicationSourceInvalidity( alias, 'alias tree absent' )
+    _reject_symlinks_in_tree( locations.website )
 
 
 def _update_available_species(
@@ -584,12 +683,21 @@ def _update_publication_branch( locations: Locations, version: str ) -> None:
     ''' Updates publication branch with new tarball.
 
         Adds the tarball to git, commits to the publication branch, and pushes
-        to origin. Uses the same approach as the GitHub workflow.
+        to origin with compare-and-swap. Fails without lost updates when the
+        destination ref advances concurrently; caller refetches, rebuilds,
+        and revalidates or fails.
     '''
     __.subprocess.run(
         [ 'git', 'add', str( locations.archive ) ],
         cwd = locations.project,
         check = True )
+    # Acquire writer ownership: fetch current destination ref first.
+    with __.ctxl.suppress( Exception ):
+        __.subprocess.run(
+            [ 'git', 'fetch', 'origin', 'publication:publication' ],
+            cwd = locations.project,
+            check = False,
+            capture_output = True )
     # Commit to publication branch without checkout
     # Get current tree hash
     tree_result = __.subprocess.run(
@@ -602,6 +710,13 @@ def _update_publication_branch( locations: Locations, version: str ) -> None:
         [ 'git', 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
         cwd = locations.project,
         check = False ).returncode == 0
+    lease_expectation = ''
+    if publication_exists:
+        lease_result = __.subprocess.run(
+            [ 'git', 'rev-parse', 'publication' ],
+            cwd = locations.project,
+            check = True, capture_output = True, text = True )
+        lease_expectation = lease_result.stdout.strip( )
     commit_result = __.subprocess.run(
         [ 'git', 'commit-tree', tree_hash,
           *( ( '-p', 'publication' ) if publication_exists else ( ) ),
@@ -613,10 +728,17 @@ def _update_publication_branch( locations: Locations, version: str ) -> None:
         [ 'git', 'branch', '--force', 'publication', commit_hash ],
         cwd = locations.project,
         check = True )
-    __.subprocess.run(
-        [ 'git', 'push', 'origin', 'publication:publication' ],
-        cwd = locations.project,
-        check = True )
+    if lease_expectation:
+        __.subprocess.run(
+            [ 'git', 'push', '--force-with-lease=publication:'
+              + lease_expectation, 'origin', 'publication:publication' ],
+            cwd = locations.project,
+            check = True )
+    else:
+        __.subprocess.run(
+            [ 'git', 'push', 'origin', 'publication:publication' ],
+            cwd = locations.project,
+            check = True )
 
 
 def _update_index_html(

@@ -331,6 +331,42 @@ def test_085_docs_alias_does_not_alter_stable(
     assert ( locations.website / 'stable' ).exists( )
 
 
+def test_086_reject_dangerous_archive_members( website, provide_tempdir ):
+    ''' Archive members with traversal or links are rejected. '''
+    class FakeMember:
+        def __init__( self, name, symlink = False, hardlink = False ):
+            self.name = name
+            self._symlink = symlink
+            self._hardlink = hardlink
+        def issym( self ): return self._symlink
+        def islnk( self ): return self._hardlink
+    class FakeArchive:
+        def __init__( self, members ): self._members = members
+        def getmembers( self ): return self._members
+        def extractall( self, path = None ): raise AssertionError( 'extract' )
+    from pathlib import Path
+    destination = Path( provide_tempdir ) / 'destination'
+    bad_names = ( '/absolute.txt', '../traversal.txt', 'a/../../b.txt' )
+    for bad_name in bad_names:
+        archive = FakeArchive( [ FakeMember( bad_name ) ] )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website._safe_extractall( archive, destination )
+    archive = FakeArchive( [ FakeMember( 'good.txt', symlink = True ) ] )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._safe_extractall( archive, destination )
+
+
+def test_087_reject_symlinks_in_tree( website, provide_tempdir ):
+    ''' Symlinks under publication tree are rejected. '''
+    from pathlib import Path
+    root = Path( provide_tempdir ) / 'site'
+    root.mkdir( parents = True, exist_ok = True )
+    ( root / 'real.txt' ).write_text( 'real' )
+    ( root / 'link.txt' ).symlink_to( root / 'real.txt' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._reject_symlinks_in_tree( root )
+
+
 def test_100_integration_update(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
