@@ -398,6 +398,7 @@ def _create_docs_alias_directories(
     _validate_alias( alias )
     source = locations.website / version
     destination = locations.website / alias
+    if source == destination: return
     if destination.is_dir( ): __.shutil.rmtree( destination )
     if source.is_dir( ): __.shutil.copytree( source, destination )
 
@@ -421,21 +422,19 @@ def _enhance_index_data_with_stable_dev(
         from the versions data and adds them as separate entries for the
         stable/development table.
     '''
-    from packaging.version import Version
+    from packaging.version import InvalidVersion, Version
     versions = data.get( 'versions', { } )
     if not versions:
         data[ 'stable_dev_versions' ] = { }
         return
     stable_version = None
     development_version = None
-    # Sort versions by packaging.version.Version for proper comparison
-    sorted_versions = sorted(
-        versions.items( ),
-        key = lambda entry: Version( entry[ 0 ] ),
-        reverse = True )
+    # Package versions only; docs tags never feed stable/dev selection.
+    sorted_versions = _sort_versions( versions )
     # Find latest stable (non-prerelease) and development (prerelease) versions
-    for version_string, species in sorted_versions:
-        version_obj = Version( version_string )
+    for version_string, species in sorted_versions.items( ):
+        try: version_obj = Version( str( version_string ).lstrip( 'v' ) )
+        except InvalidVersion: continue
         if not version_obj.is_prerelease and stable_version is None:
             stable_version = ( version_string, species )
         if version_obj.is_prerelease and development_version is None:
@@ -652,6 +651,32 @@ def _validate_publication_tree(
     _reject_symlinks_in_tree( locations.website )
 
 
+def _is_package_version( label: __.typx.Any ) -> bool:
+    ''' Checks whether label parses as a package version. '''
+    from packaging.version import InvalidVersion, Version
+    try: Version( str( label ).lstrip( 'v' ) )
+    except InvalidVersion: return False
+    return True
+
+
+def _sort_versions(
+    versions: dict[ __.typx.Any, __.typx.Any ],
+) -> dict[ __.typx.Any, __.typx.Any ]:
+    ''' Sorts package versions descending, docs tags after by name. '''
+    from packaging.version import Version
+    package_entries: list[ tuple[ __.typx.Any, __.typx.Any ] ] = [
+        entry for entry in versions.items( )
+        if _is_package_version( entry[ 0 ] ) ]
+    docs_entries: list[ tuple[ __.typx.Any, __.typx.Any ] ] = [
+        entry for entry in versions.items( )
+        if not _is_package_version( entry[ 0 ] ) ]
+    package_entries.sort(
+        key = lambda entry: Version( str( entry[ 0 ] ).lstrip( 'v' ) ),
+        reverse = True )
+    docs_entries.sort( key = lambda entry: str( entry[ 0 ] ) )
+    return dict( package_entries + docs_entries )
+
+
 def _update_available_species(
     locations: Locations, version: str
 ) -> tuple[ str, ... ]:
@@ -785,7 +810,6 @@ def _update_versions_json(
     '''
     # TODO: Add validation of version string format.
     # TODO: Consider file locking for concurrent update protection.
-    from packaging.version import Version
     if not locations.versions.is_file( ):
         data: dict[ __.typx.Any, __.typx.Any ] = { 'versions': { } }
         with locations.versions.open( 'w' ) as file:
@@ -794,10 +818,7 @@ def _update_versions_json(
         data = __.json.load( file )
         versions = data[ 'versions' ]
         versions[ version ] = species
-        versions = dict( sorted(
-            versions.items( ),
-            key = lambda entry: Version( entry[ 0 ] ),
-            reverse = True ) )
+        versions = _sort_versions( versions )
         data[ 'latest_version' ] = next( iter( versions ) )
         data[ 'versions' ] = versions
         file.seek( 0 )

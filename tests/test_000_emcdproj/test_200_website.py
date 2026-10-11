@@ -367,6 +367,69 @@ def test_087_reject_symlinks_in_tree( website, provide_tempdir ):
         website._reject_symlinks_in_tree( root )
 
 
+def test_090_staged_docs2_proof(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Staged docs-2 publish leaves stable pinned and adds docs alias. '''
+    from frigid import Dictionary as FrozenDictionary
+    coverage_template = '{{ color }}'
+    test_files = {
+        'project/.auxiliary/artifacts/coverage-pytest/coverage.xml':
+            '<?xml version="1.0" ?><coverage line-rate="0.9"></coverage>',
+        'package/data/templates/coverage.svg.jinja': coverage_template,
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+        'docs-2': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    } )  # type: ignore[arg-type]
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks )
+        stable_before = sorted(
+            path.relative_to( locations_tmpdir.website ).as_posix( )
+            for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
+        website.update(
+            auxdata_tmpdir, 'docs-2',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks )
+        stable_after = sorted(
+            path.relative_to( locations_tmpdir.website ).as_posix( )
+            for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
+        assert set( stable_before ) <= set( stable_after )
+        package_after = sorted(
+            path.relative_to(
+                locations_tmpdir.website / 'v1.0' ).as_posix( )
+            for path in ( locations_tmpdir.website / 'v1.0' ).rglob( '*' ) )
+        stable_suffixes = sorted(
+            path.relative_to(
+                locations_tmpdir.website / 'stable' ).as_posix( )
+            for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
+        assert package_after == stable_suffixes
+        assert ( locations_tmpdir.website / 'docs-2' ).is_dir( )
+        import json
+        provenance = json.loads(
+            ( locations_tmpdir.website / 'provenance.json' ).read_text( ) )
+        assert provenance[ 'version' ] == 'docs-2'
+        assert 'docs-2' in provenance[ 'aliases' ]
+
+
 def test_100_integration_update(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
