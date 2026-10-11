@@ -145,6 +145,9 @@ docsgen = [
 fragments = [
   """python .auxiliary/scripts/validate-fragments.py""",
 ]
+module-sizes = [
+  """python .auxiliary/scripts/validate-module-sizes.py""",
+]
 linters = [
   """ruff check --quiet sources documentation tests""",
   """vibelinter check""",
@@ -153,6 +156,7 @@ linters = [
   """isort --check-only --diff sources tests""",
   """pyright sources""",
   'fragments',
+  'module-sizes',
 ]
 packagers = [
   """hatch build""",
