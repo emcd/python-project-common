@@ -54,6 +54,30 @@ def matches_namespace( tag: str, namespace: str ) -> bool:
     return fnmatchcase( tag, namespace )
 
 
+def _load_default_configuration( project: __.Path ) -> TrackMap:
+    ''' Loads standard project configuration file or baked-in defaults.
+
+        Honors default file absence only on confirmed missing-file errors;
+        present non-regular, unreadable, or malformed configuration fails
+        before publication rather than silently falling back.
+    '''
+    import stat
+    candidate = (
+        project / '.auxiliary' / 'configuration' / 'website.toml' )
+    try: status = candidate.stat( )
+    except FileNotFoundError: return _DEFAULT_TRACKS
+    except OSError as exception:
+        raise _exceptions.TrackConfigurationInvalidity(
+            'configuration', 'unreadable configuration' ) from exception
+    if not stat.S_ISREG( status.st_mode ):
+        raise _exceptions.TrackConfigurationInvalidity(
+            'configuration', 'non-regular configuration' )
+    try: return load_track_configuration( candidate )
+    except _exceptions.FileAwol as exception:
+        raise _exceptions.TrackConfigurationInvalidity(
+            'configuration', 'unreadable configuration' ) from exception
+
+
 def load_track_configuration( location: __.Path | str ) -> TrackMap:
     ''' Loads and validates track configuration from TOML file. '''
     path = __.Path( location )

@@ -36,6 +36,7 @@ from .tracks import (
     _DEFAULT_TRACKS,
     TrackConfiguration,
     _is_package_version,
+    _load_default_configuration,
     _reject_ambiguous_known_tags,
     _select_latest,
     _validate_alias,
@@ -64,7 +65,7 @@ def survey(
                 __.shutil.rmtree( locations.website )
             locations.website.mkdir( exist_ok = True, parents = True )
             with tarfile_open( locations.archive, 'r:xz' ) as archive:
-                archive.extractall( path = locations.website ) # noqa: S202
+                _safe_extractall( archive, locations.website )
     if not locations.versions.is_file( ):
         context = "published" if use_extant else "local"
         print( f"No versions manifest found for {context} website. "
@@ -109,11 +110,7 @@ def update(  # noqa: PLR0913
     if not __.is_absent( configuration ):
         tracks = load_track_configuration( configuration )  # type: ignore[arg-type]
     elif tracks is _DEFAULT_TRACKS:
-        candidate = (
-            locations.project / '.auxiliary'
-            / 'configuration' / 'website.toml' )
-        if candidate.is_file( ):
-            tracks = load_track_configuration( candidate )
+        tracks = _load_default_configuration( locations.project )
     tracks = validate_track_configuration( tracks )
     locations.publications.mkdir( exist_ok = True, parents = True )
     # --production implies --use-extant to prevent clobbering existing versions

@@ -75,7 +75,7 @@ jobs:
           set -eu -o pipefail
           git config --global user.name 'Github Actions Robot'
           git config --global user.email '${{ github.actor }}@users.noreply.github.com'
-          if [ -n "${{ inputs.configuration }}" ] || [ -n "${{ inputs.legacy-inventory }}" ]; then
+          if [ -n "${{ inputs.configuration }}" ] || [ -n "${{ inputs.legacy-inventory }}" ] || [ -f .auxiliary/configuration/website.toml ]; then
             emcdproj website update --help | grep -q -e '--configuration' || {
               echo 'Installed utility lacks track support; set emcd-projects-version to a release with publisher tracks.' >&2
               exit 1

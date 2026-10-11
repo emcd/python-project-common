@@ -23,13 +23,9 @@
 
 from shutil import rmtree
 
-import ictruck
 import pytest
 
-from .__ import PACKAGE_NAME, create_test_files
-
-
-ictruck.register_module( PACKAGE_NAME )
+from .__ import create_test_files
 
 
 def test_010_extract_coverage( locations, website, fs ):

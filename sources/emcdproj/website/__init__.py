@@ -55,6 +55,7 @@ from .tracks import (
     TrackConfiguration,
     TrackMap,
     _DEFAULT_TRACKS,
+    _load_default_configuration,
     load_track_configuration,
     matches_namespace,
     validate_track_configuration,

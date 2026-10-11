@@ -161,6 +161,30 @@ def test_078_explicit_tracks_beat_ambient_file(
         assert not ( locations_tmpdir.website / 'release' ).exists( )
 
 
+def test_078_default_configuration_fails_closed( website, provide_tempdir ):
+    ''' Non-regular, unreadable, or malformed default config aborts. '''
+    from pathlib import Path
+    project = Path( provide_tempdir ) / 'project'
+    configuration = project / '.auxiliary/configuration/website.toml'
+    configuration.parent.mkdir( parents = True, exist_ok = True )
+    assert website._load_default_configuration(
+        project )[ 'stable' ][ 'alias' ] == 'stable'
+    configuration.mkdir( exist_ok = True )
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website._load_default_configuration( project )
+    configuration.rmdir( )
+    configuration.write_text( 'not = [valid', newline = '' )
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website._load_default_configuration( project )
+    configuration.write_text( 'x = 1\n', newline = '' )
+    configuration.chmod( 0o000 )
+    try:
+        with pytest.raises( website.TrackConfigurationInvalidity ):
+            website._load_default_configuration( project )
+    finally:
+        configuration.chmod( 0o644 )
+
+
 def test_081_out_of_order_publish_keeps_latest(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
