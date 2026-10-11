@@ -176,7 +176,12 @@ def test_078_default_configuration_fails_closed( website, provide_tempdir ):
     configuration.write_text( 'not = [valid', newline = '' )
     with pytest.raises( website.TrackConfigurationInvalidity ):
         website._load_default_configuration( project )
-    configuration.write_text( 'x = 1\n', newline = '' )
+    configuration.write_text(
+        '[tracks.stable]\n'
+        'tag-namespace = "v*"\n'
+        'selector = "latest-final"\n'
+        'alias = "stable"\n',
+        newline = '' )
     configuration.chmod( 0o000 )
     try:
         with pytest.raises( website.TrackConfigurationInvalidity ):
