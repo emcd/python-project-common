@@ -486,6 +486,65 @@ def test_090_staged_docs2_proof(
         assert 'docs-2' in provenance[ 'aliases' ]
 
 
+def test_092_stale_lease_fails_without_loss( website, provide_tempdir ):
+    ''' Stale compare-and-swap baseline fails instead of losing updates. '''
+    import shutil
+    import subprocess
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    project = provide_tempdir / 'pubrepo'
+    remote = provide_tempdir / 'remote.git'
+    archive = project / 'website.tar.xz'
+    project.mkdir( parents = True, exist_ok = True )
+    archive.write_bytes( b'archive-a' )
+    def git( *args ):
+        return subprocess.run(  # noqa: S603
+            [ executable, *args ], cwd = project, check = True,
+            capture_output = True, text = True )
+    subprocess.run(  # noqa: S603
+        [ executable, 'init', '--bare', str( remote ) ],
+        check = True, capture_output = True )
+    git( 'init' )
+    git( 'config', 'user.email', 'test@example.com' )
+    git( 'config', 'user.name', 'Test' )
+    git( 'remote', 'add', 'origin', str( remote ) )
+    git( 'add', str( archive ) )
+    git( 'commit', '-m', 'base' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = archive,
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    baseline = website._fetch_publication_branch_and_tarball( locations )
+    assert baseline == ''
+    website._update_publication_branch( locations, 'v1', baseline )
+    published_a = git( 'rev-parse', 'publication' ).stdout.strip( )
+    proceeding = git(
+        'commit-tree', 'HEAD^{tree}', '-p', 'publication',
+        '-m', 'writer B' ).stdout.strip( )
+    git( 'push', 'origin', proceeding + ':publication' )
+    with pytest.raises( subprocess.CalledProcessError ):
+        website._update_publication_branch(
+            locations, 'v1-stale', published_a )
+    remote_head = subprocess.run(  # noqa: S603
+        [ executable, '--git-dir', str( remote ),
+          'rev-parse', 'publication' ],
+        check = True, capture_output = True, text = True ).stdout.strip( )
+    assert remote_head == proceeding
+    website._update_publication_branch( locations, 'v1-fresh', proceeding )
+    remote_head = subprocess.run(  # noqa: S603
+        [ executable, '--git-dir', str( remote ),
+          'rev-parse', 'publication' ],
+        check = True, capture_output = True, text = True ).stdout.strip( )
+    assert remote_head != proceeding
+
+
 def test_100_integration_update(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):

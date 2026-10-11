@@ -262,8 +262,9 @@ def update(  # noqa: PLR0913
     locations = Locations.from_project_anchor( auxdata, project_anchor )
     locations.publications.mkdir( exist_ok = True, parents = True )
     # --production implies --use-extant to prevent clobbering existing versions
+    expected_sha = ''
     if use_extant or production:
-        _fetch_publication_branch_and_tarball( locations )
+        expected_sha = _fetch_publication_branch_and_tarball( locations )
     try:
         _build_publication_tree( locations, version, tracks )
     except Exception:
@@ -274,7 +275,8 @@ def update(  # noqa: PLR0913
     with chdir( locations.website ): # noqa: SIM117
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
-    if production: _update_publication_branch( locations, version )
+    if production:
+        _update_publication_branch( locations, version, expected_sha )
 
 
 def validate_track_configuration(
@@ -490,18 +492,23 @@ def _extract_coverage( locations: Locations ) -> int:
     return __.math.floor( float( line_rate ) * 100 )
 
 
-def _fetch_publication_branch_and_tarball( locations: Locations ) -> None:
-    ''' Fetches publication branch and checks out existing tarball.
+def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
+    ''' Fetches publication branch and tarball, returning destination SHA.
 
-        Attempts to fetch the publication branch from origin and checkout
-        the website tarball. Ignores failures if branch or tarball don't exist.
+        Returns the fetched destination commit, or an empty string when no
+        publication branch exists. Raises when the fetch fails while the
+        remote branch exists, so builds never proceed silently on stale
+        bases. The returned SHA threads through build to push unchanged as
+        the compare-and-swap baseline.
     '''
-    with __.ctxl.suppress( Exception ):
-        __.subprocess.run(
-            [ 'git', 'fetch', 'origin', 'publication:publication' ],
-            cwd = locations.project,
-            check = False,
-            capture_output = True )
+    fetch = __.subprocess.run(
+        [ 'git', 'fetch', 'origin', 'publication:publication' ],
+        cwd = locations.project,
+        check = False,
+        capture_output = True )
+    if fetch.returncode != 0 and _remote_has_publication( locations ):
+        raise PublicationSourceInvalidity(
+            'publication', 'fetch failed with remote branch present' )
     with __.ctxl.suppress( Exception ):
         __.subprocess.run(
             [ 'git', 'checkout', 'publication', '--',
@@ -509,6 +516,27 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> None:
             cwd = locations.project,
             check = False,
             capture_output = True )
+    probe = __.subprocess.run(
+        [ 'git', 'rev-parse', '--verify', '--quiet', 'publication' ],
+        cwd = locations.project,
+        check = False, capture_output = True, text = True )
+    return probe.stdout.strip( ) if probe.returncode == 0 else ''
+
+
+def _remote_has_publication( locations: Locations ) -> bool:
+    ''' Checks whether origin holds a publication branch. '''
+    try:
+        remote = __.subprocess.run(
+            [ 'git', 'remote', 'get-url', 'origin' ],
+            cwd = locations.project,
+            check = False, capture_output = True )
+        if remote.returncode != 0: return False
+        probe = __.subprocess.run(
+            [ 'git', 'ls-remote', '--heads', 'origin', 'publication' ],
+            cwd = locations.project,
+            check = False, capture_output = True, text = True )
+    except Exception: return True
+    return bool( probe.stdout.strip( ) )
 
 
 def _generate_coverage_badge_svg(
@@ -730,25 +758,21 @@ def _update_coverage_badge(
         file.write( svg_content )
 
 
-def _update_publication_branch( locations: Locations, version: str ) -> None:
+def _update_publication_branch(
+    locations: Locations, version: str, expected_sha: str = ''
+) -> None:
     ''' Updates publication branch with new tarball.
 
-        Adds the tarball to git, commits to the publication branch, and pushes
-        to origin with compare-and-swap. Fails without lost updates when the
-        destination ref advances concurrently; caller refetches, rebuilds,
-        and revalidates or fails.
+        Pushes with compare-and-swap against the expected destination SHA
+        captured from the same fetch that supplied the archive. Fails
+        without lost updates when the destination ref advances concurrently;
+        caller refetches, rebuilds, and revalidates or fails. Never
+        refetches here, so a stale build cannot acquire a fresh lease.
     '''
     __.subprocess.run(
         [ 'git', 'add', str( locations.archive ) ],
         cwd = locations.project,
         check = True )
-    # Acquire writer ownership: fetch current destination ref first.
-    with __.ctxl.suppress( Exception ):
-        __.subprocess.run(
-            [ 'git', 'fetch', 'origin', 'publication:publication' ],
-            cwd = locations.project,
-            check = False,
-            capture_output = True )
     # Commit to publication branch without checkout
     # Get current tree hash
     tree_result = __.subprocess.run(
@@ -761,8 +785,8 @@ def _update_publication_branch( locations: Locations, version: str ) -> None:
         [ 'git', 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
         cwd = locations.project,
         check = False ).returncode == 0
-    lease_expectation = ''
-    if publication_exists:
+    lease_expectation = expected_sha
+    if not lease_expectation and publication_exists:
         lease_result = __.subprocess.run(
             [ 'git', 'rev-parse', 'publication' ],
             cwd = locations.project,
