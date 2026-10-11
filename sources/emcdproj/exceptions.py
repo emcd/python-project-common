@@ -59,3 +59,19 @@ class FileEmpty( Omnierror, AssertionError ):
 
     def __init__( self, file: str| __.Path ):
         super( ).__init__( f"Unexpectedly empty file at '{file}'." )
+
+
+class TrackConfigurationInvalidity( Omnierror, ValueError ):
+    ''' Invalid publication track configuration. '''
+
+    def __init__( self, track: str, issue: str ):
+        super( ).__init__(
+            f"Invalid track configuration for '{track}': {issue}." )
+
+
+class PublicationSourceInvalidity( Omnierror, ValueError ):
+    ''' Invalid publication source or tree. '''
+
+    def __init__( self, source: str, issue: str ):
+        super( ).__init__(
+            f"Invalid publication source '{source}': {issue}." )

@@ -21,163 +21,11 @@
 ''' Tests for website maintenance utilities. '''
 
 
-from contextlib import AsyncExitStack
-from pathlib import Path
 from shutil import rmtree
 
-import ictruck
 import pytest
 
-from platformdirs import PlatformDirs
-
-from .__ import PACKAGE_NAME, cache_import_module, create_test_files
-
-
-ictruck.register_module( PACKAGE_NAME )
-
-
-@pytest.fixture
-def application( ):
-    ''' Provides appcore application module. '''
-    return cache_import_module( "appcore.application" )
-
-
-@pytest.fixture
-def distribution( ):
-    ''' Provides appcore distribution module. '''
-    return cache_import_module( "appcore.distribution" )
-
-
-@pytest.fixture
-def imports( ):
-    ''' Provides internal imports package. '''
-    return cache_import_module( f"{ PACKAGE_NAME }.__.imports" )
-
-
-@pytest.fixture
-def state( ):
-    ''' Provides appcore state module. '''
-    return cache_import_module( "appcore.state" )
-
-
-@pytest.fixture
-def exceptions( ):
-    ''' Provides exceptions module. '''
-    return cache_import_module( f"{ PACKAGE_NAME }.exceptions" )
-
-
-@pytest.fixture
-def website( ):
-    ''' Provides website module. '''
-    return cache_import_module( f"{ PACKAGE_NAME }.website" )
-
-
-@pytest.fixture
-def auxdata( application, distribution, state ):
-    ''' Provides minimal Globals instance for testing in mem fs. '''
-
-    class FakeDistributionInformation:
-        def __init__( self, name: str, location: Path, editable: bool ):
-            self._info = distribution.Information(
-                name = name, location = location, editable = editable )
-
-        def __getattr__( self, name: str ):
-            return getattr( self._info, name )
-
-        def provide_data_location( self, *appendages: str ) -> Path:
-            base = Path( '/package/data' )
-            if appendages: return base.joinpath( *appendages )
-            return base
-
-    distribution_obj = FakeDistributionInformation(
-        name = PACKAGE_NAME, location = Path( '/package' ), editable = True )
-    return state.Globals(
-        application = application.Information(
-            name = PACKAGE_NAME ),
-        configuration = { },  # Empty configuration for tests
-        directories = PlatformDirs(
-            appname = PACKAGE_NAME, ensure_exists = False ),
-        distribution = distribution_obj,
-        exits = AsyncExitStack( ) )
-
-
-@pytest.fixture
-def auxdata_tmpdir( application, distribution, state, provide_tempdir ):
-    ''' Provides minimal Globals instance for testing on real fs. '''
-
-    class FakeDistributionInformation:
-        def __init__( self, name: str, location: Path, editable: bool ):
-            self._info = distribution.Information(
-                name = name, location = location, editable = editable )
-
-        def __getattr__( self, name: str ):
-            return getattr( self._info, name )
-
-        def provide_data_location( self, *appendages: str ) -> Path:
-            base = Path( provide_tempdir ) / 'package/data'
-            if appendages: return base.joinpath( *appendages )
-            return base
-
-    distribution_obj = FakeDistributionInformation(
-        name = PACKAGE_NAME,
-        location = Path( provide_tempdir ) / 'package',
-        editable = True )
-    return state.Globals(
-        application = application.Information(
-            name = PACKAGE_NAME ),
-        configuration = { },  # Empty configuration for tests
-        directories = PlatformDirs(
-            appname = PACKAGE_NAME, ensure_exists = False ),
-        distribution = distribution_obj,
-        exits = AsyncExitStack( ) )
-
-
-@pytest.fixture
-def locations( auxdata, website, fs ):
-    ''' Provides locations in fake filesystem. '''
-    fs.create_dir( '/project/.auxiliary/artifacts' )
-    fs.create_dir( '/project/.auxiliary/publications' )
-    fs.create_dir( '/package/data/templates' )
-    return website.Locations.from_project_anchor( auxdata, Path( '/project' ) )
-
-
-@pytest.fixture
-def locations_tmpdir( auxdata_tmpdir, website, provide_tempdir ):
-    ''' Provides locations in real filesystem. '''
-    ( provide_tempdir / 'project/.auxiliary/artifacts' ).mkdir(
-        exist_ok = True, parents = True )
-    ( provide_tempdir / 'project/.auxiliary/publications' ).mkdir(
-        exist_ok = True, parents = True )
-    ( provide_tempdir / 'package/data/templates' ).mkdir(
-        exist_ok = True, parents = True )
-    return website.Locations.from_project_anchor(
-        auxdata_tmpdir, Path( provide_tempdir ) / 'project' )
-
-
-# def test_000_locations_attributes( locations ):
-#     ''' Locations class has expected attributes with injected anchor. '''
-#     pathetic = Pathetic( )
-#     assert pathetic.compare( locations.project, '/project' )
-#     assert pathetic.compare( locations.auxiliary, '/project/.auxiliary' )
-#     assert pathetic.compare(
-#         locations.publications, '/project/.auxiliary/publications' )
-#     assert pathetic.compare(
-#         locations.archive,
-#         '/project/.auxiliary/publications/website.tar.xz' )
-#     assert pathetic.compare(
-#         locations.artifacts, '/project/.auxiliary/artifacts' )
-#     assert pathetic.compare(
-#         locations.website, '/project/.auxiliary/artifacts/website' )
-#     assert pathetic.compare(
-#         locations.coverage,
-#         '/project/.auxiliary/artifacts/website/coverage.svg' )
-#     assert pathetic.compare(
-#         locations.index,
-#         '/project/.auxiliary/artifacts/website/index.html' )
-#     assert pathetic.compare(
-#         locations.versions,
-#         '/project/.auxiliary/artifacts/website/versions.json' )
-#     assert pathetic.compare( locations.templates, '/package/data/templates' )
+from .__ import create_test_files
 
 
 def test_010_extract_coverage( locations, website, fs ):
@@ -187,13 +35,13 @@ def test_010_extract_coverage( locations, website, fs ):
     fs.create_file(
         locations.artifacts / 'coverage-pytest/coverage.xml',
         contents = xml_content )
-    assert website._extract_coverage( locations ) == 85
+    assert website.extract_coverage( locations ) == 85
 
 
 def test_020_extract_coverage_missing_file( locations, website, exceptions ):
     ''' Coverage extraction raises FileAwol for missing XML. '''
     with pytest.raises( exceptions.FileAwol ):
-        website._extract_coverage( locations )
+        website.extract_coverage( locations )
 
 
 def test_030_update_available_species( locations, website, fs ):
@@ -202,7 +50,7 @@ def test_030_update_available_species( locations, website, fs ):
         locations.artifacts / 'coverage-pytest' )
     fs.create_file(
         locations.artifacts / 'coverage-pytest/test.txt', contents = 'test' )
-    species = website._update_available_species( locations, 'v1.0' )
+    species = website.update_available_species( locations, 'v1.0' )
     assert 'coverage-pytest' in species
     assert ( locations.website / 'v1.0/coverage-pytest/test.txt' ).exists( )
 
@@ -221,7 +69,7 @@ def test_040_update_coverage_badge( locations, website, fs ):
     j2context = jinja2.Environment(
         loader = jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
-    website._update_coverage_badge( locations, j2context )
+    website.update_coverage_badge( locations, j2context )
     assert locations.coverage.exists( )
     assert locations.coverage.read_text( ) == 'green'
 
@@ -237,7 +85,7 @@ def test_050_update_index_html( locations, website, fs ):
         loader = jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
     data = { 'latest_version': 'v1.0' }
-    website._update_index_html( locations, j2context, data )
+    website.update_index_html( locations, j2context, data )
     assert locations.index.exists( )
     assert locations.index.read_text( ) == 'v1.0'
 
@@ -246,7 +94,7 @@ def test_060_update_versions_json( locations, website, fs ):
     ''' Versions JSON is updated correctly. '''
     fs.create_dir( locations.website )
     species = ( 'coverage-pytest', )
-    data = website._update_versions_json( locations, 'v1.0', species )
+    data = website.update_versions_json( locations, 'v1.0', species )
     assert locations.versions.exists( )
     assert data[ 'latest_version' ] == 'v1.0'
     assert data[ 'versions' ][ 'v1.0' ] == species

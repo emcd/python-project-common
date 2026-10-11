@@ -19,6 +19,7 @@ dependencies = [
   'defusedxml',
   'icecream-truck~=1.4',
   'packaging',
+  'tomli~=2.0',
   'typing-extensions',
   # --- BEGIN: Injected by Copier ---
   'absence~=1.1',
