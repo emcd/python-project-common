@@ -98,6 +98,35 @@ class CommandDispatcher(
         await self.command( auxdata = auxdata, display = display )
 
 
+TrackConfiguration: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
+TrackMap: __.typx.TypeAlias = __.immut.Dictionary[ str, __.typx.Any ]
+
+_VALID_SELECTORS: tuple[ str, ... ] = (
+    'latest-final', 'latest-prerelease', 'exact-tag' )
+
+_DEFAULT_TRACKS: TrackMap = (
+    __.immut.Dictionary( {
+        'stable': __.immut.Dictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': __.immut.Dictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+    } ) )
+
+
+class TrackConfigurationInvalidity( _exceptions.Omnierror, ValueError ):
+    ''' Invalid publication track configuration. '''
+
+    def __init__( self, track: str, issue: str ):
+        super( ).__init__(
+            f"Invalid track configuration for '{track}': {issue}." )
+
+
 class Locations( __.immut.DataclassObject ):
     ''' Locations associated with website maintenance. '''
 
@@ -143,6 +172,27 @@ class Locations( __.immut.DataclassObject ):
             templates = templates )
 
 
+def matches_namespace( tag: str, namespace: str ) -> bool:
+    ''' Checks whether tag matches track namespace pattern. '''
+    from fnmatch import fnmatchcase
+    return fnmatchcase( tag, namespace )
+
+
+def select_docs_alias(
+    version: str,
+    tracks: TrackConfiguration = _DEFAULT_TRACKS,
+) -> __.Absential[ str ]:
+    ''' Selects docs-line alias for version without altering stable/dev. '''
+    candidates: list[ str ] = [ ]
+    for name, track in tracks.items( ):
+        if name in ( 'stable', 'development' ): continue
+        namespace = track.get( 'tag_namespace', '' )
+        if matches_namespace( version, namespace ):
+            candidates.append( track.get( 'alias', name ) )
+    if not candidates: return __.absent
+    return sorted( candidates )[ 0 ]
+
+
 def survey(
     auxdata: __.Globals, *,
     project_anchor: __.Absential[ __.Path ] = __.absent,
@@ -185,12 +235,13 @@ def survey(
         print( f"  {version}{marker}: {species_list}" )
 
 
-def update(
+def update(  # noqa: PLR0913
     auxdata: __.Globals,
     version: str, *,
     project_anchor: __.Absential[ __.Path ] = __.absent,
     use_extant: bool = False,
-    production: bool = False
+    production: bool = False,
+    tracks: TrackConfiguration = _DEFAULT_TRACKS,
 ) -> None:
     ''' Updates project website with latest documentation and coverage.
 
@@ -199,17 +250,13 @@ def update(
     '''
     ictr( 2 )( version )
     # TODO: Validate version string format.
-    from tarfile import open as tarfile_open
+    tracks = validate_track_configuration( tracks )
     locations = Locations.from_project_anchor( auxdata, project_anchor )
     locations.publications.mkdir( exist_ok = True, parents = True )
     # --production implies --use-extant to prevent clobbering existing versions
     if use_extant or production:
         _fetch_publication_branch_and_tarball( locations )
-    if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
-    locations.website.mkdir( exist_ok = True, parents = True )
-    if locations.archive.is_file( ):
-        with tarfile_open( locations.archive, 'r:xz' ) as archive:
-            archive.extractall( path = locations.website ) # noqa: S202
+    _restore_publication_tree( locations )
     available_species = _update_available_species( locations, version )
     j2context = _jinja2.Environment(
         loader = _jinja2.FileSystemLoader( locations.templates ),
@@ -217,16 +264,63 @@ def update(
     index_data = _update_versions_json( locations, version, available_species )
     _enhance_index_data_with_stable_dev( index_data )
     _create_stable_dev_directories( locations, index_data )
+    _promote_docs_alias( locations, version, tracks )
     _update_index_html( locations, j2context, index_data )
     if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
         _update_coverage_badge( locations, j2context )
         _update_version_coverage_badge( locations, j2context, version )
     ( locations.website / '.nojekyll' ).touch( )
+    from tarfile import open as tarfile_open
     from .filesystem import chdir
     with chdir( locations.website ): # noqa: SIM117
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
     if production: _update_publication_branch( locations, version )
+
+
+def validate_track_configuration(
+    tracks: TrackConfiguration,
+) -> TrackMap:
+    ''' Validates track namespaces, selectors, and aliases. '''
+    normalized: dict[ str, __.immut.Dictionary[ str, str ] ] = { }
+    aliases: set[ str ] = set( )
+    namespaces: list[ tuple[ str, str ] ] = [ ]
+    for name, track in tracks.items( ):
+        try: namespace = track[ 'tag_namespace' ]
+        except KeyError as exception:
+            raise TrackConfigurationInvalidity(
+                name, "missing 'tag_namespace'" ) from exception
+        try: selector = track[ 'selector' ]
+        except KeyError as exception:
+            raise TrackConfigurationInvalidity(
+                name, "missing 'selector'" ) from exception
+        try: alias = track[ 'alias' ]
+        except KeyError as exception:
+            raise TrackConfigurationInvalidity(
+                name, "missing 'alias'" ) from exception
+        if selector not in _VALID_SELECTORS:
+            raise TrackConfigurationInvalidity( name, 'invalid selector' )
+        _validate_alias( alias )
+        if alias in aliases:
+            raise TrackConfigurationInvalidity( alias, 'duplicate alias' )
+        aliases.add( alias )
+        namespaces.append( ( name, namespace ) )
+        normalized[ name ] = __.immut.Dictionary( {
+            'tag_namespace': namespace,
+            'selector': selector,
+            'alias': alias,
+        } )
+    selectors: dict[ str, str ] = {
+        name: tracks[ name ][ 'selector' ] for name in normalized }
+    for i, ( name_a, namespace_a ) in enumerate( namespaces ):
+        for name_b, namespace_b in namespaces[ i + 1 : ]:
+            if _namespaces_collide(
+                namespace_a, selectors[ name_a ],
+                namespace_b, selectors[ name_b ],
+            ):
+                raise TrackConfigurationInvalidity(
+                    name_a, f"collides with '{name_b}'" )
+    return __.immut.Dictionary( normalized )
 
 
 def _create_stable_dev_directories(
@@ -254,6 +348,46 @@ def _create_stable_dev_directories(
             __.shutil.rmtree( dev_dest )
         if dev_source.is_dir( ):
             __.shutil.copytree( dev_source, dev_dest )
+
+
+def _validate_alias( alias: str ) -> None:
+    ''' Validates alias against traversal and naming rules. '''
+    import re
+    if not alias:
+        raise TrackConfigurationInvalidity( alias, 'empty alias' )
+    normalized = alias.strip( '/' )
+    if not normalized:
+        raise TrackConfigurationInvalidity( alias, 'empty alias' )
+    if (
+        '..' in normalized
+        or '/' in normalized
+        or '\\' in normalized
+        or normalized.startswith( '.' )
+    ):
+        raise TrackConfigurationInvalidity( alias, 'traversal rejected' )
+    if not re.match( r'^[a-z0-9][a-z0-9-]*$', normalized ):
+        raise TrackConfigurationInvalidity( alias, 'must be kebab-case' )
+
+
+def _create_docs_alias_directories(
+    locations: Locations, version: str, alias: str
+) -> None:
+    ''' Creates docs-line alias directory without altering stable/dev. '''
+    _validate_alias( alias )
+    source = locations.website / version
+    destination = locations.website / alias
+    if destination.is_dir( ): __.shutil.rmtree( destination )
+    if source.is_dir( ): __.shutil.copytree( source, destination )
+
+
+def _promote_docs_alias(
+    locations: Locations, version: str, tracks: TrackConfiguration
+) -> None:
+    ''' Promotes docs-line alias for version, leaving stable/dev pinned. '''
+    docs_alias = select_docs_alias( version, tracks )
+    if __.is_absent( docs_alias ): return
+    _create_docs_alias_directories(
+        locations, version, docs_alias )  # type: ignore[arg-type]
 
 
 def _enhance_index_data_with_stable_dev(
@@ -366,6 +500,57 @@ def _generate_coverage_badge_svg(
         value_text = value_text,
         label_width = label_width,
         value_width = value_width )
+
+
+def _namespaces_collide(
+    namespace_a: str, selector_a: str,
+    namespace_b: str, selector_b: str,
+) -> bool:
+    ''' Checks whether two tracks can claim the same tag. '''
+    if namespace_a == '*' or namespace_b == '*': return True
+    if (
+        namespace_a == namespace_b
+        and selector_a == selector_b
+    ):
+        return True
+    if (
+        { selector_a, selector_b }
+        == { 'latest-final', 'latest-prerelease' }
+    ):
+        return False
+    probes = (
+        'v1.0', 'v1.0a1', 'docs-1', 'docs-2',
+        'docs-1.9', '1.0', 'stable', 'development' )
+    for probe in probes:
+        if (
+            matches_namespace( probe, namespace_a )
+            and matches_namespace( probe, namespace_b )
+            and _selector_claims( probe, selector_a )
+            and _selector_claims( probe, selector_b )
+        ):
+            return True
+    return False
+
+
+def _selector_claims( tag: str, selector: str ) -> bool:
+    ''' Checks whether selector can claim tag. '''
+    if selector == 'exact-tag': return True
+    try:
+        from packaging.version import Version
+        version = Version( tag.lstrip( 'v' ) )
+    except Exception: return selector == 'latest-final'
+    if selector == 'latest-final': return not version.is_prerelease
+    return version.is_prerelease
+
+
+def _restore_publication_tree( locations: Locations ) -> None:
+    ''' Restores prior publication tree from archive, if present. '''
+    from tarfile import open as tarfile_open
+    if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
+    locations.website.mkdir( exist_ok = True, parents = True )
+    if locations.archive.is_file( ):
+        with tarfile_open( locations.archive, 'r:xz' ) as archive:
+            archive.extractall( path = locations.website ) # noqa: S202
 
 
 def _update_available_species(

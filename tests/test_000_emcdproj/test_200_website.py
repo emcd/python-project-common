@@ -252,6 +252,85 @@ def test_060_update_versions_json( locations, website, fs ):
     assert data[ 'versions' ][ 'v1.0' ] == species
 
 
+def test_065_validate_default_tracks( website ):
+    ''' Default tracks validate with stable and development aliases. '''
+    tracks = website.validate_track_configuration( website._DEFAULT_TRACKS )
+    assert tracks[ 'stable' ][ 'alias' ] == 'stable'
+    assert tracks[ 'development' ][ 'alias' ] == 'development'
+
+
+def test_070_reject_traversal_alias( website ):
+    ''' Track aliases with traversal are rejected. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = {
+        'evil': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': '../escape',
+        } ),
+    }
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website.validate_track_configuration( tracks )  # type: ignore[arg-type]
+
+
+def test_075_reject_namespace_collision( website ):
+    ''' Overlapping docs and package namespaces are rejected. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'docs': FrozenDictionary( {
+            'tag_namespace': '*',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    }
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website.validate_track_configuration( tracks )  # type: ignore[arg-type]
+
+
+def test_080_select_docs_alias_leaves_stable_pinned( website ):
+    ''' Package versions select no docs alias; docs tags do. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+        'docs-2': FrozenDictionary( {
+            'tag_namespace': 'docs-2',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    } )  # type: ignore[arg-type]
+    assert website.__.is_absent(
+        website.select_docs_alias( 'v1.0', tracks ) )
+    assert website.select_docs_alias( 'docs-2', tracks ) == 'docs-2'
+
+
+def test_085_docs_alias_does_not_alter_stable(
+    locations, website, fs
+):
+    ''' Docs alias creation copies version tree without stable changes. '''
+    fs.create_dir( locations.website / 'docs-2/sphinx-html' )
+    fs.create_file(
+        locations.website / 'docs-2/guide.txt', contents = 'guide' )
+    fs.create_dir( locations.website / 'stable' )
+    website._create_docs_alias_directories(
+        locations, 'docs-2', 'docs-2-copy' )
+    assert ( locations.website / 'docs-2-copy/guide.txt' ).exists( )
+    assert ( locations.website / 'stable' ).exists( )
+
+
 def test_100_integration_update(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
