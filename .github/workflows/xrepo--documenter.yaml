@@ -16,7 +16,7 @@ on:
         default: '1.60'
         required: false
         type: string
-      tracks-config:
+      configuration:
         description: 'Track configuration TOML file for publication.'
         default: ''
         required: false
@@ -75,16 +75,16 @@ jobs:
           set -eu -o pipefail
           git config --global user.name 'Github Actions Robot'
           git config --global user.email '${{ github.actor }}@users.noreply.github.com'
-          if [ -n "${{ inputs.tracks-config }}" ] || [ -n "${{ inputs.legacy-inventory }}" ]; then
-            emcdproj website update --help | grep -q -e '--tracks-config' || {
+          if [ -n "${{ inputs.configuration }}" ] || [ -n "${{ inputs.legacy-inventory }}" ]; then
+            emcdproj website update --help | grep -q -e '--configuration' || {
               echo 'Installed utility lacks track support; set emcd-projects-version to a release with publisher tracks.' >&2
               exit 1
             }
           fi
           version="$(hatch --env develop version 2>/dev/null)"
           config_args=""
-          if [ -n "${{ inputs.tracks-config }}" ]; then
-            config_args="${config_args} --tracks-config ${{ inputs.tracks-config }}"
+          if [ -n "${{ inputs.configuration }}" ]; then
+            config_args="${config_args} --configuration ${{ inputs.configuration }}"
           fi
           if [ -n "${{ inputs.legacy-inventory }}" ]; then
             config_args="${config_args} --legacy-inventory ${{ inputs.legacy-inventory }}"

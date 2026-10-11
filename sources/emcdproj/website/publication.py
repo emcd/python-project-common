@@ -18,206 +18,30 @@
 #============================================================================#
 
 
-''' Static website maintenance utilities for projects. '''
+''' Publication building, promotion, and synchronization. '''
 
 
 import jinja2 as _jinja2
 
-from . import __
-from . import exceptions as _exceptions
-from . import interfaces as _interfaces
-
-
-class SurveyCommand(
-    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
-):
-    ''' Surveys release versions published in static website. '''
-
-    use_extant: __.typx.Annotated[
-        bool,
-        __.typx.Doc( ''' Fetch publication branch and use tarball. ''' ),
-    ] = False
-
-    async def __call__(
-        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
-    ) -> None:
-        survey( auxdata, use_extant = self.use_extant )
-
-
-class UpdateCommand(
-    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
-):
-    ''' Updates static website for particular release version. '''
-
-    version: __.typx.Annotated[
-        str,
-        __.typx.Doc( ''' Release version to update. ''' ),
-        __.tyro.conf.Positional,
-    ]
-
-    use_extant: __.typx.Annotated[
-        bool,
-        __.typx.Doc( ''' Fetch publication branch and use tarball. ''' ),
-    ] = False
-
-    production: __.typx.Annotated[
-        bool,
-        __.typx.Doc( ''' Update publication branch with new tarball.
-                     Implies --use-extant to prevent data loss. ''' ),
-    ] = False
-
-    tracks_config: __.typx.Annotated[
-        str,
-        __.typx.Doc( ''' Track configuration TOML file for publication. ''' ),
-    ] = ''
-
-    legacy_inventory: __.typx.Annotated[
-        str,
-        __.typx.Doc( ''' Legacy-link inventory TOML file for validation. ''' ),
-    ] = ''
-
-    async def __call__(
-        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
-    ) -> None:
-        tracks: TrackConfiguration = _DEFAULT_TRACKS
-        if self.tracks_config:
-            tracks = load_track_configuration( self.tracks_config )
-        inventory: __.Absential[ __.Path ] = __.absent
-        if self.legacy_inventory:
-            inventory = __.Path( self.legacy_inventory )
-        update(
-            auxdata, self.version,
-            use_extant = self.use_extant,
-            production = self.production,
-            tracks = tracks,
-            legacy_inventory = inventory )
-
-
-class CommandDispatcher(
-    _interfaces.CliCommand, decorators = ( __.standard_tyro_class, ),
-):
-    ''' Dispatches commands for static website maintenance. '''
-
-    command: __.typx.Union[
-        __.typx.Annotated[
-            SurveyCommand,
-            __.tyro.conf.subcommand( 'survey', prefix_name = False ),
-        ],
-        __.typx.Annotated[
-            UpdateCommand,
-            __.tyro.conf.subcommand( 'update', prefix_name = False ),
-        ],
-    ]
-
-    async def __call__(
-        self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
-    ) -> None:
-        ictr( 1 )( self.command )
-        await self.command( auxdata = auxdata, display = display )
-
-
-TrackConfiguration: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
-TrackMap: __.typx.TypeAlias = __.immut.Dictionary[ str, __.typx.Any ]
-
-_VALID_SELECTORS: tuple[ str, ... ] = (
-    'latest-final', 'latest-prerelease', 'exact-tag' )
-
-_DEFAULT_TRACKS: TrackMap = (
-    __.immut.Dictionary( {
-        'stable': __.immut.Dictionary( {
-            'tag-namespace': 'v*',
-            'selector': 'latest-final',
-            'alias': 'stable',
-        } ),
-        'development': __.immut.Dictionary( {
-            'tag-namespace': 'v*',
-            'selector': 'latest-prerelease',
-            'alias': 'development',
-        } ),
-    } ) )
-
-
-class TrackConfigurationInvalidity( _exceptions.Omnierror, ValueError ):
-    ''' Invalid publication track configuration. '''
-
-    def __init__( self, track: str, issue: str ):
-        super( ).__init__(
-            f"Invalid track configuration for '{track}': {issue}." )
-
-
-class PublicationSourceInvalidity( _exceptions.Omnierror, ValueError ):
-    ''' Invalid publication source or tree. '''
-
-    def __init__( self, source: str, issue: str ):
-        super( ).__init__(
-            f"Invalid publication source '{source}': {issue}." )
-
-
-class Locations( __.immut.DataclassObject ):
-    ''' Locations associated with website maintenance. '''
-
-    project: __.Path
-    auxiliary: __.Path
-    publications: __.Path
-    archive: __.Path
-    artifacts: __.Path
-    website: __.Path
-    coverage: __.Path
-    index: __.Path
-    versions: __.Path
-    templates: __.Path
-
-    @classmethod
-    def from_project_anchor(
-        selfclass,
-        auxdata: __.Globals,
-        anchor: __.Absential[ __.Path ] = __.absent,
-    ) -> __.typx.Self:
-        ''' Produces locations from project anchor, if provided.
-
-            If project anchor is not given, then attempt to discover it.
-        '''
-        if __.is_absent( anchor ):
-            # TODO: Discover missing anchor via directory traversal,
-            #       seeking VCS markers.
-            project = __.Path( ).resolve( strict = True )
-        else: project = anchor.resolve( strict = True )
-        auxiliary = project / '.auxiliary'
-        publications = auxiliary / 'publications'
-        templates = auxdata.distribution.provide_data_location( 'templates' )
-        return selfclass(
-            project = project,
-            auxiliary = auxiliary,
-            publications = publications,
-            archive = publications / 'website.tar.xz',
-            artifacts = auxiliary / 'artifacts',
-            website = auxiliary / 'artifacts/website',
-            coverage = auxiliary / 'artifacts/website/coverage.svg',
-            index = auxiliary / 'artifacts/website/index.html',
-            versions = auxiliary / 'artifacts/website/versions.json',
-            templates = templates )
-
-
-def matches_namespace( tag: str, namespace: str ) -> bool:
-    ''' Checks whether tag matches track namespace pattern. '''
-    from fnmatch import fnmatchcase
-    return fnmatchcase( tag, namespace )
-
-
-def load_track_configuration( location: __.Path | str ) -> TrackMap:
-    ''' Loads and validates track configuration from TOML file. '''
-    path = __.Path( location )
-    try: content = path.read_bytes( )
-    except OSError as exception:
-        raise _exceptions.FileAwol( path ) from exception
-    try: data = _toml_loads( content )
-    except Exception as exception:
-        raise TrackConfigurationInvalidity(
-            str( path ), 'unparseable TOML' ) from exception
-    if 'tracks' not in data:
-        raise TrackConfigurationInvalidity(
-            str( path ), "missing 'tracks' table" )
-    return validate_track_configuration( data[ 'tracks' ] )
+from .. import __
+from .. import exceptions as _exceptions
+from .inventory import (
+    _reject_alias_collisions,
+    _snapshot_archive,
+    _validate_legacy_inventory,
+    _verify_retained_history,
+)
+from .locations import Locations
+from .tracks import (
+    _DEFAULT_TRACKS,
+    TrackConfiguration,
+    _is_package_version,
+    _reject_ambiguous_known_tags,
+    _select_latest,
+    _validate_alias,
+    load_track_configuration,
+    validate_track_configuration,
+)
 
 
 def survey(
@@ -269,17 +93,28 @@ def update(  # noqa: PLR0913
     use_extant: bool = False,
     production: bool = False,
     tracks: TrackConfiguration = _DEFAULT_TRACKS,
+    configuration: __.Absential[ __.Path | str ] = __.absent,
     legacy_inventory: __.Absential[ __.Path | str ] = __.absent,
 ) -> None:
     ''' Updates project website with latest documentation and coverage.
 
         Processes the specified version, copies documentation artifacts,
         updates version information, and generates coverage badges.
+        Track configuration resolves from the explicit argument, then
+        the standard project configuration file, then baked-in defaults.
     '''
     ictr( 2 )( version )
     _validate_version_label( version )
-    tracks = validate_track_configuration( tracks )
     locations = Locations.from_project_anchor( auxdata, project_anchor )
+    if not __.is_absent( configuration ):
+        tracks = load_track_configuration( configuration )  # type: ignore[arg-type]
+    else:
+        candidate = (
+            locations.project / '.auxiliary'
+            / 'configuration' / 'website.toml' )
+        if candidate.is_file( ):
+            tracks = load_track_configuration( candidate )
+    tracks = validate_track_configuration( tracks )
     locations.publications.mkdir( exist_ok = True, parents = True )
     # --production implies --use-extant to prevent clobbering existing versions
     expected_sha = ''
@@ -292,64 +127,13 @@ def update(  # noqa: PLR0913
         _restore_publication_tree( locations )
         raise
     from tarfile import open as tarfile_open
-    from .filesystem import chdir
+
+    from ..filesystem import chdir
     with chdir( locations.website ): # noqa: SIM117
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
     if production:
         _update_publication_branch( locations, version, expected_sha )
-
-
-def validate_track_configuration(
-    tracks: TrackConfiguration,
-    known_tags: __.Absential[ __.cabc.Sequence[ str ] ] = __.absent,
-) -> TrackMap:
-    ''' Validates track namespaces, selectors, and aliases. '''
-    normalized: dict[ str, __.immut.Dictionary[ str, str ] ] = { }
-    aliases: set[ str ] = set( )
-    namespaces: list[ tuple[ str, str ] ] = [ ]
-    for name, track in tracks.items( ):
-        try: namespace = track[ 'tag-namespace' ]
-        except KeyError as exception:
-            raise TrackConfigurationInvalidity(
-                name, "missing 'tag-namespace'" ) from exception
-        try: selector = track[ 'selector' ]
-        except KeyError as exception:
-            raise TrackConfigurationInvalidity(
-                name, "missing 'selector'" ) from exception
-        try: alias = track[ 'alias' ]
-        except KeyError as exception:
-            raise TrackConfigurationInvalidity(
-                name, "missing 'alias'" ) from exception
-        if selector not in _VALID_SELECTORS:
-            raise TrackConfigurationInvalidity( name, 'invalid selector' )
-        canonical = _validate_alias( alias )
-        if canonical in aliases:
-            raise TrackConfigurationInvalidity( canonical, 'duplicate alias' )
-        aliases.add( canonical )
-        namespaces.append( ( name, namespace ) )
-        normalized[ name ] = __.immut.Dictionary( {
-            'tag-namespace': namespace,
-            'selector': selector,
-            'alias': canonical,
-        } )
-    selectors: dict[ str, str ] = {
-        name: tracks[ name ][ 'selector' ] for name in normalized }
-    for i, ( name_a, namespace_a ) in enumerate( namespaces ):
-        for name_b, namespace_b in namespaces[ i + 1 : ]:
-            if _namespaces_collide(
-                namespace_a, selectors[ name_a ],
-                namespace_b, selectors[ name_b ],
-            ):
-                raise TrackConfigurationInvalidity(
-                    name_a, f"collides with '{name_b}'" )
-    if not __.is_absent( known_tags ):
-        _reject_ambiguous_known_tags(
-            normalized, known_tags )  # type: ignore[arg-type]
-    return __.immut.Dictionary( normalized )
-
-
-
 
 
 def _promote_track_aliases(
@@ -365,28 +149,6 @@ def _promote_track_aliases(
         _copy_version_to_alias( locations, version, alias )
 
 
-def _validate_alias( alias: str ) -> str:
-    ''' Validates alias and returns canonical single-component form. '''
-    import re
-    if not alias:
-        raise TrackConfigurationInvalidity( alias, 'empty alias' )
-    if alias.startswith( '/' ) or alias.startswith( '\\' ):
-        raise TrackConfigurationInvalidity( alias, 'absolute path rejected' )
-    normalized = alias.strip( '/' )
-    if not normalized:
-        raise TrackConfigurationInvalidity( alias, 'empty alias' )
-    if (
-        '..' in normalized
-        or '/' in normalized
-        or '\\' in normalized
-        or normalized.startswith( '.' )
-    ):
-        raise TrackConfigurationInvalidity( alias, 'traversal rejected' )
-    if not re.match( r'^[a-z0-9][a-z0-9-]*$', normalized ):
-        raise TrackConfigurationInvalidity( alias, 'must be kebab-case' )
-    return normalized
-
-
 def _validate_version_label( version: str ) -> None:
     ''' Validates version label before any destructive operation.
 
@@ -395,7 +157,8 @@ def _validate_version_label( version: str ) -> None:
         than crashing version ordering later.
     '''
     if not version:
-        raise PublicationSourceInvalidity( version, 'empty version' )
+        raise _exceptions.PublicationSourceInvalidity( version,
+            'empty version' )
     if (
         version.startswith( '/' )
         or version.startswith( '\\' )
@@ -405,11 +168,12 @@ def _validate_version_label( version: str ) -> None:
         or version in ( '.', '..' )
         or version.startswith( '.' )
     ):
-        raise PublicationSourceInvalidity( version, 'traversal rejected' )
+        raise _exceptions.PublicationSourceInvalidity( version,
+            'traversal rejected' )
     from packaging.version import InvalidVersion, Version
     try: Version( version.lstrip( 'v' ) )
     except InvalidVersion as exception:
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             version, 'unparseable version' ) from exception
 
 
@@ -527,7 +291,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         check = False )
     if fetch.returncode != 0:
         if _remote_has_publication( locations ):
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 'publication', 'fetch failed with remote branch present' )
         _clear_stale_publication_state( locations )
         return ''
@@ -537,7 +301,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         check = False )
     destination = probe.stdout.strip( ) if probe.returncode == 0 else ''
     if not destination:
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             'publication', 'unresolvable destination' )
     if locations.archive.is_file( ):
         locations.archive.unlink( )
@@ -546,7 +310,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         [ 'checkout', destination, '--', str( locations.archive ) ],
         check = False )
     if checkout.returncode != 0 or not locations.archive.is_file( ):
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             'publication', 'archive unrestorable from destination' )
     return destination
 
@@ -561,10 +325,10 @@ def _clear_stale_publication_state( locations: Locations ) -> None:
     if locations.archive.is_file( ) or locations.archive.is_symlink( ):
         try: locations.archive.unlink( )
         except OSError as exception:
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 'archive', 'stale archive irremovable' ) from exception
     elif locations.archive.exists( ):
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             'archive', 'stale archive irremovable' )
     with __.ctxl.suppress( Exception ):
         _run_git(
@@ -575,7 +339,7 @@ def _clear_stale_publication_state( locations: Locations ) -> None:
         [ 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
         check = False )
     if probe.returncode == 0:
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             'publication', 'stale ancestry irremovable' )
 
 
@@ -594,10 +358,10 @@ def _remote_has_publication( locations: Locations ) -> bool:
             locations, [ 'ls-remote', '--heads', 'origin', 'publication' ],
             check = False )
     except Exception as exception:
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             'publication', 'remote probe failed' ) from exception
     if probe.returncode != 0:
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             'publication', 'remote probe failed' )
     return bool( probe.stdout.strip( ) )
 
@@ -633,54 +397,6 @@ def _generate_coverage_badge_svg(
         value_width = value_width )
 
 
-def _namespaces_collide(
-    namespace_a: str, selector_a: str,
-    namespace_b: str, selector_b: str,
-) -> bool:
-    ''' Checks whether two tracks can claim the same tag.
-
-        Only exact-tag pairs can collide ambiguously; overlapping
-        latest-selector aliases are legitimate shared pointers.
-    '''
-    if selector_a != 'exact-tag' and selector_b != 'exact-tag':
-        return False
-    if namespace_a == '*' or namespace_b == '*': return True
-    if (
-        namespace_a == namespace_b
-        and selector_a == selector_b
-    ):
-        return True
-    if (
-        { selector_a, selector_b }
-        == { 'latest-final', 'latest-prerelease' }
-    ):
-        return False
-    probes = (
-        'v1.0', 'v1.0a1', 'v2.0rc1', 'v10.0', '1.0', '1.0a1', '2.0',
-        'docs-1', 'docs-2', 'docs-3', 'docs-1.9', 'docs-3.1',
-        'release-1.0', 'stable', 'development', 'nightly', 'latest' )
-    for probe in probes:
-        if (
-            matches_namespace( probe, namespace_a )
-            and matches_namespace( probe, namespace_b )
-            and _selector_claims( probe, selector_a )
-            and _selector_claims( probe, selector_b )
-        ):
-            return True
-    return False
-
-
-def _selector_claims( tag: str, selector: str ) -> bool:
-    ''' Checks whether selector can claim tag. '''
-    if selector == 'exact-tag': return True
-    try:
-        from packaging.version import Version
-        version = Version( tag.lstrip( 'v' ) )
-    except Exception: return selector == 'latest-final'
-    if selector == 'latest-final': return not version.is_prerelease
-    return version.is_prerelease
-
-
 def _record_provenance(
     locations: Locations, version: str, tracks: TrackConfiguration,
     strict: bool = False,
@@ -704,10 +420,10 @@ def _record_provenance(
             with provenance_file.open( 'r' ) as file:
                 loaded: dict[ str, __.typx.Any ] = __.json.load( file )
         except ValueError as exception:
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 'provenance', 'unparseable record' ) from exception
         if not isinstance( loaded, dict ):
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 'provenance', 'malformed record' )
         data = loaded
     data[ version ] = {
@@ -720,25 +436,12 @@ def _record_provenance(
         __.json.dump( data, file, indent = 4 )
 
 
-def _reject_ambiguous_known_tags(
-    tracks: __.cabc.Mapping[ str, __.cabc.Mapping[ str, str ] ],
-    known_tags: __.cabc.Sequence[ str ],
-) -> None:
-    ''' Rejects known tags claimed by multiple exact-tag tracks.
-
-        Overlapping latest-selector aliases are legitimate pointers at
-        shared versions (e.g. stable and floating major); only exact-tag
-        multi-claims are ambiguous about which track owns the tag.
-    '''
-    for tag in known_tags:
-        claimants = [
-            name for name, track in tracks.items( )
-            if track[ 'selector' ] == 'exact-tag'
-            and matches_namespace( tag, track[ 'tag-namespace' ] )
-            and _selector_claims( tag, track[ 'selector' ] ) ]
-        if len( claimants ) > 1:
-            raise TrackConfigurationInvalidity(
-                tag, 'claimed by multiple tracks' )
+def _reject_symlinks_in_tree( root: __.Path ) -> None:
+    ''' Rejects symlinks anywhere under publication tree. '''
+    for path in sorted( root.rglob( '*' ) ):
+        if path.is_symlink( ):
+            raise _exceptions.PublicationSourceInvalidity(
+                str( path ), 'symlink rejected' )
 
 
 def _resolve_source_identity(
@@ -751,15 +454,15 @@ def _resolve_source_identity(
             locations, [ 'rev-parse', 'HEAD' ], check = False )
         commit = result.stdout.strip( )
     if strict and not commit:
-        raise PublicationSourceInvalidity(
+        raise _exceptions.PublicationSourceInvalidity(
             version, 'source identity unavailable' )
     if strict:
         tag_sha = _resolve_release_tag( locations, version )
         if not tag_sha:
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 version, 'unresolvable release tag' )
         if tag_sha != commit:
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 version, 'source identity mismatch' )
     return commit
 
@@ -783,14 +486,6 @@ def _resolve_release_tag( locations: Locations, version: str ) -> str:
         if probe.returncode == 0 and probe.stdout.strip( ):
             return probe.stdout.strip( )
     return ''
-
-
-def _reject_symlinks_in_tree( root: __.Path ) -> None:
-    ''' Rejects symlinks anywhere under publication tree. '''
-    for path in sorted( root.rglob( '*' ) ):
-        if path.is_symlink( ):
-            raise PublicationSourceInvalidity(
-                str( path ), 'symlink rejected' )
 
 
 def _restore_publication_tree( locations: Locations ) -> None:
@@ -833,117 +528,25 @@ def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
     for member in archive.getmembers( ):
         name = member.name
         if name.startswith( '/' ) or name.startswith( '\\' ):
-            raise PublicationSourceInvalidity( name, 'absolute path rejected' )
+            raise _exceptions.PublicationSourceInvalidity(
+                name, 'absolute path rejected' )
         parts = name.replace( '\\', '/' ).split( '/' )
         if '..' in parts:
-            raise PublicationSourceInvalidity( name, 'traversal rejected' )
+            raise _exceptions.PublicationSourceInvalidity(
+                name, 'traversal rejected' )
         if member.issym( ) or member.islnk( ):
-            raise PublicationSourceInvalidity( name, 'link rejected' )
+            raise _exceptions.PublicationSourceInvalidity(
+                name, 'link rejected' )
         if (
             member.ischr( ) or member.isblk( )
             or member.isfifo( ) or member.isdev( )
         ):
-            raise PublicationSourceInvalidity( name, 'special file rejected' )
+            raise _exceptions.PublicationSourceInvalidity(
+                name, 'special file rejected' )
         if not ( member.isfile( ) or member.isdir( ) ):
-            raise PublicationSourceInvalidity( name, 'non-regular rejected' )
+            raise _exceptions.PublicationSourceInvalidity(
+                name, 'non-regular rejected' )
     archive.extractall( path = destination ) # noqa: S202
-
-
-def _validate_inventory_path( root: __.Path, entry: str ) -> __.Path:
-    ''' Resolves inventory entry path under website root. '''
-    if entry.startswith( '/' ) or entry.startswith( '\\' ):
-        raise PublicationSourceInvalidity( entry, 'absolute path rejected' )
-    parts = entry.replace( '\\', '/' ).split( '/' )
-    if '..' in parts or not entry:
-        raise PublicationSourceInvalidity( entry, 'traversal rejected' )
-    return root / entry.replace( '/', __.os.sep )
-
-
-def _validate_legacy_inventory(
-    locations: Locations, inventory: __.Path | str
-) -> None:
-    ''' Validates legacy-link inventory against built tree.
-
-        Every entry must resolve; frozen entries require matching content
-        digests; listed fragments must occur as element IDs. Malformed
-        staged input aborts promotion without changing prior output.
-    '''
-    path = __.Path( inventory )
-    try: content = path.read_bytes( )
-    except OSError as exception:
-        raise _exceptions.FileAwol( path ) from exception
-    try: data = _toml_loads( content )
-    except Exception as exception:
-        raise PublicationSourceInvalidity(
-            str( path ), 'unparseable inventory' ) from exception
-    try: items = list( data.get( 'entries', [ ] ) )
-    except TypeError as exception:
-        raise PublicationSourceInvalidity(
-            str( path ), 'malformed inventory' ) from exception
-    if not items:
-        raise PublicationSourceInvalidity(
-            str( path ), 'empty inventory' )
-    for raw_entry in items:
-        _validate_inventory_entry( locations, raw_entry )
-
-
-def _validate_inventory_entry(
-    locations: Locations, raw_entry: __.typx.Any
-) -> None:
-    ''' Validates one legacy inventory entry against built tree.
-
-        Consumes dynamic TOML values validated at runtime via duck typing;
-        malformed staged input aborts promotion.
-    '''
-    get = getattr( raw_entry, 'get', None )
-    if get is None:
-        raise PublicationSourceInvalidity( 'entry', 'malformed entry' )
-    relative = get( 'path', '' )
-    semantics = get( 'semantics', 'frozen' )
-    if not isinstance( relative, str ) or not isinstance( semantics, str ):
-        raise PublicationSourceInvalidity( 'entry', 'malformed entry' )
-    if semantics not in ( 'frozen', 'follow' ):
-        raise PublicationSourceInvalidity( relative, 'unknown semantics' )
-    target = _validate_inventory_path( locations.website, relative )
-    if not target.is_file( ):
-        raise PublicationSourceInvalidity( relative, 'entry absent' )
-    _check_entry_digest(
-        target, relative, get( 'sha256', '' ), semantics )
-    _check_entry_fragments(
-        target, relative, get( 'fragments', [ ] ) )
-
-
-def _check_entry_digest(
-    target: __.Path, relative: str, digest: str, semantics: str
-) -> None:
-    ''' Checks entry content digest for frozen or pinned entries. '''
-    import hashlib
-    if digest or semantics == 'frozen':
-        if not digest:
-            raise PublicationSourceInvalidity(
-                relative, 'frozen entry without digest' )
-        actual = hashlib.sha256( target.read_bytes( ) ).hexdigest( )
-        if actual != digest:
-            raise PublicationSourceInvalidity(
-                relative, 'content drift detected' )
-
-
-def _check_entry_fragments(
-    target: __.Path, relative: str, fragment_source: __.typx.Any
-) -> None:
-    ''' Checks entry anchor fragments as parsed element IDs. '''
-    if isinstance( fragment_source, str ):
-        raise PublicationSourceInvalidity(
-            relative, 'malformed fragments' )
-    try: fragments = list( fragment_source )
-    except TypeError as exception:
-        raise PublicationSourceInvalidity(
-            relative, 'malformed fragments' ) from exception
-    identifiers = _extract_element_ids(
-        target.read_text( errors = 'replace' ) )
-    for fragment in fragments:
-        if not isinstance( fragment, str ) or fragment not in identifiers:
-            raise PublicationSourceInvalidity( relative, 'fragment absent' )
 
 
 def _validate_publication_tree(
@@ -954,116 +557,17 @@ def _validate_publication_tree(
     ''' Validates built tree before alias promotion and archiving. '''
     version_dir = locations.website / version
     if not version_dir.is_dir( ):
-        raise PublicationSourceInvalidity( version, 'version tree absent' )
+        raise _exceptions.PublicationSourceInvalidity( version,
+            'version tree absent' )
     for requisite in ( locations.index, locations.versions ):
         if not requisite.is_file( ):
-            raise PublicationSourceInvalidity(
+            raise _exceptions.PublicationSourceInvalidity(
                 str( requisite ), 'requisite absent' )
     for alias in index_data.get( 'track_versions', { } ):
         if not ( locations.website / alias ).is_dir( ):
-            raise PublicationSourceInvalidity( alias, 'alias tree absent' )
+            raise _exceptions.PublicationSourceInvalidity( alias,
+                'alias tree absent' )
     _reject_symlinks_in_tree( locations.website )
-
-
-def _is_package_version( label: __.typx.Any ) -> bool:
-    ''' Checks whether label parses as a package version. '''
-    from packaging.version import InvalidVersion, Version
-    try: Version( str( label ).lstrip( 'v' ) )
-    except InvalidVersion: return False
-    return True
-
-
-_MUTABLE_TOP_LEVEL: tuple[ str, ... ] = (
-    'index.html', 'versions.json', 'provenance.json',
-    'coverage.svg', '.nojekyll' )
-
-_VOLATILE_VERSION_FILES: tuple[ str, ... ] = (
-    'coverage.xml', '.buildinfo' )
-
-
-def _snapshot_archive( archive: __.Path ) -> dict[ str, str ]:
-    ''' Snapshots retained-history digests from the trusted archive.
-
-        Reads the pre-update archive members without extracting, so
-        restore loss itself is visible to later comparison. Returns an
-        empty manifest when no archive exists yet.
-    '''
-    import hashlib
-    import tarfile
-    if not archive.is_file( ): return { }
-    manifest: dict[ str, str ] = { }
-    try:
-        with tarfile.open( archive, mode = 'r:*' ) as bundle:
-            for member in bundle.getmembers( ):
-                if not member.isfile( ): continue
-                name = member.name.replace( '\\', '/' )
-                while name.startswith( './' ): name = name[ 2 : ]
-                if not name or name == '.': continue
-                handle = bundle.extractfile( member )
-                if handle is None: continue
-                manifest[ name ] = hashlib.sha256(
-                    handle.read( ) ).hexdigest( )
-    except ( tarfile.TarError, OSError, EOFError ) as exception:
-        raise PublicationSourceInvalidity(
-            str( archive ), 'unreadable archive' ) from exception
-    return manifest
-
-
-def _reject_alias_collisions(
-    index_data: dict[ __.typx.Any, __.typx.Any ],
-    version: str,
-) -> None:
-    ''' Rejects aliases colliding with retained releases.
-
-        An alias pointing at a different retained version would overwrite
-        history that the retained check then skips. Only deliberate
-        identity (alias equal to its selected version) is allowed.
-    '''
-    mapping = index_data.get( 'track_versions', { } )
-    retained = {
-        label for label in index_data.get( 'versions', { } )
-        if label != version }
-    for alias, selected in mapping.items( ):
-        if alias != selected and alias in retained:
-            raise PublicationSourceInvalidity(
-                alias, 'alias collides with retained release' )
-    if version in mapping and mapping.get( version ) != version:
-        raise PublicationSourceInvalidity(
-            version, 'version collides with alias' )
-
-
-def _verify_retained_history(
-    locations: Locations,
-    snapshot: dict[ str, str ],
-    version: str,
-    tracks: TrackConfiguration,
-) -> None:
-    ''' Verifies retained history against the pre-build snapshot.
-
-        Every snapshotted file outside the published version, configured
-        aliases, and mutable top-level files must exist with identical
-        content. Republished versions must reproduce retained files
-        byte-identically apart from volatile build outputs; changed
-        same-version content is refused while idempotent reruns pass.
-        Legitimate new version files and mutable outputs are excluded by
-        explicit class rules, never by regeneration.
-    '''
-    import hashlib
-    aliases = {
-        track.get( 'alias', name ) for name, track in tracks.items( ) }
-    for relative, digest in snapshot.items( ):
-        head = relative.split( '/', 1 )[ 0 ]
-        if head in aliases and head != version: continue
-        if '/' not in relative and relative in _MUTABLE_TOP_LEVEL: continue
-        if head == version:
-            base = relative.rsplit( '/', 1 )[ -1 ]
-            if base in _VOLATILE_VERSION_FILES: continue
-        candidate = locations.website / relative
-        if not candidate.is_file( ):
-            raise PublicationSourceInvalidity( relative, 'history lost' )
-        actual = hashlib.sha256( candidate.read_bytes( ) ).hexdigest( )
-        if actual != digest:
-            raise PublicationSourceInvalidity( relative, 'history drift' )
 
 
 def _sort_versions(
@@ -1082,67 +586,6 @@ def _sort_versions(
         reverse = True )
     docs_entries.sort( key = lambda entry: str( entry[ 0 ] ) )
     return dict( package_entries + docs_entries )
-
-
-def _parse_package_version( label: __.typx.Any ) -> __.typx.Any:
-    ''' Parses label as package version, returning None when not parseable. '''
-    from packaging.version import InvalidVersion, Version
-    try: return Version( str( label ).lstrip( 'v' ) )
-    except InvalidVersion: return None
-
-
-def _select_latest(
-    versions: __.cabc.Iterable[ __.typx.Any ],
-    namespace: str, selector: str, track: str,
-) -> __.Absential[ __.typx.Any ]:
-    ''' Selects version for track from namespace and selector. '''
-    from packaging.version import Version
-    matched = [
-        version for version in versions
-        if matches_namespace( str( version ), namespace ) ]
-    if selector == 'exact-tag':
-        if not matched: return __.absent
-        if len( matched ) > 1:
-            raise TrackConfigurationInvalidity(
-                track, 'ambiguous exact-tag matches' )
-        return matched[ 0 ]
-    package_versions: list[ tuple[ __.typx.Any, Version ] ] = [ ]
-    for version in matched:
-        parsed = _parse_package_version( version )
-        if parsed is None: continue
-        if selector == 'latest-final' and parsed.is_prerelease: continue
-        if selector == 'latest-prerelease' and not parsed.is_prerelease:
-            continue
-        package_versions.append( ( version, parsed ) )
-    if not package_versions: return __.absent
-    package_versions.sort( key = lambda entry: entry[ 1 ], reverse = True )
-    return package_versions[ 0 ][ 0 ]
-
-
-def _toml_loads( content: bytes ) -> dict[ str, __.typx.Any ]:
-    ''' Parses TOML content. '''
-    from tomli import loads as parse
-    result: dict[ str, __.typx.Any ] = parse( content.decode( 'utf-8' ) )
-    return result
-
-
-def _extract_element_ids( content: str ) -> set[ str ]:
-    ''' Extracts element IDs from HTML content with a real parser. '''
-    import html.parser
-    identifiers: set[ str ] = set( )
-
-    class Collector( html.parser.HTMLParser ):
-
-        def handle_starttag(
-            self, tag: str, attrs: list[ tuple[ str, str | None ] ]
-        ) -> None:
-            for name, value in attrs:
-                if name == 'id' and value:
-                    identifiers.add( value )
-
-    parser = Collector( convert_charrefs = True )
-    parser.feed( content )
-    return identifiers
 
 
 def _update_available_species(
