@@ -22,9 +22,9 @@
 
 
 from . import __
-from .locations import Locations
-from .tracks import TrackConfiguration, _toml_loads
-
+from .locations import Locations as _Locations
+from .tracks import TrackConfiguration as _TrackConfiguration
+from .tracks import _toml_loads
 
 _MUTABLE_TOP_LEVEL: tuple[ str, ... ] = (
     'index.html', 'versions.json', 'provenance.json',
@@ -87,10 +87,10 @@ def _reject_alias_collisions(
 
 
 def _verify_retained_history(
-    locations: Locations,
+    locations: _Locations,
     snapshot: dict[ str, str ],
     version: str,
-    tracks: TrackConfiguration,
+    tracks: _TrackConfiguration,
 ) -> None:
     ''' Verifies retained history against the pre-build snapshot.
 
@@ -135,7 +135,7 @@ def _validate_inventory_path( root: __.Path, entry: str ) -> __.Path:
 
 
 def _validate_legacy_inventory(
-    locations: Locations, inventory: __.Path | str
+    locations: _Locations, inventory: __.Path | str
 ) -> None:
     ''' Validates legacy-link inventory against built tree.
 
@@ -163,7 +163,7 @@ def _validate_legacy_inventory(
 
 
 def _validate_inventory_entry(
-    locations: Locations, raw_entry: __.typx.Any
+    locations: _Locations, raw_entry: __.typx.Any
 ) -> None:
     ''' Validates one legacy inventory entry against built tree.
 
