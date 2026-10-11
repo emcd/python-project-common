@@ -482,8 +482,35 @@ def test_090_staged_docs2_proof(
         import json
         provenance = json.loads(
             ( locations_tmpdir.website / 'provenance.json' ).read_text( ) )
-        assert provenance[ 'version' ] == 'docs-2'
-        assert 'docs-2' in provenance[ 'aliases' ]
+        assert provenance[ 'docs-2' ][ 'aliases' ] is not None
+        assert 'docs-2' in provenance[ 'docs-2' ][ 'aliases' ]
+        assert 'v1.0' in provenance
+
+
+def test_095_provenance_per_release_and_strict(
+    locations_tmpdir, website, provide_tempdir
+):
+    ''' Provenance merges per release and strict refuses empty identity. '''
+    import json
+    from frigid import Dictionary as FrozenDictionary
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+    } )  # type: ignore[arg-type]
+    locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+    website._record_provenance(
+        locations_tmpdir, 'v1.0', tracks )
+    website._record_provenance(
+        locations_tmpdir, 'v1.1', tracks )
+    provenance = json.loads(
+        ( locations_tmpdir.website / 'provenance.json' ).read_text( ) )
+    assert set( provenance.keys( ) ) == { 'v1.0', 'v1.1' }
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._record_provenance(
+            locations_tmpdir, 'v1.2', tracks, strict = True )
 
 
 def test_091_reject_ambiguous_docs_tracks( website ):

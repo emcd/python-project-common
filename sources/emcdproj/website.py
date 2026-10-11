@@ -296,7 +296,7 @@ def update(  # noqa: PLR0913
     if use_extant or production:
         expected_sha = _fetch_publication_branch_and_tarball( locations )
     try:
-        _build_publication_tree( locations, version, tracks )
+        _build_publication_tree( locations, version, tracks, production )
     except Exception:
         _restore_publication_tree( locations )
         raise
@@ -424,7 +424,8 @@ def _validate_version_label( version: str ) -> None:
 
 
 def _build_publication_tree(
-    locations: Locations, version: str, tracks: TrackConfiguration
+    locations: Locations, version: str, tracks: TrackConfiguration,
+    strict: bool = False,
 ) -> None:
     ''' Builds version tree, aliases, and indexes for publication. '''
     _restore_publication_tree( locations )
@@ -442,7 +443,7 @@ def _build_publication_tree(
         _update_coverage_badge( locations, j2context )
         _update_version_coverage_badge( locations, j2context, version )
     ( locations.website / '.nojekyll' ).touch( )
-    _record_provenance( locations, version, tracks )
+    _record_provenance( locations, version, tracks, strict )
     _validate_publication_tree( locations, version, tracks, index_data )
 
 
@@ -644,9 +645,15 @@ def _selector_claims( tag: str, selector: str ) -> bool:
 
 
 def _record_provenance(
-    locations: Locations, version: str, tracks: TrackConfiguration
+    locations: Locations, version: str, tracks: TrackConfiguration,
+    strict: bool = False,
 ) -> None:
-    ''' Records tag-to-commit provenance for publication. '''
+    ''' Records tag-to-commit provenance for publication.
+
+        Maintains one record per retained release. Refuses to record when
+        source identity is unavailable in strict mode, so production never
+        promotes with empty provenance.
+    '''
     import datetime
     commit = ''
     with __.ctxl.suppress( Exception ):
@@ -655,18 +662,33 @@ def _record_provenance(
             cwd = locations.project,
             check = False, capture_output = True, text = True )
         commit = result.stdout.strip( )
+    if strict and not commit:
+        raise PublicationSourceInvalidity(
+            version, 'source identity unavailable' )
     aliases: list[ str ] = [ ]
     for name, track in tracks.items( ):
         alias = track.get( 'alias', name )
         if alias not in aliases: aliases.append( alias )
-    data: dict[ str, __.typx.Any ] = {
-        'version': version,
+    data: dict[ str, __.typx.Any ] = { }
+    provenance_file = locations.website / 'provenance.json'
+    if provenance_file.is_file( ):
+        try:
+            with provenance_file.open( 'r' ) as file:
+                loaded: dict[ str, __.typx.Any ] = __.json.load( file )
+        except ValueError as exception:
+            raise PublicationSourceInvalidity(
+                'provenance', 'unparseable record' ) from exception
+        if not isinstance( loaded, dict ):
+            raise PublicationSourceInvalidity(
+                'provenance', 'malformed record' )
+        data = loaded
+    data[ version ] = {
         'commit': commit,
         'timestamp': datetime.datetime.now(
             datetime.timezone.utc ).isoformat( ),
         'aliases': sorted( aliases ),
     }
-    with ( locations.website / 'provenance.json' ).open( 'w' ) as file:
+    with provenance_file.open( 'w' ) as file:
         __.json.dump( data, file, indent = 4 )
 
 
