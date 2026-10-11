@@ -59,10 +59,6 @@ jobs:
           "{{ version }}":
             hatch: "py{{ version }}"
           {%- endfor %}
-          {%- for version in pypy_versions %}
-          "pypy{{ version }}":
-            hatch: "pypy{{ version }}"
-          {%- endfor %}
           EOF
           )"
           echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
@@ -74,12 +70,8 @@ jobs:
         id: matrix-exclusions
         run: |
           set -eu
-          # PyPy has slow I/O, even slower on Windows.
           items="$(jq --compact-output <<EOF
           [
-            {%- for version in pypy_versions %}
-            {"platform": "windows-latest", "python-version": "pypy{{ version }}"}{% if not loop.last %},{% endif %}
-            {%- endfor %}
           ]
           EOF
           )"

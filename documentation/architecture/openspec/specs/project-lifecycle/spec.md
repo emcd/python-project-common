@@ -89,7 +89,8 @@ testing, documentation generation, and reporting.
 #### Scenario: Cross-platform test execution
 - **WHEN** code is pushed to branches included in the workflow configuration
 - **THEN** the CI/CD workflow executes tests across the configured Python
-  versions (from the project's selected subset of 3.10-3.14) on Linux,
+  versions (from the project's selected subset of supported Python
+  versions, currently 3.12-3.15) on Linux,
   macOS, and Windows
 
 #### Scenario: Reusable workflow composition

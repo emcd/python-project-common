@@ -20,7 +20,7 @@ creation to maintenance. It provides:
 
 ## Tech Stack
 
-- Language: Python (>= 3.10)
+- Language: Python (>= 3.12)
 - Project Management: Hatch
 - Templating: Copier
 - Documentation: Sphinx, `myst-parser`

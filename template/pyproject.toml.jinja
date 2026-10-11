@@ -45,9 +45,6 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: {{ version }}',
   {%- endfor %}
   'Programming Language :: Python :: Implementation :: CPython',
-  {%- if pypy_versions %}
-  'Programming Language :: Python :: Implementation :: PyPy',
-  {%- endif %}
   # --- END: Injected by Copier ---
   #'Topic :: Software Development',
   # TODO: Add classifiers as appropriate.
@@ -238,9 +235,6 @@ template = 'develop'
 python = [
     {%- for version in python_versions %}
     '{{ version }}',
-    {%- endfor %}
-    {%- for version in pypy_versions %}
-    'pypy{{ version }}',
     {%- endfor %}
 ]
 [tool.hatch.version]
