@@ -81,11 +81,7 @@ jobs:
               exit 1
             }
           fi
-          if [[ "${GITHUB_REF}" == refs/tags/docs-* ]]; then
-            version="${GITHUB_REF#refs/tags/}"
-          else
-            version="$(hatch --env develop version 2>/dev/null)"
-          fi
+          version="$(hatch --env develop version 2>/dev/null)"
           config_args=""
           if [ -n "${{ inputs.tracks-config }}" ]; then
             config_args="${config_args} --tracks-config ${{ inputs.tracks-config }}"

@@ -263,7 +263,7 @@ def test_070_reject_traversal_alias( website ):
     from frigid import Dictionary as FrozenDictionary
     tracks = {
         'evil': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
+            'tag-namespace': 'docs-*',
             'selector': 'exact-tag',
             'alias': '../escape',
         } ),
@@ -277,12 +277,12 @@ def test_075_reject_namespace_collision( website ):
     from frigid import Dictionary as FrozenDictionary
     tracks = {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'docs': FrozenDictionary( {
-            'tag_namespace': '*',
+            'tag-namespace': '*',
             'selector': 'exact-tag',
             'alias': 'docs-2',
         } ),
@@ -304,12 +304,12 @@ def test_080_custom_alias_emitted_from_selection(
     }
     tracks = website.validate_track_configuration( {
         'release': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'release',
         } ),
         'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
@@ -366,70 +366,50 @@ def test_082_overlap_rejected_on_production_path(
     }
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
-        'docs-a': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
+        'line-a': FrozenDictionary( {
+            'tag-namespace': 'v9.*',
             'selector': 'exact-tag',
-            'alias': 'docs-a',
+            'alias': 'line-a',
         } ),
-        'docs-b': FrozenDictionary( {
-            'tag_namespace': 'docs-9*',
+        'line-b': FrozenDictionary( {
+            'tag-namespace': 'v9.9',
             'selector': 'exact-tag',
-            'alias': 'docs-b',
+            'alias': 'line-b',
         } ),
     } )  # type: ignore[arg-type]
     with create_test_files( provide_tempdir, test_files ):
         locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
         with pytest.raises( website.TrackConfigurationInvalidity ):
             website.update(
-                auxdata_tmpdir, 'docs-99',
+                auxdata_tmpdir, 'v9.9',
                 project_anchor = locations_tmpdir.project,
                 tracks = tracks )
 
 
-def test_083_docs_policy_requires_inventory(
+def test_083_reject_unparseable_version_label(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
-    ''' Docs tracks without inventory abort before promotion. '''
-    from frigid import Dictionary as FrozenDictionary
+    ''' Non-version labels abort before any destructive operation. '''
     test_files = {
-        'project/.auxiliary/artifacts/sphinx-html/guide.html':
-            '<html><body></body></html>',
         'package/data/templates/coverage.svg.jinja': '{{ color }}',
         'package/data/templates/website.html.jinja': '{{ latest_version }}',
     }
-    tracks = website.validate_track_configuration( {
-        'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
-            'selector': 'latest-final',
-            'alias': 'stable',
-        } ),
-        'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
-            'selector': 'latest-prerelease',
-            'alias': 'development',
-        } ),
-        'docs-2': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
-            'selector': 'exact-tag',
-            'alias': 'docs-2',
-        } ),
-    } )  # type: ignore[arg-type]
     with create_test_files( provide_tempdir, test_files ):
         locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
         with pytest.raises( website.PublicationSourceInvalidity ):
             website.update(
                 auxdata_tmpdir, 'docs-2',
-                project_anchor = locations_tmpdir.project,
-                tracks = tracks )
+                project_anchor = locations_tmpdir.project )
+        assert not list( locations_tmpdir.website.iterdir( ) )
 
 
 def test_085_docs_alias_does_not_alter_stable(
@@ -496,22 +476,24 @@ def test_086_reject_dangerous_archive_members( website, provide_tempdir ):
 
 
 def test_088_reject_absolute_alias_and_version( website ):
-    ''' Leading-slash aliases and escaping versions are rejected. '''
+    ''' Leading-slash aliases and non-version labels are rejected. '''
     from frigid import Dictionary as FrozenDictionary
     tracks = {
         'docs': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
+            'tag-namespace': 'docs-*',
             'selector': 'exact-tag',
             'alias': '/docs-2',
         } ),
     }
     with pytest.raises( website.TrackConfigurationInvalidity ):
         website.validate_track_configuration( tracks )  # type: ignore[arg-type]
-    for bad_version in ( '', '../outside', '/absolute', 'a/b', '.hidden' ):
+    for bad_version in (
+        '', '../outside', '/absolute', 'a/b', '.hidden', 'docs-2'
+    ):
         with pytest.raises( website.PublicationSourceInvalidity ):
             website._validate_version_label( bad_version )
     website._validate_version_label( 'v1.0' )
-    website._validate_version_label( 'docs-2' )
+    website._validate_version_label( '1.61a0' )
 
 
 def test_089_canonicalize_trailing_slash_alias( website ):
@@ -519,7 +501,7 @@ def test_089_canonicalize_trailing_slash_alias( website ):
     from frigid import Dictionary as FrozenDictionary
     tracks = website.validate_track_configuration( {
         'docs': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
+            'tag-namespace': 'docs-*',
             'selector': 'exact-tag',
             'alias': 'docs-2/',
         } ),
@@ -538,10 +520,10 @@ def test_087_reject_symlinks_in_tree( website, provide_tempdir ):
         website._reject_symlinks_in_tree( root )
 
 
-def test_090_docs_alias_publish_contract(
+def test_090_floating_major_publish_contract(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
-    ''' Docs publish contract pins alias isolation and stable mirroring.
+    ''' Floating-major publish tracks newest line release pinned to stable.
 
         Fixture-based contract pin only; real staged CI receipts are
         required before any production URL cutover.
@@ -556,25 +538,26 @@ def test_090_docs_alias_publish_contract(
     }
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
-        'docs-2': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
-            'selector': 'exact-tag',
-            'alias': 'docs-2',
+        'v1': FrozenDictionary( {
+            'tag-namespace': 'v1.*',
+            'selector': 'latest-final',
+            'alias': 'v1',
         } ),
     } )  # type: ignore[arg-type]
     inventory = _write_inventory_case(
         provide_tempdir,
         [ ( 'stable/coverage-pytest/coverage.xml', '', ( ), 'follow' ),
           ( 'v1.0/coverage-pytest/coverage.xml', '', ( ), 'follow' ),
+          ( 'v1/coverage-pytest/coverage.xml', '', ( ), 'follow' ),
           ( 'index.html', '', ( ), 'follow' ) ] )
     with create_test_files( provide_tempdir, test_files ):
         locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
@@ -583,33 +566,31 @@ def test_090_docs_alias_publish_contract(
             project_anchor = locations_tmpdir.project,
             tracks = tracks,
             legacy_inventory = inventory )
-        stable_before = sorted(
-            path.relative_to( locations_tmpdir.website ).as_posix( )
-            for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
         website.update(
-            auxdata_tmpdir, 'docs-2',
+            auxdata_tmpdir, 'v1.1',
             project_anchor = locations_tmpdir.project,
             tracks = tracks,
             legacy_inventory = inventory )
-        stable_after = sorted(
-            path.relative_to( locations_tmpdir.website ).as_posix( )
-            for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
-        assert set( stable_before ) <= set( stable_after )
+        line_after = sorted(
+            path.relative_to(
+                locations_tmpdir.website / 'v1' ).as_posix( )
+            for path in ( locations_tmpdir.website / 'v1' ).rglob( '*' )
+            if path.name != 'coverage.svg' )
         package_after = sorted(
             path.relative_to(
-                locations_tmpdir.website / 'v1.0' ).as_posix( )
-            for path in ( locations_tmpdir.website / 'v1.0' ).rglob( '*' ) )
+                locations_tmpdir.website / 'v1.1' ).as_posix( )
+            for path in ( locations_tmpdir.website / 'v1.1' ).rglob( '*' )
+            if path.name != 'coverage.svg' )
+        assert line_after == package_after
         stable_suffixes = sorted(
             path.relative_to(
                 locations_tmpdir.website / 'stable' ).as_posix( )
             for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
         assert package_after == stable_suffixes
-        assert ( locations_tmpdir.website / 'docs-2' ).is_dir( )
         import json
         provenance = json.loads(
             ( locations_tmpdir.website / 'provenance.json' ).read_text( ) )
-        assert provenance[ 'docs-2' ][ 'aliases' ] is not None
-        assert 'docs-2' in provenance[ 'docs-2' ][ 'aliases' ]
+        assert 'v1' in provenance[ 'v1.1' ][ 'aliases' ]
         assert 'v1.0' in provenance
 
 
@@ -622,7 +603,7 @@ def test_095_provenance_per_release_and_strict(
     from frigid import Dictionary as FrozenDictionary
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
@@ -645,12 +626,12 @@ def test_092_reject_claimed_known_tag( website ):
     from frigid import Dictionary as FrozenDictionary
     tracks = {
         'docs-a': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
+            'tag-namespace': 'docs-*',
             'selector': 'exact-tag',
             'alias': 'docs-a',
         } ),
         'docs-b': FrozenDictionary( {
-            'tag_namespace': 'docs-3*',
+            'tag-namespace': 'docs-3*',
             'selector': 'exact-tag',
             'alias': 'docs-b',
         } ),
@@ -666,17 +647,17 @@ def test_093_load_tracks_from_toml( website, provide_tempdir ):
     location = Path( provide_tempdir ) / 'tracks.toml'
     location.write_text(
         '[tracks.stable]\n'
-        'tag_namespace = "v*"\n'
+        'tag-namespace = "v*"\n'
         'selector = "latest-final"\n'
         'alias = "stable"\n'
         '[tracks.docs-2]\n'
-        'tag_namespace = "docs-*"\n'
+        'tag-namespace = "docs-*"\n'
         'selector = "exact-tag"\n'
         'alias = "docs-2"\n',
         newline = '' )
     tracks = website.load_track_configuration( location )
     assert tracks[ 'stable' ][ 'alias' ] == 'stable'
-    assert tracks[ 'docs-2' ][ 'tag_namespace' ] == 'docs-*'
+    assert tracks[ 'docs-2' ][ 'tag-namespace' ] == 'docs-*'
     with pytest.raises( website._exceptions.FileAwol ):
         website.load_track_configuration(
             Path( provide_tempdir ) / 'absent.toml' )
@@ -936,17 +917,21 @@ def test_097_verify_retained_history_classes( website, provide_tempdir ):
         templates = Path( provide_tempdir ) / 'templates' )
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'docs-2': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
+            'tag-namespace': 'docs-*',
             'selector': 'exact-tag',
             'alias': 'docs-2',
         } ),
     } )  # type: ignore[arg-type]
-    snapshot = website._snapshot_tree( root )
+    import hashlib
+    snapshot = {
+        path.relative_to( root ).as_posix( ): hashlib.sha256(
+            path.read_bytes( ) ).hexdigest( )
+        for path in sorted( root.rglob( '*' ) ) if path.is_file( ) }
     website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
     ( root / 'v1.0/guide.html' ).write_text( 'tampered', newline = '' )
     with pytest.raises( website.PublicationSourceInvalidity ):
@@ -998,7 +983,7 @@ def test_098_provenance_validates_release_tag( website, provide_tempdir ):
     locations.website.mkdir( parents = True, exist_ok = True )
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
@@ -1134,7 +1119,7 @@ def test_104_annotated_tag_peels_to_commit( website, provide_tempdir ):
         templates = project / 'templates' )
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
@@ -1315,36 +1300,36 @@ def test_107_reject_alias_overwriting_retained_release(
     }
     honest = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
-        'docs-2': FrozenDictionary( {
-            'tag_namespace': 'docs-2',
-            'selector': 'exact-tag',
-            'alias': 'docs-2',
+        'v1': FrozenDictionary( {
+            'tag-namespace': 'v1.*',
+            'selector': 'latest-final',
+            'alias': 'v1',
         } ),
     } )  # type: ignore[arg-type]
     rogue = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
         'evil': FrozenDictionary( {
-            'tag_namespace': 'docs-3',
+            'tag-namespace': 'v11',
             'selector': 'exact-tag',
-            'alias': 'docs-2',
+            'alias': 'v10',
         } ),
     } )  # type: ignore[arg-type]
     inventory = _write_inventory_case(
@@ -1358,13 +1343,13 @@ def test_107_reject_alias_overwriting_retained_release(
             tracks = honest,
             legacy_inventory = inventory )
         website.update(
-            auxdata_tmpdir, 'docs-2',
+            auxdata_tmpdir, 'v10',
             project_anchor = locations_tmpdir.project,
             tracks = honest,
             legacy_inventory = inventory )
         with pytest.raises( website.PublicationSourceInvalidity ):
             website.update(
-                auxdata_tmpdir, 'docs-3',
+                auxdata_tmpdir, 'v11',
                 project_anchor = locations_tmpdir.project,
                 tracks = rogue,
                 legacy_inventory = inventory )
@@ -1385,25 +1370,26 @@ def test_108_changed_republish_refused_idempotent_passes(
     }
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'development': FrozenDictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
-        'docs-2': FrozenDictionary( {
-            'tag_namespace': 'docs-2',
-            'selector': 'exact-tag',
-            'alias': 'docs-2',
+        'v1': FrozenDictionary( {
+            'tag-namespace': 'v1.*',
+            'selector': 'latest-final',
+            'alias': 'v1',
         } ),
     } )  # type: ignore[arg-type]
     inventory = _write_inventory_case(
         provide_tempdir,
         [ ( 'stable/sphinx-html/guide.html', '', ( ), 'follow' ),
-          ( 'v1.0/sphinx-html/guide.html', '', ( ), 'follow' ) ] )
+          ( 'v1.0/sphinx-html/guide.html', '', ( ), 'follow' ),
+          ( 'v1/sphinx-html/guide.html', '', ( ), 'follow' ) ] )
     with create_test_files( provide_tempdir, test_files ):
         locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
         website.update(
@@ -1412,12 +1398,12 @@ def test_108_changed_republish_refused_idempotent_passes(
             tracks = tracks,
             legacy_inventory = inventory )
         website.update(
-            auxdata_tmpdir, 'docs-2',
+            auxdata_tmpdir, 'v1.1',
             project_anchor = locations_tmpdir.project,
             tracks = tracks,
             legacy_inventory = inventory )
         website.update(
-            auxdata_tmpdir, 'docs-2',
+            auxdata_tmpdir, 'v1.1',
             project_anchor = locations_tmpdir.project,
             tracks = tracks,
             legacy_inventory = inventory )
@@ -1427,10 +1413,39 @@ def test_108_changed_republish_refused_idempotent_passes(
         guide.write_text( '<html><body>two</body></html>', newline = '' )
         with pytest.raises( website.PublicationSourceInvalidity ):
             website.update(
-                auxdata_tmpdir, 'docs-2',
+                auxdata_tmpdir, 'v1.1',
                 project_anchor = locations_tmpdir.project,
                 tracks = tracks,
                 legacy_inventory = inventory )
+
+
+def test_111_retained_history_without_inventory(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Retained history enforced without any inventory input. '''
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body>one</body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project )
+        guide = (
+            Path( provide_tempdir )
+            / 'project/.auxiliary/artifacts/sphinx-html/guide.html' )
+        guide.write_text( '<html><body>two</body></html>', newline = '' )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'v1.0',
+                project_anchor = locations_tmpdir.project )
+        guide.write_text( '<html><body>one</body></html>', newline = '' )
+        website.update(
+            auxdata_tmpdir, 'v1.1',
+            project_anchor = locations_tmpdir.project )
 
 
 def test_100_integration_update(
