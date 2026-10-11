@@ -544,6 +544,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         if _remote_has_publication( locations ):
             raise PublicationSourceInvalidity(
                 'publication', 'fetch failed with remote branch present' )
+        _clear_stale_publication_state( locations )
         return ''
     probe = __.subprocess.run(
         [ 'git', 'rev-parse', '--verify', '--quiet', 'publication' ],
@@ -556,7 +557,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
     if locations.archive.is_file( ):
         locations.archive.unlink( )
     checkout = __.subprocess.run(
-        [ 'git', 'checkout', 'publication', '--', str( locations.archive ) ],
+        [ 'git', 'checkout', destination, '--', str( locations.archive ) ],
         cwd = locations.project,
         check = False,
         capture_output = True )
@@ -564,6 +565,23 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         raise PublicationSourceInvalidity(
             'publication', 'archive unrestorable from destination' )
     return destination
+
+
+def _clear_stale_publication_state( locations: Locations ) -> None:
+    ''' Clears stale local archive and publication ancestry.
+
+        Runs on confirmed remote absence so an absent destination never
+        publishes unrelated stale local state.
+    '''
+    with __.ctxl.suppress( Exception ):
+        if locations.archive.is_file( ):
+            locations.archive.unlink( )
+    with __.ctxl.suppress( Exception ):
+        __.subprocess.run(
+            [ 'git', 'branch', '--delete', '--force', 'publication' ],
+            cwd = locations.project,
+            check = False,
+            capture_output = True )
 
 
 def _remote_has_publication( locations: Locations ) -> bool:
@@ -745,13 +763,19 @@ def _resolve_source_identity(
 
 
 def _resolve_release_tag( locations: Locations, version: str ) -> str:
-    ''' Resolves release tag to commit SHA, or empty when absent. '''
+    ''' Resolves release tag to commit SHA, or empty when absent.
+
+        Peels exact tag references to commits, so annotated and signed
+        tags compare by commit identity. Branches or other revisions
+        sharing the name never resolve.
+    '''
     candidates = [ version ]
     if not version.startswith( 'v' ):
         candidates.append( 'v' + version )
     for candidate in candidates:
         probe = __.subprocess.run(
-            [ 'git', 'rev-parse', '--verify', '--quiet', candidate ],
+            [ 'git', 'rev-parse', '--verify', '--quiet',
+              f"refs/tags/{candidate}^{{commit}}" ],
             cwd = locations.project,
             check = False, capture_output = True, text = True )
         if probe.returncode == 0 and probe.stdout.strip( ):

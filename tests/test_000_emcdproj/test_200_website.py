@@ -699,6 +699,27 @@ def _write_inventory_case( base, entries ):
     return location
 
 
+def _make_git_repo( provide_tempdir, name ):
+    ''' Creates git repo with disabled signing, returning paths. '''
+    import shutil
+    import subprocess
+    from pathlib import Path
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    project = Path( provide_tempdir ) / name
+    project.mkdir( parents = True, exist_ok = True )
+    def git( *args ):
+        return subprocess.run(  # noqa: S603
+            [ executable, *args ], cwd = project, check = True,
+            capture_output = True, text = True )
+    git( 'init' )
+    git( 'config', 'user.email', 'test@example.com' )
+    git( 'config', 'user.name', 'Test' )
+    git( 'config', 'commit.gpgsign', 'false' )
+    git( 'config', 'tag.gpgsign', 'false' )
+    return project, git
+
+
 def test_099_reject_unverifiable_fetch_base( website, provide_tempdir ):
     ''' Unverifiable fetch bases abort before any build. '''
     import subprocess
@@ -1060,6 +1081,8 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
         templates = project / 'templates' )
     baseline = website._fetch_publication_branch_and_tarball( locations )
     assert baseline == ''
+    # Confirmed absence clears stale state; build regenerates the archive.
+    archive.write_bytes( b'archive-a' )
     website._update_publication_branch( locations, 'v1', baseline )
     published_a = git( 'rev-parse', 'publication' ).stdout.strip( )
     proceeding = git(
@@ -1080,6 +1103,121 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
           'rev-parse', 'publication' ],
         check = True, capture_output = True, text = True ).stdout.strip( )
     assert remote_head != proceeding
+
+
+def test_104_annotated_tag_peels_to_commit( website, provide_tempdir ):
+    ''' Annotated tags resolve by commit identity, branches never do. '''
+    from frigid import Dictionary as FrozenDictionary
+    project, git = _make_git_repo( provide_tempdir, 'tagrepo2' )
+    site = project / 'site'
+    site.mkdir( parents = True, exist_ok = True )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    git( 'tag', '-a', '-m', 'release', 'v9.8' )
+    git( 'branch', 'wobbly' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = project / 'website.tar.xz',
+        artifacts = project / '.auxiliary/artifacts',
+        website = site,
+        coverage = site / 'coverage.svg',
+        index = site / 'index.html',
+        versions = site / 'versions.json',
+        templates = project / 'templates' )
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+    } )  # type: ignore[arg-type]
+    website._record_provenance(
+        locations, '9.8', tracks, strict = True )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._record_provenance(
+            locations, 'wobbly', tracks, strict = True )
+
+
+def test_105_absence_clears_stale_local_state( website, provide_tempdir ):
+    ''' Confirmed absence clears stale archive and publication ancestry. '''
+    project, git = _make_git_repo( provide_tempdir, 'absentrepo' )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    archive = project / '.auxiliary/publications/website.tar.xz'
+    archive.parent.mkdir( parents = True, exist_ok = True )
+    archive.write_bytes( b'stale-local' )
+    git( 'branch', 'publication' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = archive,
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    assert not archive.exists( )
+    import shutil
+    import subprocess
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    probe = subprocess.run(  # noqa: S603
+        [ executable, 'show-ref', '--verify', '--quiet',
+          'refs/heads/publication' ],
+        cwd = project, check = False, capture_output = True )
+    assert probe.returncode != 0
+
+
+def test_106_concurrent_creation_fails_without_loss(
+    website, provide_tempdir
+):
+    ''' Race-created remote branch defeats plain absent-lease push. '''
+    import shutil
+    import subprocess
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    project, git = _make_git_repo( provide_tempdir, 'racerrepo' )
+    remote = Path( provide_tempdir ) / 'remote-race.git'
+    subprocess.run(  # noqa: S603
+        [ executable, 'init', '--bare', str( remote ) ],
+        check = True, capture_output = True )
+    git( 'remote', 'add', 'origin', str( remote ) )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    archive = project / '.auxiliary/publications/website.tar.xz'
+    archive.parent.mkdir( parents = True, exist_ok = True )
+    archive.write_bytes( b'archive-a' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = archive,
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    tree = git( 'rev-parse', 'HEAD:' ).stdout.strip( )
+    proceeding = git(
+        'commit-tree', tree, '-m', 'writer B' ).stdout.strip( )
+    git( 'push', 'origin', proceeding + ':refs/heads/publication' )
+    with pytest.raises( subprocess.CalledProcessError ):
+        website._update_publication_branch( locations, 'v1', '' )
+    remote_head = subprocess.run(  # noqa: S603
+        [ executable, '--git-dir', str( remote ),
+          'rev-parse', 'publication' ],
+        check = True, capture_output = True, text = True ).stdout.strip( )
+    assert remote_head == proceeding
 
 
 def test_100_integration_update(
