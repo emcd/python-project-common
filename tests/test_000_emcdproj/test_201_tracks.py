@@ -161,7 +161,9 @@ def test_078_explicit_tracks_beat_ambient_file(
         assert not ( locations_tmpdir.website / 'release' ).exists( )
 
 
-def test_078_default_configuration_fails_closed( website, provide_tempdir ):
+def test_078_default_configuration_fails_closed(
+    website, provide_tempdir, monkeypatch
+):
     ''' Non-regular, unreadable, or malformed default config aborts. '''
     from pathlib import Path
     project = Path( provide_tempdir ) / 'project'
@@ -182,12 +184,11 @@ def test_078_default_configuration_fails_closed( website, provide_tempdir ):
         'selector = "latest-final"\n'
         'alias = "stable"\n',
         newline = '' )
-    configuration.chmod( 0o000 )
-    try:
-        with pytest.raises( website.TrackConfigurationInvalidity ):
-            website.load_default_configuration( project )
-    finally:
-        configuration.chmod( 0o644 )
+    def _denied( self ):
+        raise PermissionError( 13, 'Permission denied' )
+    monkeypatch.setattr( Path, 'read_bytes', _denied )
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website.load_default_configuration( project )
 
 
 def test_081_out_of_order_publish_keeps_latest(
