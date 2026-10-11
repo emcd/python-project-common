@@ -331,29 +331,85 @@ def test_085_docs_alias_does_not_alter_stable(
     assert ( locations.website / 'stable' ).exists( )
 
 
-def test_086_reject_dangerous_archive_members( website, provide_tempdir ):
-    ''' Archive members with traversal or links are rejected. '''
-    class FakeMember:
-        def __init__( self, name, symlink = False, hardlink = False ):
-            self.name = name
-            self._symlink = symlink
-            self._hardlink = hardlink
-        def issym( self ): return self._symlink
-        def islnk( self ): return self._hardlink
-    class FakeArchive:
-        def __init__( self, members ): self._members = members
-        def getmembers( self ): return self._members
-        def extractall( self, path = None ): raise AssertionError( 'extract' )
-    from pathlib import Path
-    destination = Path( provide_tempdir ) / 'destination'
-    bad_names = ( '/absolute.txt', '../traversal.txt', 'a/../../b.txt' )
-    for bad_name in bad_names:
-        archive = FakeArchive( [ FakeMember( bad_name ) ] )
-        with pytest.raises( website.PublicationSourceInvalidity ):
-            website._safe_extractall( archive, destination )
-    archive = FakeArchive( [ FakeMember( 'good.txt', symlink = True ) ] )
+class _FakeMember:
+    ''' Stands in for tarfile members in archive rejection tests. '''
+
+    def __init__(
+        self, name, symlink = False, hardlink = False,
+        special = False, regular = True
+    ):
+        self.name = name
+        self._symlink = symlink
+        self._hardlink = hardlink
+        self._special = special
+        self._regular = regular
+    def issym( self ): return self._symlink
+    def islnk( self ): return self._hardlink
+    def ischr( self ): return self._special
+    def isblk( self ): return False
+    def isfifo( self ): return self._special
+    def isdev( self ): return self._special
+    def isfile( self ): return self._regular and not self._special
+    def isdir( self ): return False
+
+
+class _FakeArchive:
+    ''' Stands in for tarfile archives in rejection tests. '''
+
+    def __init__( self, members ): self._members = members
+    def getmembers( self ): return self._members
+    def extractall( self, path = None ): raise AssertionError( 'extract' )
+
+
+def _assert_rejected( website, destination, member ):
+    ''' Asserts archive with single member is rejected. '''
+    archive = _FakeArchive( [ member ] )
     with pytest.raises( website.PublicationSourceInvalidity ):
         website._safe_extractall( archive, destination )
+
+
+def test_086_reject_dangerous_archive_members( website, provide_tempdir ):
+    ''' Archive members with traversal or links are rejected. '''
+    from pathlib import Path
+    destination = Path( provide_tempdir ) / 'destination'
+    for bad_name in ( '/absolute.txt', '../traversal.txt', 'a/../../b.txt' ):
+        _assert_rejected( website, destination, _FakeMember( bad_name ) )
+    _assert_rejected(
+        website, destination, _FakeMember( 'good.txt', symlink = True ) )
+    _assert_rejected(
+        website, destination, _FakeMember( 'dev-null', special = True ) )
+
+
+def test_088_reject_absolute_alias_and_version( website ):
+    ''' Leading-slash aliases and escaping versions are rejected. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = {
+        'docs': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': '/docs-2',
+        } ),
+    }
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website.validate_track_configuration( tracks )  # type: ignore[arg-type]
+    for bad_version in ( '', '../outside', '/absolute', 'a/b', '.hidden' ):
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website._validate_version_label( bad_version )
+    website._validate_version_label( 'v1.0' )
+    website._validate_version_label( 'docs-2' )
+
+
+def test_089_canonicalize_trailing_slash_alias( website ):
+    ''' Trailing-slash aliases are stored in canonical form. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = website.validate_track_configuration( {
+        'docs': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': 'docs-2/',
+        } ),
+    } )  # type: ignore[arg-type]
+    assert tracks[ 'docs' ][ 'alias' ] == 'docs-2'
 
 
 def test_087_reject_symlinks_in_tree( website, provide_tempdir ):

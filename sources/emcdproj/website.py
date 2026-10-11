@@ -257,7 +257,7 @@ def update(  # noqa: PLR0913
         updates version information, and generates coverage badges.
     '''
     ictr( 2 )( version )
-    # TODO: Validate version string format.
+    _validate_version_label( version )
     tracks = validate_track_configuration( tracks )
     locations = Locations.from_project_anchor( auxdata, project_anchor )
     locations.publications.mkdir( exist_ok = True, parents = True )
@@ -299,15 +299,15 @@ def validate_track_configuration(
                 name, "missing 'alias'" ) from exception
         if selector not in _VALID_SELECTORS:
             raise TrackConfigurationInvalidity( name, 'invalid selector' )
-        _validate_alias( alias )
-        if alias in aliases:
-            raise TrackConfigurationInvalidity( alias, 'duplicate alias' )
-        aliases.add( alias )
+        canonical = _validate_alias( alias )
+        if canonical in aliases:
+            raise TrackConfigurationInvalidity( canonical, 'duplicate alias' )
+        aliases.add( canonical )
         namespaces.append( ( name, namespace ) )
         normalized[ name ] = __.immut.Dictionary( {
             'tag_namespace': namespace,
             'selector': selector,
-            'alias': alias,
+            'alias': canonical,
         } )
     selectors: dict[ str, str ] = {
         name: tracks[ name ][ 'selector' ] for name in normalized }
@@ -349,11 +349,13 @@ def _create_stable_dev_directories(
             __.shutil.copytree( dev_source, dev_dest )
 
 
-def _validate_alias( alias: str ) -> None:
-    ''' Validates alias against traversal and naming rules. '''
+def _validate_alias( alias: str ) -> str:
+    ''' Validates alias and returns canonical single-component form. '''
     import re
     if not alias:
         raise TrackConfigurationInvalidity( alias, 'empty alias' )
+    if alias.startswith( '/' ) or alias.startswith( '\\' ):
+        raise TrackConfigurationInvalidity( alias, 'absolute path rejected' )
     normalized = alias.strip( '/' )
     if not normalized:
         raise TrackConfigurationInvalidity( alias, 'empty alias' )
@@ -366,6 +368,23 @@ def _validate_alias( alias: str ) -> None:
         raise TrackConfigurationInvalidity( alias, 'traversal rejected' )
     if not re.match( r'^[a-z0-9][a-z0-9-]*$', normalized ):
         raise TrackConfigurationInvalidity( alias, 'must be kebab-case' )
+    return normalized
+
+
+def _validate_version_label( version: str ) -> None:
+    ''' Validates version label before any destructive operation. '''
+    if not version:
+        raise PublicationSourceInvalidity( version, 'empty version' )
+    if (
+        version.startswith( '/' )
+        or version.startswith( '\\' )
+        or '..' in version.replace( '\\', '/' ).split( '/' )
+        or '/' in version
+        or '\\' in version
+        or version in ( '.', '..' )
+        or version.startswith( '.' )
+    ):
+        raise PublicationSourceInvalidity( version, 'traversal rejected' )
 
 
 def _build_publication_tree(
@@ -395,9 +414,9 @@ def _create_docs_alias_directories(
     locations: Locations, version: str, alias: str
 ) -> None:
     ''' Creates docs-line alias directory without altering stable/dev. '''
-    _validate_alias( alias )
+    canonical = _validate_alias( alias )
     source = locations.website / version
-    destination = locations.website / alias
+    destination = locations.website / canonical
     if source == destination: return
     if destination.is_dir( ): __.shutil.rmtree( destination )
     if source.is_dir( ): __.shutil.copytree( source, destination )
@@ -620,6 +639,13 @@ def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
             raise PublicationSourceInvalidity( name, 'traversal rejected' )
         if member.issym( ) or member.islnk( ):
             raise PublicationSourceInvalidity( name, 'link rejected' )
+        if (
+            member.ischr( ) or member.isblk( )
+            or member.isfifo( ) or member.isdev( )
+        ):
+            raise PublicationSourceInvalidity( name, 'special file rejected' )
+        if not ( member.isfile( ) or member.isdir( ) ):
+            raise PublicationSourceInvalidity( name, 'non-regular rejected' )
     archive.extractall( path = destination ) # noqa: S202
 
 
