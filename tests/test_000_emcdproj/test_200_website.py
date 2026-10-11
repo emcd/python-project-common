@@ -574,6 +574,120 @@ def test_093_load_tracks_from_toml( website, provide_tempdir ):
             Path( provide_tempdir ) / 'absent.toml' )
 
 
+def _write_inventory_case( base, entries ):
+    ''' Writes legacy inventory TOML and returns its path. '''
+    from pathlib import Path
+    lines = [ ]
+    for path, sha256, fragments, semantics in entries:
+        lines.append( '[[entries]]' )
+        lines.append( f'path = "{path}"' )
+        if sha256: lines.append( f'sha256 = "{sha256}"' )
+        if fragments:
+            quoted = ', '.join( f'"{fragment}"' for fragment in fragments )
+            lines.append( f'fragments = [{quoted}]' )
+        lines.append( f'semantics = "{semantics}"' )
+    location = Path( base ) / 'inventory.toml'
+    location.write_text( '\n'.join( lines ) + '\n', newline = '' )
+    return location
+
+
+def test_096_validate_legacy_inventory( website, provide_tempdir ):
+    ''' Legacy inventory passes on intact tree with digests and anchors. '''
+    import hashlib
+    from pathlib import Path
+    root = Path( provide_tempdir ) / 'site'
+    page = root / 'stable/guide.html'
+    page.parent.mkdir( parents = True, exist_ok = True )
+    content = '<html><body><a id="guide"></a><h1>Guide</h1></body></html>'
+    page.write_text( content, newline = '' )
+    digest = hashlib.sha256( content.encode( 'utf-8' ) ).hexdigest( )
+    inventory = _write_inventory_case(
+        provide_tempdir,
+        [ ( 'stable/guide.html', digest, ( 'guide', ), 'frozen' ) ] )
+    website._validate_legacy_inventory(
+        website.Locations(
+            project = Path( provide_tempdir ),
+            auxiliary = Path( provide_tempdir ) / '.auxiliary',
+            publications = Path( provide_tempdir ) / 'publications',
+            archive = Path( provide_tempdir ) / 'website.tar.xz',
+            artifacts = Path( provide_tempdir ) / 'artifacts',
+            website = root,
+            coverage = root / 'coverage.svg',
+            index = root / 'index.html',
+            versions = root / 'versions.json',
+            templates = Path( provide_tempdir ) / 'templates' ),
+        inventory )
+
+
+def test_097_reject_bad_inventory_cases( website, provide_tempdir ):
+    ''' Missing files, drift, anchors, and malformed input abort. '''
+    import hashlib
+    from pathlib import Path
+    root = Path( provide_tempdir ) / 'site'
+    page = root / 'stable/guide.html'
+    page.parent.mkdir( parents = True, exist_ok = True )
+    content = '<html><body><h1>No anchors here</h1></body></html>'
+    page.write_text( content, newline = '' )
+    digest = hashlib.sha256( content.encode( 'utf-8' ) ).hexdigest( )
+    locations = website.Locations(
+        project = Path( provide_tempdir ),
+        auxiliary = Path( provide_tempdir ) / '.auxiliary',
+        publications = Path( provide_tempdir ) / 'publications',
+        archive = Path( provide_tempdir ) / 'website.tar.xz',
+        artifacts = Path( provide_tempdir ) / 'artifacts',
+        website = root,
+        coverage = root / 'coverage.svg',
+        index = root / 'index.html',
+        versions = root / 'versions.json',
+        templates = Path( provide_tempdir ) / 'templates' )
+    cases = [
+        [ ( 'stable/absent.html', digest, ( ), 'frozen' ) ],
+        [ ( 'stable/guide.html', '0' * 64, ( ), 'frozen' ) ],
+        [ ( 'stable/guide.html', digest, ( 'guide', ), 'frozen' ) ],
+        [ ( 'stable/guide.html', '', ( ), 'frozen' ) ],
+        [ ( '../escape.html', digest, ( ), 'frozen' ) ],
+    ]
+    for entries in cases:
+        inventory = _write_inventory_case( provide_tempdir, entries )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website._validate_legacy_inventory( locations, inventory )
+    malformed = Path( provide_tempdir ) / 'inventory.toml'
+    malformed.write_text( '[[entries]\nbroken', newline = '' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._validate_legacy_inventory( locations, malformed )
+
+
+def test_098_inventory_failure_retains_previous_tree(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Failed inventory validation restores previous good tree. '''
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body><a id="guide"></a></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project )
+        baseline = (
+            locations_tmpdir.website / 'v1.0/sphinx-html/guide.html'
+        ).read_text( )
+        inventory = _write_inventory_case(
+            provide_tempdir,
+            [ ( 'v1.0/sphinx-html/guide.html', '0' * 64, ( ), 'frozen' ) ] )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'v1.0',
+                project_anchor = locations_tmpdir.project,
+                legacy_inventory = inventory )
+        assert (
+            locations_tmpdir.website / 'v1.0/sphinx-html/guide.html'
+        ).read_text( ) == baseline
+
+
 def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
     ''' Stale compare-and-swap baseline fails instead of losing updates. '''
     import shutil

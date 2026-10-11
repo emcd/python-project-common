@@ -71,17 +71,26 @@ class UpdateCommand(
         __.typx.Doc( ''' Track configuration TOML file for publication. ''' ),
     ] = ''
 
+    legacy_inventory: __.typx.Annotated[
+        str,
+        __.typx.Doc( ''' Legacy-link inventory TOML file for validation. ''' ),
+    ] = ''
+
     async def __call__(
         self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
     ) -> None:
         tracks: TrackConfiguration = _DEFAULT_TRACKS
         if self.tracks_config:
             tracks = load_track_configuration( self.tracks_config )
+        inventory: __.Absential[ __.Path ] = __.absent
+        if self.legacy_inventory:
+            inventory = __.Path( self.legacy_inventory )
         update(
             auxdata, self.version,
             use_extant = self.use_extant,
             production = self.production,
-            tracks = tracks )
+            tracks = tracks,
+            legacy_inventory = inventory )
 
 
 class CommandDispatcher(
@@ -280,6 +289,7 @@ def update(  # noqa: PLR0913
     use_extant: bool = False,
     production: bool = False,
     tracks: TrackConfiguration = _DEFAULT_TRACKS,
+    legacy_inventory: __.Absential[ __.Path | str ] = __.absent,
 ) -> None:
     ''' Updates project website with latest documentation and coverage.
 
@@ -296,7 +306,8 @@ def update(  # noqa: PLR0913
     if use_extant or production:
         expected_sha = _fetch_publication_branch_and_tarball( locations )
     try:
-        _build_publication_tree( locations, version, tracks, production )
+        _build_publication_tree(
+            locations, version, tracks, production, legacy_inventory )
     except Exception:
         _restore_publication_tree( locations )
         raise
@@ -426,6 +437,7 @@ def _validate_version_label( version: str ) -> None:
 def _build_publication_tree(
     locations: Locations, version: str, tracks: TrackConfiguration,
     strict: bool = False,
+    legacy_inventory: __.Absential[ __.Path | str ] = __.absent,
 ) -> None:
     ''' Builds version tree, aliases, and indexes for publication. '''
     _restore_publication_tree( locations )
@@ -445,6 +457,9 @@ def _build_publication_tree(
     ( locations.website / '.nojekyll' ).touch( )
     _record_provenance( locations, version, tracks, strict )
     _validate_publication_tree( locations, version, tracks, index_data )
+    if not __.is_absent( legacy_inventory ):
+        _validate_legacy_inventory(
+            locations, legacy_inventory )  # type: ignore[arg-type]
 
 
 def _create_docs_alias_directories(
@@ -744,6 +759,82 @@ def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
         if not ( member.isfile( ) or member.isdir( ) ):
             raise PublicationSourceInvalidity( name, 'non-regular rejected' )
     archive.extractall( path = destination ) # noqa: S202
+
+
+def _validate_inventory_path( root: __.Path, entry: str ) -> __.Path:
+    ''' Resolves inventory entry path under website root. '''
+    if entry.startswith( '/' ) or entry.startswith( '\\' ):
+        raise PublicationSourceInvalidity( entry, 'absolute path rejected' )
+    parts = entry.replace( '\\', '/' ).split( '/' )
+    if '..' in parts or not entry:
+        raise PublicationSourceInvalidity( entry, 'traversal rejected' )
+    return root / entry.replace( '/', __.os.sep )
+
+
+def _validate_legacy_inventory(
+    locations: Locations, inventory: __.Path | str
+) -> None:
+    ''' Validates legacy-link inventory against built tree.
+
+        Every entry must resolve; frozen entries require matching content
+        digests; listed fragments must occur as element IDs. Malformed
+        staged input aborts promotion without changing prior output.
+    '''
+    path = __.Path( inventory )
+    try: content = path.read_bytes( )
+    except OSError as exception:
+        raise _exceptions.FileAwol( path ) from exception
+    try: data = _toml_loads( content )
+    except Exception as exception:
+        raise PublicationSourceInvalidity(
+            str( path ), 'unparseable inventory' ) from exception
+    try: items = list( data.get( 'entries', [ ] ) )
+    except TypeError as exception:
+        raise PublicationSourceInvalidity(
+            str( path ), 'malformed inventory' ) from exception
+    if not items:
+        raise PublicationSourceInvalidity(
+            str( path ), 'empty inventory' )
+    for raw_entry in items:
+        _validate_inventory_entry( locations, raw_entry )
+
+
+def _validate_inventory_entry(
+    locations: Locations, raw_entry: __.typx.Any
+) -> None:
+    ''' Validates one legacy inventory entry against built tree.
+
+        Consumes dynamic TOML values validated at runtime via duck typing;
+        malformed staged input aborts promotion.
+    '''
+    import hashlib
+    get = getattr( raw_entry, 'get', None )
+    if get is None:
+        raise PublicationSourceInvalidity( 'entry', 'malformed entry' )
+    relative = get( 'path', '' )
+    semantics = get( 'semantics', 'frozen' )
+    if semantics not in ( 'frozen', 'follow' ):
+        raise PublicationSourceInvalidity( relative, 'unknown semantics' )
+    target = _validate_inventory_path( locations.website, relative )
+    if not target.is_file( ):
+        raise PublicationSourceInvalidity( relative, 'entry absent' )
+    digest = get( 'sha256', '' )
+    if digest or semantics == 'frozen':
+        if not digest:
+            raise PublicationSourceInvalidity(
+                relative, 'frozen entry without digest' )
+        actual = hashlib.sha256( target.read_bytes( ) ).hexdigest( )
+        if actual != digest:
+            raise PublicationSourceInvalidity(
+                relative, 'content drift detected' )
+    text = target.read_text( errors = 'replace' )
+    try: fragments = list( get( 'fragments', [ ] ) )
+    except TypeError as exception:
+        raise PublicationSourceInvalidity(
+            relative, 'malformed fragments' ) from exception
+    for fragment in fragments:
+        if f'id="{fragment}"' not in text:
+            raise PublicationSourceInvalidity( relative, 'fragment absent' )
 
 
 def _validate_publication_tree(
