@@ -438,6 +438,7 @@ def _build_publication_tree(
     _enhance_index_data_with_stable_dev( index_data, tracks )
     _reject_ambiguous_known_tags(
         tracks, list( index_data.get( 'versions', { } ).keys( ) ) )
+    _reject_alias_collisions( index_data, version )
     _promote_track_aliases( locations, index_data )
     _update_index_html( locations, j2context, index_data )
     if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
@@ -950,6 +951,9 @@ _MUTABLE_TOP_LEVEL: tuple[ str, ... ] = (
     'index.html', 'versions.json', 'provenance.json',
     'coverage.svg', '.nojekyll' )
 
+_VOLATILE_VERSION_FILES: tuple[ str, ... ] = (
+    'coverage.xml', '.buildinfo' )
+
 
 def _snapshot_tree( root: __.Path ) -> dict[ str, str ]:
     ''' Snapshots retained-history digests for every file under root. '''
@@ -963,6 +967,29 @@ def _snapshot_tree( root: __.Path ) -> dict[ str, str ]:
     return manifest
 
 
+def _reject_alias_collisions(
+    index_data: dict[ __.typx.Any, __.typx.Any ],
+    version: str,
+) -> None:
+    ''' Rejects aliases colliding with retained releases.
+
+        An alias pointing at a different retained version would overwrite
+        history that the retained check then skips. Only deliberate
+        identity (alias equal to its selected version) is allowed.
+    '''
+    mapping = index_data.get( 'track_versions', { } )
+    retained = {
+        label for label in index_data.get( 'versions', { } )
+        if label != version }
+    for alias, selected in mapping.items( ):
+        if alias != selected and alias in retained:
+            raise PublicationSourceInvalidity(
+                alias, 'alias collides with retained release' )
+    if version in mapping and mapping.get( version ) != version:
+        raise PublicationSourceInvalidity(
+            version, 'version collides with alias' )
+
+
 def _verify_retained_history(
     locations: Locations,
     snapshot: dict[ str, str ],
@@ -973,17 +1000,22 @@ def _verify_retained_history(
 
         Every snapshotted file outside the published version, configured
         aliases, and mutable top-level files must exist with identical
-        content. Legitimate new version files and mutable outputs are
-        excluded by explicit class rules, never by regeneration.
+        content. Republished versions must reproduce retained files
+        byte-identically apart from volatile build outputs; changed
+        same-version content is refused while idempotent reruns pass.
+        Legitimate new version files and mutable outputs are excluded by
+        explicit class rules, never by regeneration.
     '''
     import hashlib
     aliases = {
         track.get( 'alias', name ) for name, track in tracks.items( ) }
     for relative, digest in snapshot.items( ):
         head = relative.split( '/', 1 )[ 0 ]
-        if head == version: continue
-        if head in aliases: continue
+        if head in aliases and head != version: continue
         if '/' not in relative and relative in _MUTABLE_TOP_LEVEL: continue
+        if head == version:
+            base = relative.rsplit( '/', 1 )[ -1 ]
+            if base in _VOLATILE_VERSION_FILES: continue
         candidate = locations.website / relative
         if not candidate.is_file( ):
             raise PublicationSourceInvalidity( relative, 'history lost' )

@@ -948,7 +948,6 @@ def test_097_verify_retained_history_classes( website, provide_tempdir ):
         website._verify_retained_history(
             locations, snapshot, 'v2.0', tracks )
     ( root / 'v1.0/guide.html' ).write_text( 'old', newline = '' )
-    ( root / 'v2.0/guide.html' ).write_text( 'rebuilt', newline = '' )
     ( root / 'stable/guide.html' ).write_text( 'recopied', newline = '' )
     ( root / 'index.html' ).write_text( 'rerendered', newline = '' )
     website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
@@ -1218,6 +1217,136 @@ def test_106_concurrent_creation_fails_without_loss(
           'rev-parse', 'publication' ],
         check = True, capture_output = True, text = True ).stdout.strip( )
     assert remote_head == proceeding
+
+
+def test_107_reject_alias_overwriting_retained_release(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Alias pointed at another retained release aborts. '''
+    from frigid import Dictionary as FrozenDictionary
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    honest = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+        'docs-2': FrozenDictionary( {
+            'tag_namespace': 'docs-2',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    } )  # type: ignore[arg-type]
+    rogue = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+        'evil': FrozenDictionary( {
+            'tag_namespace': 'docs-3',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    } )  # type: ignore[arg-type]
+    inventory = _write_inventory_case(
+        provide_tempdir,
+        [ ( 'stable/sphinx-html/guide.html', '', ( ), 'follow' ) ] )
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project,
+            tracks = honest,
+            legacy_inventory = inventory )
+        website.update(
+            auxdata_tmpdir, 'docs-2',
+            project_anchor = locations_tmpdir.project,
+            tracks = honest,
+            legacy_inventory = inventory )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'docs-3',
+                project_anchor = locations_tmpdir.project,
+                tracks = rogue,
+                legacy_inventory = inventory )
+
+
+def test_108_changed_republish_refused_idempotent_passes(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Changed same-version content aborts; identical rerun passes. '''
+    from frigid import Dictionary as FrozenDictionary
+    from pathlib import Path
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body>one</body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+        'docs-2': FrozenDictionary( {
+            'tag_namespace': 'docs-2',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    } )  # type: ignore[arg-type]
+    inventory = _write_inventory_case(
+        provide_tempdir,
+        [ ( 'stable/sphinx-html/guide.html', '', ( ), 'follow' ),
+          ( 'v1.0/sphinx-html/guide.html', '', ( ), 'follow' ) ] )
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks,
+            legacy_inventory = inventory )
+        website.update(
+            auxdata_tmpdir, 'docs-2',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks,
+            legacy_inventory = inventory )
+        website.update(
+            auxdata_tmpdir, 'docs-2',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks,
+            legacy_inventory = inventory )
+        guide = (
+            Path( provide_tempdir )
+            / 'project/.auxiliary/artifacts/sphinx-html/guide.html' )
+        guide.write_text( '<html><body>two</body></html>', newline = '' )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'docs-2',
+                project_anchor = locations_tmpdir.project,
+                tracks = tracks,
+                legacy_inventory = inventory )
 
 
 def test_100_integration_update(
