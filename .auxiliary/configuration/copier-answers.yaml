@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v1.59.3
+_commit: a2336159b401c292c41401931bf79c13e5f75bdd
 _src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
@@ -17,13 +17,10 @@ inject_exceptions: true
 inject_foundations: true
 package_name: emcdproj
 project_name: python-project-common
-pypy_versions:
-- '3.11'
-python_version_min: '3.10'
+python_version_min: '3.12'
 python_versions:
-- '3.10'
-- '3.11'
 - '3.12'
 - '3.13'
 - '3.14'
+- '3.15'
 year_of_origin: 2024
