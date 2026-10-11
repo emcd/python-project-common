@@ -123,6 +123,44 @@ def test_079_default_configuration_location_resolves(
         assert not ( locations_tmpdir.website / 'stable' ).exists( )
 
 
+def test_078_explicit_tracks_beat_ambient_file(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Explicit mapping wins over project configuration file. '''
+    from frigid import Dictionary as FrozenDictionary
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'project/.auxiliary/configuration/website.toml':
+            '[tracks.release]\n'
+            'tag-namespace = "v*"\n'
+            'selector = "latest-final"\n'
+            'alias = "release"\n',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag-namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag-namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+    } )  # type: ignore[arg-type]
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks )
+        assert ( locations_tmpdir.website / 'stable' ).is_dir( )
+        assert not ( locations_tmpdir.website / 'release' ).exists( )
+
+
 def test_081_out_of_order_publish_keeps_latest(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):

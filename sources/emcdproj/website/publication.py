@@ -108,7 +108,7 @@ def update(  # noqa: PLR0913
     locations = Locations.from_project_anchor( auxdata, project_anchor )
     if not __.is_absent( configuration ):
         tracks = load_track_configuration( configuration )  # type: ignore[arg-type]
-    else:
+    elif tracks is _DEFAULT_TRACKS:
         candidate = (
             locations.project / '.auxiliary'
             / 'configuration' / 'website.toml' )
