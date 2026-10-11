@@ -680,6 +680,18 @@ def _write_inventory_case( base, entries ):
     return location
 
 
+def _git_environment( ):
+    ''' Returns environment scrubbed of ambient Git variables.
+
+        Outer `git commit` hooks export `GIT_INDEX_FILE` and friends,
+        which would otherwise hijack throwaway test repositories.
+    '''
+    import os
+    return {
+        key: value for key, value in os.environ.items( )
+        if not key.startswith( 'GIT_' ) }
+
+
 def _make_git_repo( provide_tempdir, name ):
     ''' Creates git repo with disabled signing, returning paths. '''
     import shutil
@@ -693,7 +705,8 @@ def _make_git_repo( provide_tempdir, name ):
     def git( *args ):
         return subprocess.run(  # noqa: S603
             [ executable, *args ], cwd = project, check = True,
-            capture_output = True, text = True )
+            capture_output = True, text = True,
+            env = _git_environment( ) )
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
@@ -712,7 +725,8 @@ def test_099_reject_unverifiable_fetch_base( website, provide_tempdir ):
         executable = shutil.which( 'git' )
         return subprocess.run(  # noqa: S603
             [ executable, *args ], cwd = project, check = True,
-            capture_output = True, text = True )
+            capture_output = True, text = True,
+            env = _git_environment( ) )
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
@@ -747,10 +761,12 @@ def test_101_reject_branch_without_tarball( website, provide_tempdir ):
     def git( *args ):
         return subprocess.run(  # noqa: S603
             [ executable, *args ], cwd = project, check = True,
-            capture_output = True, text = True )
+            capture_output = True, text = True,
+            env = _git_environment( ) )
     subprocess.run(  # noqa: S603
         [ executable, 'init', '--bare', str( remote ) ],
-        check = True, capture_output = True )
+        check = True, capture_output = True,
+        env = _git_environment( ) )
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
@@ -957,7 +973,8 @@ def test_098_provenance_validates_release_tag( website, provide_tempdir ):
     def git( *args ):
         return subprocess.run(  # noqa: S603
             [ executable, *args ], cwd = project, check = True,
-            capture_output = True, text = True )
+            capture_output = True, text = True,
+            env = _git_environment( ) )
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
@@ -1046,10 +1063,12 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
     def git( *args ):
         return subprocess.run(  # noqa: S603
             [ executable, *args ], cwd = project, check = True,
-            capture_output = True, text = True )
+            capture_output = True, text = True,
+            env = _git_environment( ) )
     subprocess.run(  # noqa: S603
         [ executable, 'init', '--bare', str( remote ) ],
-        check = True, capture_output = True )
+        check = True, capture_output = True,
+        env = _git_environment( ) )
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
@@ -1085,13 +1104,15 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
-        check = True, capture_output = True, text = True ).stdout.strip( )
+        check = True, capture_output = True, text = True,
+        env = _git_environment( ) ).stdout.strip( )
     assert remote_head == proceeding
     website._update_publication_branch( locations, 'v1-fresh', proceeding )
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
-        check = True, capture_output = True, text = True ).stdout.strip( )
+        check = True, capture_output = True, text = True,
+        env = _git_environment( ) ).stdout.strip( )
     assert remote_head != proceeding
 
 
@@ -1161,7 +1182,8 @@ def test_105_absence_clears_stale_local_state( website, provide_tempdir ):
     probe = subprocess.run(  # noqa: S603
         [ executable, 'show-ref', '--verify', '--quiet',
           'refs/heads/publication' ],
-        cwd = project, check = False, capture_output = True )
+        cwd = project, check = False, capture_output = True,
+        env = _git_environment( ) )
     assert probe.returncode != 0
 
 
@@ -1177,7 +1199,8 @@ def test_106_concurrent_creation_fails_without_loss(
     remote = Path( provide_tempdir ) / 'remote-race.git'
     subprocess.run(  # noqa: S603
         [ executable, 'init', '--bare', str( remote ) ],
-        check = True, capture_output = True )
+        check = True, capture_output = True,
+        env = _git_environment( ) )
     git( 'remote', 'add', 'origin', str( remote ) )
     ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
     git( 'add', 'seed.txt' )
@@ -1211,7 +1234,8 @@ def test_106_concurrent_creation_fails_without_loss(
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
-        check = True, capture_output = True, text = True ).stdout.strip( )
+        check = True, capture_output = True, text = True,
+        env = _git_environment( ) ).stdout.strip( )
     assert remote_head == proceeding
 
 
@@ -1230,7 +1254,8 @@ def test_109_absence_without_race_publishes_cleanly(
     remote = Path( provide_tempdir ) / 'remote-clean.git'
     subprocess.run(  # noqa: S603
         [ executable, 'init', '--bare', str( remote ) ],
-        check = True, capture_output = True )
+        check = True, capture_output = True,
+        env = _git_environment( ) )
     git( 'remote', 'add', 'origin', str( remote ) )
     archive = project / '.auxiliary/publications/website.tar.xz'
     archive.parent.mkdir( parents = True, exist_ok = True )
@@ -1252,7 +1277,8 @@ def test_109_absence_without_race_publishes_cleanly(
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
-        check = True, capture_output = True, text = True ).stdout.strip( )
+        check = True, capture_output = True, text = True,
+        env = _git_environment( ) ).stdout.strip( )
     local_head = git( 'rev-parse', 'publication' ).stdout.strip( )
     assert remote_head == local_head
 

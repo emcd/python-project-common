@@ -23,6 +23,18 @@ Release Notes
 
 .. towncrier release notes start
 
+emcdproj 1.62 (2026-10-11)
+==========================
+
+Enhancements
+------------
+
+- Add explicit publication tracks with tag-driven alias selection, validated
+  tree promotion, compare-and-swap serialization, per-release provenance,
+  retained-history verification, and legacy inventory checks to the static
+  website publisher.
+
+
 emcdproj 1.60 (2026-08-06)
 ==========================
 

@@ -522,32 +522,29 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         silently on stale bases. The returned SHA threads through build to
         push unchanged as the compare-and-swap baseline.
     '''
-    fetch = __.subprocess.run(
-        [ 'git', 'fetch', 'origin', 'publication:publication' ],
-        cwd = locations.project,
-        check = False,
-        capture_output = True )
+    fetch = _run_git(
+        locations, [ 'fetch', 'origin', 'publication:publication' ],
+        check = False )
     if fetch.returncode != 0:
         if _remote_has_publication( locations ):
             raise PublicationSourceInvalidity(
                 'publication', 'fetch failed with remote branch present' )
         _clear_stale_publication_state( locations )
         return ''
-    probe = __.subprocess.run(
-        [ 'git', 'rev-parse', '--verify', '--quiet', 'publication' ],
-        cwd = locations.project,
-        check = False, capture_output = True, text = True )
+    probe = _run_git(
+        locations,
+        [ 'rev-parse', '--verify', '--quiet', 'publication' ],
+        check = False )
     destination = probe.stdout.strip( ) if probe.returncode == 0 else ''
     if not destination:
         raise PublicationSourceInvalidity(
             'publication', 'unresolvable destination' )
     if locations.archive.is_file( ):
         locations.archive.unlink( )
-    checkout = __.subprocess.run(
-        [ 'git', 'checkout', destination, '--', str( locations.archive ) ],
-        cwd = locations.project,
-        check = False,
-        capture_output = True )
+    checkout = _run_git(
+        locations,
+        [ 'checkout', destination, '--', str( locations.archive ) ],
+        check = False )
     if checkout.returncode != 0 or not locations.archive.is_file( ):
         raise PublicationSourceInvalidity(
             'publication', 'archive unrestorable from destination' )
@@ -570,17 +567,13 @@ def _clear_stale_publication_state( locations: Locations ) -> None:
         raise PublicationSourceInvalidity(
             'archive', 'stale archive irremovable' )
     with __.ctxl.suppress( Exception ):
-        __.subprocess.run(
-            [ 'git', 'branch', '--delete', '--force', 'publication' ],
-            cwd = locations.project,
-            check = False,
-            capture_output = True )
-    probe = __.subprocess.run(
-        [ 'git', 'show-ref', '--verify', '--quiet',
-          'refs/heads/publication' ],
-        cwd = locations.project,
-        check = False,
-        capture_output = True )
+        _run_git(
+            locations, [ 'branch', '--delete', '--force', 'publication' ],
+            check = False )
+    probe = _run_git(
+        locations,
+        [ 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
+        check = False )
     if probe.returncode == 0:
         raise PublicationSourceInvalidity(
             'publication', 'stale ancestry irremovable' )
@@ -593,16 +586,13 @@ def _remote_has_publication( locations: Locations ) -> bool:
         remote branch list). Raises on query failure so callers fail
         closed instead of guessing absence.
     '''
-    remote = __.subprocess.run(
-        [ 'git', 'remote', 'get-url', 'origin' ],
-        cwd = locations.project,
-        check = False, capture_output = True )
+    remote = _run_git(
+        locations, [ 'remote', 'get-url', 'origin' ], check = False )
     if remote.returncode != 0: return False
     try:
-        probe = __.subprocess.run(
-            [ 'git', 'ls-remote', '--heads', 'origin', 'publication' ],
-            cwd = locations.project,
-            check = False, capture_output = True, text = True )
+        probe = _run_git(
+            locations, [ 'ls-remote', '--heads', 'origin', 'publication' ],
+            check = False )
     except Exception as exception:
         raise PublicationSourceInvalidity(
             'publication', 'remote probe failed' ) from exception
@@ -757,10 +747,8 @@ def _resolve_source_identity(
     ''' Resolves source commit, checking release tag in strict mode. '''
     commit = ''
     with __.ctxl.suppress( Exception ):
-        result = __.subprocess.run(
-            [ 'git', 'rev-parse', 'HEAD' ],
-            cwd = locations.project,
-            check = False, capture_output = True, text = True )
+        result = _run_git(
+            locations, [ 'rev-parse', 'HEAD' ], check = False )
         commit = result.stdout.strip( )
     if strict and not commit:
         raise PublicationSourceInvalidity(
@@ -787,11 +775,11 @@ def _resolve_release_tag( locations: Locations, version: str ) -> str:
     if not version.startswith( 'v' ):
         candidates.append( 'v' + version )
     for candidate in candidates:
-        probe = __.subprocess.run(
-            [ 'git', 'rev-parse', '--verify', '--quiet',
+        probe = _run_git(
+            locations,
+            [ 'rev-parse', '--verify', '--quiet',
               f"refs/tags/{candidate}^{{commit}}" ],
-            cwd = locations.project,
-            check = False, capture_output = True, text = True )
+            check = False )
         if probe.returncode == 0 and probe.stdout.strip( ):
             return probe.stdout.strip( )
     return ''
@@ -813,6 +801,31 @@ def _restore_publication_tree( locations: Locations ) -> None:
     if locations.archive.is_file( ):
         with tarfile_open( locations.archive, 'r:xz' ) as archive:
             _safe_extractall( archive, locations.website )
+
+
+def _run_git(
+    locations: Locations,
+    arguments: __.cabc.Sequence[ str ],
+    check: bool = True,
+) -> __.typx.Any:
+    ''' Runs git in the project without ambient repository redirection.
+
+        Strips variables that would redirect git at another repository
+        (e.g. `GIT_INDEX_FILE` exported by outer commit hooks) while
+        preserving identity, transport, and editor settings.
+    '''
+    environment = {
+        key: value for key, value in __.os.environ.items( )
+        if key not in (
+            'GIT_DIR', 'GIT_WORK_TREE', 'GIT_INDEX_FILE',
+            'GIT_PREFIX', 'GIT_COMMON_DIR' ) }
+    return __.subprocess.run(
+        [ 'git', *arguments ],
+        cwd = locations.project,
+        check = check,
+        capture_output = True,
+        text = True,
+        env = environment )
 
 
 def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
@@ -1173,46 +1186,35 @@ def _update_publication_branch(
         expected-absent lease, so concurrent creation fails instead of
         merging with unrelated local ancestry.
     '''
-    __.subprocess.run(
-        [ 'git', 'add', str( locations.archive ) ],
-        cwd = locations.project,
-        check = True )
+    _run_git( locations, [ 'add', str( locations.archive ) ] )
     # Commit to publication branch without checkout
     # Get current tree hash
-    tree_result = __.subprocess.run(
-        [ 'git', 'write-tree' ],
-        cwd = locations.project,
-        check = True, capture_output = True, text = True )
+    tree_result = _run_git( locations, [ 'write-tree' ] )
     tree_hash = tree_result.stdout.strip( )
     # Check if publication branch exists
-    publication_exists = __.subprocess.run(
-        [ 'git', 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
-        cwd = locations.project,
+    publication_exists = _run_git(
+        locations,
+        [ 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
         check = False ).returncode == 0
     lease_expectation = expected_sha
-    commit_result = __.subprocess.run(
-        [ 'git', 'commit-tree', tree_hash,
+    commit_result = _run_git(
+        locations,
+        [ 'commit-tree', tree_hash,
           *( ( '-p', 'publication' ) if publication_exists else ( ) ),
-          '-m', f"Update documents for publication. ({version})" ],
-        cwd = locations.project,
-        check = True, capture_output = True, text = True )
+          '-m', f"Update documents for publication. ({version})" ] )
     commit_hash = commit_result.stdout.strip( )
-    __.subprocess.run(
-        [ 'git', 'branch', '--force', 'publication', commit_hash ],
-        cwd = locations.project,
-        check = True )
+    _run_git(
+        locations, [ 'branch', '--force', 'publication', commit_hash ] )
     if lease_expectation:
-        __.subprocess.run(
-            [ 'git', 'push', '--force-with-lease=publication:'
-              + lease_expectation, 'origin', 'publication:publication' ],
-            cwd = locations.project,
-            check = True )
+        _run_git(
+            locations,
+            [ 'push', '--force-with-lease=publication:'
+              + lease_expectation, 'origin', 'publication:publication' ] )
     else:
-        __.subprocess.run(
-            [ 'git', 'push', '--force-with-lease=publication:',
-              'origin', 'publication:publication' ],
-            cwd = locations.project,
-            check = True )
+        _run_git(
+            locations,
+            [ 'push', '--force-with-lease=publication:',
+              'origin', 'publication:publication' ] )
 
 
 def _update_index_html(
