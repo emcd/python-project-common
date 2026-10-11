@@ -1206,17 +1206,94 @@ def test_106_concurrent_creation_fails_without_loss(
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
     assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    # Confirmed absence clears stale state; build regenerates the archive.
+    archive.write_bytes( b'archive-a' )
     tree = git( 'rev-parse', 'HEAD:' ).stdout.strip( )
     proceeding = git(
         'commit-tree', tree, '-m', 'writer B' ).stdout.strip( )
     git( 'push', 'origin', proceeding + ':refs/heads/publication' )
-    with pytest.raises( subprocess.CalledProcessError ):
+    with pytest.raises( subprocess.CalledProcessError ) as excuse:
         website._update_publication_branch( locations, 'v1', '' )
+    assert 'push' in str( excuse.value.cmd )
+    local_head = git( 'rev-parse', 'publication' ).stdout.strip( )
+    assert local_head != proceeding
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
         check = True, capture_output = True, text = True ).stdout.strip( )
     assert remote_head == proceeding
+
+
+def test_109_absence_without_race_publishes_cleanly(
+    website, provide_tempdir
+):
+    ''' Confirmed absence with no race creates the remote branch. '''
+    project, git = _make_git_repo( provide_tempdir, 'cleanrepo' )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    import shutil
+    import subprocess
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    remote = Path( provide_tempdir ) / 'remote-clean.git'
+    subprocess.run(  # noqa: S603
+        [ executable, 'init', '--bare', str( remote ) ],
+        check = True, capture_output = True )
+    git( 'remote', 'add', 'origin', str( remote ) )
+    archive = project / '.auxiliary/publications/website.tar.xz'
+    archive.parent.mkdir( parents = True, exist_ok = True )
+    archive.write_bytes( b'archive-a' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = archive,
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    archive.write_bytes( b'archive-a' )
+    website._update_publication_branch( locations, 'v1', '' )
+    remote_head = subprocess.run(  # noqa: S603
+        [ executable, '--git-dir', str( remote ),
+          'rev-parse', 'publication' ],
+        check = True, capture_output = True, text = True ).stdout.strip( )
+    local_head = git( 'rev-parse', 'publication' ).stdout.strip( )
+    assert remote_head == local_head
+
+
+def test_110_cleanup_failures_abort_before_build( website, provide_tempdir ):
+    ''' Irremovable stale archive or ancestry aborts the fetch. '''
+    project, git = _make_git_repo( provide_tempdir, 'stubbornrepo' )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    archive = project / '.auxiliary/publications/website.tar.xz'
+    archive.parent.mkdir( parents = True, exist_ok = True )
+    archive.mkdir( exist_ok = True )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = archive,
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._fetch_publication_branch_and_tarball( locations )
+    archive.rmdir( )
+    archive.write_bytes( b'stale-local' )
+    git( 'branch', 'publication' )
+    git( 'checkout', 'publication' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._fetch_publication_branch_and_tarball( locations )
 
 
 def test_107_reject_alias_overwriting_retained_release(

@@ -572,17 +572,32 @@ def _clear_stale_publication_state( locations: Locations ) -> None:
     ''' Clears stale local archive and publication ancestry.
 
         Runs on confirmed remote absence so an absent destination never
-        publishes unrelated stale local state.
+        publishes unrelated stale local state. Establishes absence and
+        raises when either removal fails.
     '''
-    with __.ctxl.suppress( Exception ):
-        if locations.archive.is_file( ):
-            locations.archive.unlink( )
+    if locations.archive.is_file( ) or locations.archive.is_symlink( ):
+        try: locations.archive.unlink( )
+        except OSError as exception:
+            raise PublicationSourceInvalidity(
+                'archive', 'stale archive irremovable' ) from exception
+    elif locations.archive.exists( ):
+        raise PublicationSourceInvalidity(
+            'archive', 'stale archive irremovable' )
     with __.ctxl.suppress( Exception ):
         __.subprocess.run(
             [ 'git', 'branch', '--delete', '--force', 'publication' ],
             cwd = locations.project,
             check = False,
             capture_output = True )
+    probe = __.subprocess.run(
+        [ 'git', 'show-ref', '--verify', '--quiet',
+          'refs/heads/publication' ],
+        cwd = locations.project,
+        check = False,
+        capture_output = True )
+    if probe.returncode == 0:
+        raise PublicationSourceInvalidity(
+            'publication', 'stale ancestry irremovable' )
 
 
 def _remote_has_publication( locations: Locations ) -> bool:
@@ -1140,8 +1155,9 @@ def _update_publication_branch(
         without lost updates when the destination ref advances concurrently;
         caller refetches, rebuilds, and revalidates or fails. Never
         refetches here, so a stale build cannot acquire a fresh lease.
-        An empty SHA means confirmed remote absence and pushes plainly,
-        which still fails closed on concurrent creation.
+        An empty SHA means confirmed remote absence and pushes with an
+        expected-absent lease, so concurrent creation fails instead of
+        merging with unrelated local ancestry.
     '''
     __.subprocess.run(
         [ 'git', 'add', str( locations.archive ) ],
@@ -1179,7 +1195,8 @@ def _update_publication_branch(
             check = True )
     else:
         __.subprocess.run(
-            [ 'git', 'push', 'origin', 'publication:publication' ],
+            [ 'git', 'push', '--force-with-lease=publication:',
+              'origin', 'publication:publication' ],
             cwd = locations.project,
             check = True )
 
