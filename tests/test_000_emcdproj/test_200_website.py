@@ -713,6 +713,8 @@ def test_099_reject_unverifiable_fetch_base( website, provide_tempdir ):
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
+    git( 'config', 'commit.gpgsign', 'false' )
+    git( 'config', 'tag.gpgsign', 'false' )
     git( 'remote', 'add', 'origin', '/nonexistent/remote.git' )
     locations = website.Locations(
         project = project,
@@ -749,6 +751,8 @@ def test_101_reject_branch_without_tarball( website, provide_tempdir ):
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
+    git( 'config', 'commit.gpgsign', 'false' )
+    git( 'config', 'tag.gpgsign', 'false' )
     git( 'remote', 'add', 'origin', str( remote ) )
     git( 'add', 'seed.txt' )
     git( 'commit', '-m', 'base' )
@@ -838,7 +842,155 @@ def test_102_reject_bad_inventory_cases( website, provide_tempdir ):
         website._validate_legacy_inventory( locations, malformed )
 
 
-def test_098_inventory_failure_retains_previous_tree(
+def test_096_reject_comment_anchors_and_string_fragments(
+    website, provide_tempdir
+):
+    ''' Commented IDs do not count; string fragments are malformed. '''
+    import hashlib
+    from pathlib import Path
+    root = Path( provide_tempdir ) / 'site'
+    page = root / 'stable/guide.html'
+    page.parent.mkdir( parents = True, exist_ok = True )
+    content = (
+        '<html><body><!-- <a id="ghost"></a> -->'
+        '<h1 id="guide">Guide</h1></body></html>' )
+    page.write_text( content, newline = '' )
+    digest = hashlib.sha256( content.encode( 'utf-8' ) ).hexdigest( )
+    locations = website.Locations(
+        project = Path( provide_tempdir ),
+        auxiliary = Path( provide_tempdir ) / '.auxiliary',
+        publications = Path( provide_tempdir ) / 'publications',
+        archive = Path( provide_tempdir ) / 'website.tar.xz',
+        artifacts = Path( provide_tempdir ) / 'artifacts',
+        website = root,
+        coverage = root / 'coverage.svg',
+        index = root / 'index.html',
+        versions = root / 'versions.json',
+        templates = Path( provide_tempdir ) / 'templates' )
+    assert website._extract_element_ids( content ) == { 'guide' }
+    inventory = _write_inventory_case(
+        provide_tempdir,
+        [ ( 'stable/guide.html', digest, ( 'ghost', ), 'frozen' ) ] )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._validate_legacy_inventory( locations, inventory )
+    inventory = Path( provide_tempdir ) / 'inventory.toml'
+    inventory.write_text(
+        '[[entries]]\n'
+        'path = "stable/guide.html"\n'
+        f'sha256 = "{digest}"\n'
+        'fragments = "guide"\n'
+        'semantics = "frozen"\n',
+        newline = '' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._validate_legacy_inventory( locations, inventory )
+
+
+def test_097_verify_retained_history_classes( website, provide_tempdir ):
+    ''' Retained history guards old versions, not new or mutable outputs. '''
+    from frigid import Dictionary as FrozenDictionary
+    from pathlib import Path
+    root = Path( provide_tempdir ) / 'site'
+    ( root / 'v1.0' ).mkdir( parents = True, exist_ok = True )
+    ( root / 'v1.0/guide.html' ).write_text( 'old', newline = '' )
+    ( root / 'v2.0' ).mkdir( parents = True, exist_ok = True )
+    ( root / 'v2.0/guide.html' ).write_text( 'new', newline = '' )
+    ( root / 'stable' ).mkdir( parents = True, exist_ok = True )
+    ( root / 'stable/guide.html' ).write_text( 'alias', newline = '' )
+    ( root / 'index.html' ).write_text( 'index', newline = '' )
+    locations = website.Locations(
+        project = Path( provide_tempdir ),
+        auxiliary = Path( provide_tempdir ) / '.auxiliary',
+        publications = Path( provide_tempdir ) / 'publications',
+        archive = Path( provide_tempdir ) / 'website.tar.xz',
+        artifacts = Path( provide_tempdir ) / 'artifacts',
+        website = root,
+        coverage = root / 'coverage.svg',
+        index = root / 'index.html',
+        versions = root / 'versions.json',
+        templates = Path( provide_tempdir ) / 'templates' )
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'docs-2': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': 'docs-2',
+        } ),
+    } )  # type: ignore[arg-type]
+    snapshot = website._snapshot_tree( root )
+    website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
+    ( root / 'v1.0/guide.html' ).write_text( 'tampered', newline = '' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._verify_retained_history(
+            locations, snapshot, 'v2.0', tracks )
+    ( root / 'v1.0/guide.html' ).write_text( 'old', newline = '' )
+    ( root / 'v2.0/guide.html' ).write_text( 'rebuilt', newline = '' )
+    ( root / 'stable/guide.html' ).write_text( 'recopied', newline = '' )
+    ( root / 'index.html' ).write_text( 'rerendered', newline = '' )
+    website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
+
+
+def test_098_provenance_validates_release_tag( website, provide_tempdir ):
+    ''' Strict provenance requires HEAD to match the release tag. '''
+    import shutil
+    import subprocess
+    from frigid import Dictionary as FrozenDictionary
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    project = Path( provide_tempdir ) / 'tagrepo'
+    project.mkdir( parents = True, exist_ok = True )
+    ( project / 'site' ).mkdir( parents = True, exist_ok = True )
+    def git( *args ):
+        return subprocess.run(  # noqa: S603
+            [ executable, *args ], cwd = project, check = True,
+            capture_output = True, text = True )
+    git( 'init' )
+    git( 'config', 'user.email', 'test@example.com' )
+    git( 'config', 'user.name', 'Test' )
+    git( 'config', 'commit.gpgsign', 'false' )
+    git( 'config', 'tag.gpgsign', 'false' )
+    git( 'config', 'commit.gpgsign', 'false' )
+    git( 'config', 'tag.gpgsign', 'false' )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    git( 'tag', 'v9.9' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = project / 'website.tar.xz',
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / 'site',
+        coverage = project / 'site/coverage.svg',
+        index = project / 'site/index.html',
+        versions = project / 'site/versions.json',
+        templates = project / 'templates' )
+    locations.website.mkdir( parents = True, exist_ok = True )
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+    } )  # type: ignore[arg-type]
+    website._record_provenance(
+        locations, '9.9', tracks, strict = True )
+    ( project / 'other.txt' ).write_text( 'other', newline = '' )
+    git( 'add', 'other.txt' )
+    git( 'commit', '-m', 'advance' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._record_provenance(
+            locations, '9.9', tracks, strict = True )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._record_provenance(
+            locations, '0.0', tracks, strict = True )
+
+
+def test_103_inventory_failure_retains_previous_tree(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
     ''' Failed inventory validation restores previous good tree. '''
@@ -890,6 +1042,8 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
     git( 'init' )
     git( 'config', 'user.email', 'test@example.com' )
     git( 'config', 'user.name', 'Test' )
+    git( 'config', 'commit.gpgsign', 'false' )
+    git( 'config', 'tag.gpgsign', 'false' )
     git( 'remote', 'add', 'origin', str( remote ) )
     git( 'add', str( archive ) )
     git( 'commit', '-m', 'base' )

@@ -428,6 +428,7 @@ def _build_publication_tree(
 ) -> None:
     ''' Builds version tree, aliases, and indexes for publication. '''
     _restore_publication_tree( locations )
+    baseline = _snapshot_tree( locations.website )
     available_species = _update_available_species( locations, version )
     j2context = _jinja2.Environment(
         loader = _jinja2.FileSystemLoader( locations.templates ),
@@ -451,6 +452,7 @@ def _build_publication_tree(
                 'inventory', 'required for docs tracks' )
         _validate_legacy_inventory(
             locations, legacy_inventory )  # type: ignore[arg-type]
+        _verify_retained_history( locations, baseline, version, tracks )
     elif not __.is_absent( legacy_inventory ):
         _validate_legacy_inventory(
             locations, legacy_inventory )  # type: ignore[arg-type]
@@ -674,16 +676,7 @@ def _record_provenance(
         promotes with empty provenance.
     '''
     import datetime
-    commit = ''
-    with __.ctxl.suppress( Exception ):
-        result = __.subprocess.run(
-            [ 'git', 'rev-parse', 'HEAD' ],
-            cwd = locations.project,
-            check = False, capture_output = True, text = True )
-        commit = result.stdout.strip( )
-    if strict and not commit:
-        raise PublicationSourceInvalidity(
-            version, 'source identity unavailable' )
+    commit = _resolve_source_identity( locations, version, strict )
     aliases: list[ str ] = [ ]
     for name, track in tracks.items( ):
         alias = track.get( 'alias', name )
@@ -724,6 +717,46 @@ def _reject_ambiguous_known_tags(
         if len( claimants ) > 1:
             raise TrackConfigurationInvalidity(
                 tag, 'claimed by multiple tracks' )
+
+
+def _resolve_source_identity(
+    locations: Locations, version: str, strict: bool
+) -> str:
+    ''' Resolves source commit, checking release tag in strict mode. '''
+    commit = ''
+    with __.ctxl.suppress( Exception ):
+        result = __.subprocess.run(
+            [ 'git', 'rev-parse', 'HEAD' ],
+            cwd = locations.project,
+            check = False, capture_output = True, text = True )
+        commit = result.stdout.strip( )
+    if strict and not commit:
+        raise PublicationSourceInvalidity(
+            version, 'source identity unavailable' )
+    if strict:
+        tag_sha = _resolve_release_tag( locations, version )
+        if not tag_sha:
+            raise PublicationSourceInvalidity(
+                version, 'unresolvable release tag' )
+        if tag_sha != commit:
+            raise PublicationSourceInvalidity(
+                version, 'source identity mismatch' )
+    return commit
+
+
+def _resolve_release_tag( locations: Locations, version: str ) -> str:
+    ''' Resolves release tag to commit SHA, or empty when absent. '''
+    candidates = [ version ]
+    if not version.startswith( 'v' ):
+        candidates.append( 'v' + version )
+    for candidate in candidates:
+        probe = __.subprocess.run(
+            [ 'git', 'rev-parse', '--verify', '--quiet', candidate ],
+            cwd = locations.project,
+            check = False, capture_output = True, text = True )
+        if probe.returncode == 0 and probe.stdout.strip( ):
+            return probe.stdout.strip( )
+    return ''
 
 
 def _reject_symlinks_in_tree( root: __.Path ) -> None:
@@ -811,18 +844,29 @@ def _validate_inventory_entry(
         Consumes dynamic TOML values validated at runtime via duck typing;
         malformed staged input aborts promotion.
     '''
-    import hashlib
     get = getattr( raw_entry, 'get', None )
     if get is None:
         raise PublicationSourceInvalidity( 'entry', 'malformed entry' )
     relative = get( 'path', '' )
     semantics = get( 'semantics', 'frozen' )
+    if not isinstance( relative, str ) or not isinstance( semantics, str ):
+        raise PublicationSourceInvalidity( 'entry', 'malformed entry' )
     if semantics not in ( 'frozen', 'follow' ):
         raise PublicationSourceInvalidity( relative, 'unknown semantics' )
     target = _validate_inventory_path( locations.website, relative )
     if not target.is_file( ):
         raise PublicationSourceInvalidity( relative, 'entry absent' )
-    digest = get( 'sha256', '' )
+    _check_entry_digest(
+        target, relative, get( 'sha256', '' ), semantics )
+    _check_entry_fragments(
+        target, relative, get( 'fragments', [ ] ) )
+
+
+def _check_entry_digest(
+    target: __.Path, relative: str, digest: str, semantics: str
+) -> None:
+    ''' Checks entry content digest for frozen or pinned entries. '''
+    import hashlib
     if digest or semantics == 'frozen':
         if not digest:
             raise PublicationSourceInvalidity(
@@ -831,13 +875,23 @@ def _validate_inventory_entry(
         if actual != digest:
             raise PublicationSourceInvalidity(
                 relative, 'content drift detected' )
-    text = target.read_text( errors = 'replace' )
-    try: fragments = list( get( 'fragments', [ ] ) )
+
+
+def _check_entry_fragments(
+    target: __.Path, relative: str, fragment_source: __.typx.Any
+) -> None:
+    ''' Checks entry anchor fragments as parsed element IDs. '''
+    if isinstance( fragment_source, str ):
+        raise PublicationSourceInvalidity(
+            relative, 'malformed fragments' )
+    try: fragments = list( fragment_source )
     except TypeError as exception:
         raise PublicationSourceInvalidity(
             relative, 'malformed fragments' ) from exception
+    identifiers = _extract_element_ids(
+        target.read_text( errors = 'replace' ) )
     for fragment in fragments:
-        if f'id="{fragment}"' not in text:
+        if not isinstance( fragment, str ) or fragment not in identifiers:
             raise PublicationSourceInvalidity( relative, 'fragment absent' )
 
 
@@ -866,6 +920,52 @@ def _is_package_version( label: __.typx.Any ) -> bool:
     try: Version( str( label ).lstrip( 'v' ) )
     except InvalidVersion: return False
     return True
+
+
+_MUTABLE_TOP_LEVEL: tuple[ str, ... ] = (
+    'index.html', 'versions.json', 'provenance.json',
+    'coverage.svg', '.nojekyll' )
+
+
+def _snapshot_tree( root: __.Path ) -> dict[ str, str ]:
+    ''' Snapshots retained-history digests for every file under root. '''
+    import hashlib
+    manifest: dict[ str, str ] = { }
+    for path in sorted( root.rglob( '*' ) ):
+        if path.is_symlink( ) or not path.is_file( ): continue
+        relative = path.relative_to( root ).as_posix( )
+        manifest[ relative ] = hashlib.sha256(
+            path.read_bytes( ) ).hexdigest( )
+    return manifest
+
+
+def _verify_retained_history(
+    locations: Locations,
+    snapshot: dict[ str, str ],
+    version: str,
+    tracks: TrackConfiguration,
+) -> None:
+    ''' Verifies retained history against the pre-build snapshot.
+
+        Every snapshotted file outside the published version, configured
+        aliases, and mutable top-level files must exist with identical
+        content. Legitimate new version files and mutable outputs are
+        excluded by explicit class rules, never by regeneration.
+    '''
+    import hashlib
+    aliases = {
+        track.get( 'alias', name ) for name, track in tracks.items( ) }
+    for relative, digest in snapshot.items( ):
+        head = relative.split( '/', 1 )[ 0 ]
+        if head == version: continue
+        if head in aliases: continue
+        if '/' not in relative and relative in _MUTABLE_TOP_LEVEL: continue
+        candidate = locations.website / relative
+        if not candidate.is_file( ):
+            raise PublicationSourceInvalidity( relative, 'history lost' )
+        actual = hashlib.sha256( candidate.read_bytes( ) ).hexdigest( )
+        if actual != digest:
+            raise PublicationSourceInvalidity( relative, 'history drift' )
 
 
 def _sort_versions(
@@ -926,6 +1026,25 @@ def _toml_loads( content: bytes ) -> dict[ str, __.typx.Any ]:
     from tomli import loads as parse
     result: dict[ str, __.typx.Any ] = parse( content.decode( 'utf-8' ) )
     return result
+
+
+def _extract_element_ids( content: str ) -> set[ str ]:
+    ''' Extracts element IDs from HTML content with a real parser. '''
+    import html.parser
+    identifiers: set[ str ] = set( )
+
+    class Collector( html.parser.HTMLParser ):
+
+        def handle_starttag(
+            self, tag: str, attrs: list[ tuple[ str, str | None ] ]
+        ) -> None:
+            for name, value in attrs:
+                if name == 'id' and value:
+                    identifiers.add( value )
+
+    parser = Collector( convert_charrefs = True )
+    parser.feed( content )
+    return identifiers
 
 
 def _update_available_species(
