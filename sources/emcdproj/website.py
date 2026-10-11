@@ -542,47 +542,67 @@ def _extract_coverage( locations: Locations ) -> int:
 def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
     ''' Fetches publication branch and tarball, returning destination SHA.
 
-        Returns the fetched destination commit, or an empty string when no
-        publication branch exists. Raises when the fetch fails while the
-        remote branch exists, so builds never proceed silently on stale
-        bases. The returned SHA threads through build to push unchanged as
-        the compare-and-swap baseline.
+        Returns the fetched destination commit only when that exact SHA's
+        archive was loaded, or an empty string when remote branch absence
+        is confirmed. Raises on query failure, failed fetch with a present
+        remote branch, and unrestorable archives, so builds never proceed
+        silently on stale bases. The returned SHA threads through build to
+        push unchanged as the compare-and-swap baseline.
     '''
     fetch = __.subprocess.run(
         [ 'git', 'fetch', 'origin', 'publication:publication' ],
         cwd = locations.project,
         check = False,
         capture_output = True )
-    if fetch.returncode != 0 and _remote_has_publication( locations ):
-        raise PublicationSourceInvalidity(
-            'publication', 'fetch failed with remote branch present' )
-    with __.ctxl.suppress( Exception ):
-        __.subprocess.run(
-            [ 'git', 'checkout', 'publication', '--',
-              str( locations.archive ) ],
-            cwd = locations.project,
-            check = False,
-            capture_output = True )
+    if fetch.returncode != 0:
+        if _remote_has_publication( locations ):
+            raise PublicationSourceInvalidity(
+                'publication', 'fetch failed with remote branch present' )
+        return ''
     probe = __.subprocess.run(
         [ 'git', 'rev-parse', '--verify', '--quiet', 'publication' ],
         cwd = locations.project,
         check = False, capture_output = True, text = True )
-    return probe.stdout.strip( ) if probe.returncode == 0 else ''
+    destination = probe.stdout.strip( ) if probe.returncode == 0 else ''
+    if not destination:
+        raise PublicationSourceInvalidity(
+            'publication', 'unresolvable destination' )
+    if locations.archive.is_file( ):
+        locations.archive.unlink( )
+    checkout = __.subprocess.run(
+        [ 'git', 'checkout', 'publication', '--', str( locations.archive ) ],
+        cwd = locations.project,
+        check = False,
+        capture_output = True )
+    if checkout.returncode != 0 or not locations.archive.is_file( ):
+        raise PublicationSourceInvalidity(
+            'publication', 'archive unrestorable from destination' )
+    return destination
 
 
 def _remote_has_publication( locations: Locations ) -> bool:
-    ''' Checks whether origin holds a publication branch. '''
+    ''' Checks whether origin holds a publication branch.
+
+        Returns false only when absence is confirmed (no remote or empty
+        remote branch list). Raises on query failure so callers fail
+        closed instead of guessing absence.
+    '''
+    remote = __.subprocess.run(
+        [ 'git', 'remote', 'get-url', 'origin' ],
+        cwd = locations.project,
+        check = False, capture_output = True )
+    if remote.returncode != 0: return False
     try:
-        remote = __.subprocess.run(
-            [ 'git', 'remote', 'get-url', 'origin' ],
-            cwd = locations.project,
-            check = False, capture_output = True )
-        if remote.returncode != 0: return False
         probe = __.subprocess.run(
             [ 'git', 'ls-remote', '--heads', 'origin', 'publication' ],
             cwd = locations.project,
             check = False, capture_output = True, text = True )
-    except Exception: return True
+    except Exception as exception:
+        raise PublicationSourceInvalidity(
+            'publication', 'remote probe failed' ) from exception
+    if probe.returncode != 0:
+        raise PublicationSourceInvalidity(
+            'publication', 'remote probe failed' )
     return bool( probe.stdout.strip( ) )
 
 
@@ -970,6 +990,8 @@ def _update_publication_branch(
         without lost updates when the destination ref advances concurrently;
         caller refetches, rebuilds, and revalidates or fails. Never
         refetches here, so a stale build cannot acquire a fresh lease.
+        An empty SHA means confirmed remote absence and pushes plainly,
+        which still fails closed on concurrent creation.
     '''
     __.subprocess.run(
         [ 'git', 'add', str( locations.archive ) ],
@@ -988,12 +1010,6 @@ def _update_publication_branch(
         cwd = locations.project,
         check = False ).returncode == 0
     lease_expectation = expected_sha
-    if not lease_expectation and publication_exists:
-        lease_result = __.subprocess.run(
-            [ 'git', 'rev-parse', 'publication' ],
-            cwd = locations.project,
-            check = True, capture_output = True, text = True )
-        lease_expectation = lease_result.stdout.strip( )
     commit_result = __.subprocess.run(
         [ 'git', 'commit-tree', tree_hash,
           *( ( '-p', 'publication' ) if publication_exists else ( ) ),

@@ -591,7 +591,80 @@ def _write_inventory_case( base, entries ):
     return location
 
 
-def test_096_validate_legacy_inventory( website, provide_tempdir ):
+def test_099_reject_unverifiable_fetch_base( website, provide_tempdir ):
+    ''' Unverifiable fetch bases abort before any build. '''
+    import subprocess
+    project = provide_tempdir / 'fetchrepo'
+    project.mkdir( parents = True, exist_ok = True )
+    def git( *args ):
+        import shutil
+        executable = shutil.which( 'git' )
+        return subprocess.run(  # noqa: S603
+            [ executable, *args ], cwd = project, check = True,
+            capture_output = True, text = True )
+    git( 'init' )
+    git( 'config', 'user.email', 'test@example.com' )
+    git( 'config', 'user.name', 'Test' )
+    git( 'remote', 'add', 'origin', '/nonexistent/remote.git' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = project / '.auxiliary/publications/website.tar.xz',
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._fetch_publication_branch_and_tarball( locations )
+
+
+def test_101_reject_branch_without_tarball( website, provide_tempdir ):
+    ''' Publication branch without tarball aborts before any build. '''
+    import shutil
+    import subprocess
+    executable = shutil.which( 'git' )
+    assert executable is not None
+    project = provide_tempdir / 'notarball'
+    remote = provide_tempdir / 'remote-nt.git'
+    project.mkdir( parents = True, exist_ok = True )
+    ( project / 'seed.txt' ).write_text( 'seed', newline = '' )
+    def git( *args ):
+        return subprocess.run(  # noqa: S603
+            [ executable, *args ], cwd = project, check = True,
+            capture_output = True, text = True )
+    subprocess.run(  # noqa: S603
+        [ executable, 'init', '--bare', str( remote ) ],
+        check = True, capture_output = True )
+    git( 'init' )
+    git( 'config', 'user.email', 'test@example.com' )
+    git( 'config', 'user.name', 'Test' )
+    git( 'remote', 'add', 'origin', str( remote ) )
+    git( 'add', 'seed.txt' )
+    git( 'commit', '-m', 'base' )
+    git( 'branch', 'publication' )
+    git( 'push', 'origin', 'publication:publication' )
+    archive = project / '.auxiliary/publications/website.tar.xz'
+    archive.parent.mkdir( parents = True, exist_ok = True )
+    archive.write_bytes( b'stale-local' )
+    locations = website.Locations(
+        project = project,
+        auxiliary = project / '.auxiliary',
+        publications = project / '.auxiliary/publications',
+        archive = archive,
+        artifacts = project / '.auxiliary/artifacts',
+        website = project / '.auxiliary/artifacts/website',
+        coverage = project / '.auxiliary/artifacts/website/coverage.svg',
+        index = project / '.auxiliary/artifacts/website/index.html',
+        versions = project / '.auxiliary/artifacts/website/versions.json',
+        templates = project / 'templates' )
+    with pytest.raises( website.PublicationSourceInvalidity ):
+        website._fetch_publication_branch_and_tarball( locations )
+
+
+def test_097_validate_legacy_inventory( website, provide_tempdir ):
     ''' Legacy inventory passes on intact tree with digests and anchors. '''
     import hashlib
     from pathlib import Path
@@ -619,7 +692,7 @@ def test_096_validate_legacy_inventory( website, provide_tempdir ):
         inventory )
 
 
-def test_097_reject_bad_inventory_cases( website, provide_tempdir ):
+def test_102_reject_bad_inventory_cases( website, provide_tempdir ):
     ''' Missing files, drift, anchors, and malformed input abort. '''
     import hashlib
     from pathlib import Path
