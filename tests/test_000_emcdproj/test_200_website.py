@@ -486,7 +486,68 @@ def test_090_staged_docs2_proof(
         assert 'docs-2' in provenance[ 'aliases' ]
 
 
-def test_092_stale_lease_fails_without_loss( website, provide_tempdir ):
+def test_091_reject_ambiguous_docs_tracks( website ):
+    ''' Multiple docs tracks claiming one version are rejected. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = website.validate_track_configuration( {
+        'docs-a': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': 'docs-a',
+        } ),
+        'docs-b': FrozenDictionary( {
+            'tag_namespace': 'docs-9*',
+            'selector': 'exact-tag',
+            'alias': 'docs-b',
+        } ),
+    } )  # type: ignore[arg-type]
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website.select_docs_alias( 'docs-99', tracks )
+
+
+def test_092_reject_claimed_known_tag( website ):
+    ''' Known tags claimed by two tracks are rejected. '''
+    from frigid import Dictionary as FrozenDictionary
+    tracks = {
+        'docs-a': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': 'docs-a',
+        } ),
+        'docs-b': FrozenDictionary( {
+            'tag_namespace': 'docs-3*',
+            'selector': 'exact-tag',
+            'alias': 'docs-b',
+        } ),
+    }
+    with pytest.raises( website.TrackConfigurationInvalidity ):
+        website.validate_track_configuration(
+            tracks, known_tags = ( 'docs-30', ) )  # type: ignore[arg-type]
+
+
+def test_093_load_tracks_from_toml( website, provide_tempdir ):
+    ''' Track configuration loads from TOML file. '''
+    from pathlib import Path
+    location = Path( provide_tempdir ) / 'tracks.toml'
+    location.write_text(
+        '[tracks.stable]\n'
+        'tag_namespace = "v*"\n'
+        'selector = "latest-final"\n'
+        'alias = "stable"\n'
+        '[tracks.docs-2]\n'
+        'tag_namespace = "docs-*"\n'
+        'selector = "exact-tag"\n'
+        'alias = "docs-2"\n',
+        newline = '' )
+    tracks = website.load_track_configuration( location )
+    assert tracks[ 'stable' ][ 'alias' ] == 'stable'
+    assert tracks[ 'docs-2' ][ 'tag_namespace' ] == 'docs-*'
+    with pytest.raises( website._exceptions.FileAwol ):
+        website.load_track_configuration(
+            Path( provide_tempdir ) / 'absent.toml' )
+
+
+def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
     ''' Stale compare-and-swap baseline fails instead of losing updates. '''
     import shutil
     import subprocess

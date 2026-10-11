@@ -66,13 +66,22 @@ class UpdateCommand(
                      Implies --use-extant to prevent data loss. ''' ),
     ] = False
 
+    tracks_config: __.typx.Annotated[
+        str,
+        __.typx.Doc( ''' Track configuration TOML file for publication. ''' ),
+    ] = ''
+
     async def __call__(
         self, auxdata: __.Globals, display: _interfaces.ConsoleDisplay
     ) -> None:
+        tracks: TrackConfiguration = _DEFAULT_TRACKS
+        if self.tracks_config:
+            tracks = load_track_configuration( self.tracks_config )
         update(
             auxdata, self.version,
             use_extant = self.use_extant,
-            production = self.production )
+            production = self.production,
+            tracks = tracks )
 
 
 class CommandDispatcher(
@@ -195,10 +204,31 @@ def select_docs_alias(
     for name, track in tracks.items( ):
         if name in ( 'stable', 'development' ): continue
         namespace = track.get( 'tag_namespace', '' )
-        if matches_namespace( version, namespace ):
-            candidates.append( track.get( 'alias', name ) )
+        selector = track.get( 'selector', 'exact-tag' )
+        if not matches_namespace( version, namespace ): continue
+        if not _selector_claims( version, selector ): continue
+        candidates.append( track.get( 'alias', name ) )
     if not candidates: return __.absent
-    return sorted( candidates )[ 0 ]
+    if len( candidates ) > 1:
+        raise TrackConfigurationInvalidity(
+            version, 'ambiguous docs tracks' )
+    return candidates[ 0 ]
+
+
+def load_track_configuration( location: __.Path | str ) -> TrackMap:
+    ''' Loads and validates track configuration from TOML file. '''
+    path = __.Path( location )
+    try: content = path.read_bytes( )
+    except OSError as exception:
+        raise _exceptions.FileAwol( path ) from exception
+    try: data = _toml_loads( content )
+    except Exception as exception:
+        raise TrackConfigurationInvalidity(
+            str( path ), 'unparseable TOML' ) from exception
+    if 'tracks' not in data:
+        raise TrackConfigurationInvalidity(
+            str( path ), "missing 'tracks' table" )
+    return validate_track_configuration( data[ 'tracks' ] )
 
 
 def survey(
@@ -281,6 +311,7 @@ def update(  # noqa: PLR0913
 
 def validate_track_configuration(
     tracks: TrackConfiguration,
+    known_tags: __.Absential[ __.cabc.Sequence[ str ] ] = __.absent,
 ) -> TrackMap:
     ''' Validates track namespaces, selectors, and aliases. '''
     normalized: dict[ str, __.immut.Dictionary[ str, str ] ] = { }
@@ -321,6 +352,9 @@ def validate_track_configuration(
             ):
                 raise TrackConfigurationInvalidity(
                     name_a, f"collides with '{name_b}'" )
+    if not __.is_absent( known_tags ):
+        _reject_ambiguous_known_tags(
+            normalized, known_tags )  # type: ignore[arg-type]
     return __.immut.Dictionary( normalized )
 
 
@@ -400,7 +434,7 @@ def _build_publication_tree(
         autoescape = True )
     index_data = _update_versions_json(
         locations, version, available_species )
-    _enhance_index_data_with_stable_dev( index_data )
+    _enhance_index_data_with_stable_dev( index_data, tracks )
     _create_stable_dev_directories( locations, index_data )
     _promote_docs_alias( locations, version, tracks )
     _update_index_html( locations, j2context, index_data )
@@ -435,41 +469,38 @@ def _promote_docs_alias(
 
 
 def _enhance_index_data_with_stable_dev(
-    data: dict[ __.typx.Any, __.typx.Any ]
+    data: dict[ __.typx.Any, __.typx.Any ],
+    tracks: TrackConfiguration = _DEFAULT_TRACKS,
 ) -> None:
     ''' Enhances index data with stable/development version information.
 
-        Identifies the latest stable release and latest development version
-        from the versions data and adds them as separate entries for the
-        stable/development table.
+        Selects versions per configured track namespaces and selectors,
+        defaulting to latest final release for stable and latest prerelease
+        for development exactly as before.
     '''
-    from packaging.version import InvalidVersion, Version
     versions = data.get( 'versions', { } )
     if not versions:
         data[ 'stable_dev_versions' ] = { }
+        data[ 'track_versions' ] = { }
         return
-    stable_version = None
-    development_version = None
-    # Package versions only; docs tags never feed stable/dev selection.
-    sorted_versions = _sort_versions( versions )
-    # Find latest stable (non-prerelease) and development (prerelease) versions
-    for version_string, species in sorted_versions.items( ):
-        try: version_obj = Version( str( version_string ).lstrip( 'v' ) )
-        except InvalidVersion: continue
-        if not version_obj.is_prerelease and stable_version is None:
-            stable_version = ( version_string, species )
-        if version_obj.is_prerelease and development_version is None:
-            development_version = ( version_string, species )
-        if stable_version and development_version:
-            break
+    track_versions: dict[ __.typx.Any, __.typx.Any ] = { }
+    for name, track in tracks.items( ):
+        selected = _select_latest(
+            versions.keys( ), track.get( 'tag_namespace', '' ),
+            track.get( 'selector', 'exact-tag' ), name )
+        if not __.is_absent( selected ):
+            track_versions[ track.get( 'alias', name ) ] = selected
+    data[ 'track_versions' ] = track_versions
+    stable_version = track_versions.get( 'stable' )
+    development_version = track_versions.get( 'development' )
     stable_dev_versions: dict[ str, tuple[ str, ... ] ] = { }
-    if stable_version:
-        stable_dev_versions[ 'stable (current)' ] = stable_version[ 1 ]
-        data[ 'stable_version' ] = stable_version[ 0 ]
-    if development_version:
+    if stable_version is not None:
+        stable_dev_versions[ 'stable (current)' ] = versions[ stable_version ]
+        data[ 'stable_version' ] = stable_version
+    if development_version is not None:
         stable_dev_versions[ 'development (current)' ] = (
-            development_version[ 1 ] )
-        data[ 'development_version' ] = development_version[ 0 ]
+            versions[ development_version ] )
+        data[ 'development_version' ] = development_version
     data[ 'stable_dev_versions' ] = stable_dev_versions
 
 
@@ -587,8 +618,9 @@ def _namespaces_collide(
     ):
         return False
     probes = (
-        'v1.0', 'v1.0a1', 'docs-1', 'docs-2',
-        'docs-1.9', '1.0', 'stable', 'development' )
+        'v1.0', 'v1.0a1', 'v2.0rc1', 'v10.0', '1.0', '1.0a1', '2.0',
+        'docs-1', 'docs-2', 'docs-3', 'docs-1.9', 'docs-3.1',
+        'release-1.0', 'stable', 'development', 'nightly', 'latest' )
     for probe in probes:
         if (
             matches_namespace( probe, namespace_a )
@@ -636,6 +668,21 @@ def _record_provenance(
     }
     with ( locations.website / 'provenance.json' ).open( 'w' ) as file:
         __.json.dump( data, file, indent = 4 )
+
+
+def _reject_ambiguous_known_tags(
+    tracks: dict[ str, __.immut.Dictionary[ str, str ] ],
+    known_tags: __.cabc.Sequence[ str ],
+) -> None:
+    ''' Rejects known tags claimed by multiple tracks. '''
+    for tag in known_tags:
+        claimants = [
+            name for name, track in tracks.items( )
+            if matches_namespace( tag, track[ 'tag_namespace' ] )
+            and _selector_claims( tag, track[ 'selector' ] ) ]
+        if len( claimants ) > 1:
+            raise TrackConfigurationInvalidity(
+                tag, 'claimed by multiple tracks' )
 
 
 def _reject_symlinks_in_tree( root: __.Path ) -> None:
@@ -729,6 +776,48 @@ def _sort_versions(
         reverse = True )
     docs_entries.sort( key = lambda entry: str( entry[ 0 ] ) )
     return dict( package_entries + docs_entries )
+
+
+def _parse_package_version( label: __.typx.Any ) -> __.typx.Any:
+    ''' Parses label as package version, returning None when not parseable. '''
+    from packaging.version import InvalidVersion, Version
+    try: return Version( str( label ).lstrip( 'v' ) )
+    except InvalidVersion: return None
+
+
+def _select_latest(
+    versions: __.cabc.Iterable[ __.typx.Any ],
+    namespace: str, selector: str, track: str,
+) -> __.Absential[ __.typx.Any ]:
+    ''' Selects version for track from namespace and selector. '''
+    from packaging.version import Version
+    matched = [
+        version for version in versions
+        if matches_namespace( str( version ), namespace ) ]
+    if selector == 'exact-tag':
+        if not matched: return __.absent
+        if len( matched ) > 1:
+            raise TrackConfigurationInvalidity(
+                track, 'ambiguous exact-tag matches' )
+        return matched[ 0 ]
+    package_versions: list[ tuple[ __.typx.Any, Version ] ] = [ ]
+    for version in matched:
+        parsed = _parse_package_version( version )
+        if parsed is None: continue
+        if selector == 'latest-final' and parsed.is_prerelease: continue
+        if selector == 'latest-prerelease' and not parsed.is_prerelease:
+            continue
+        package_versions.append( ( version, parsed ) )
+    if not package_versions: return __.absent
+    package_versions.sort( key = lambda entry: entry[ 1 ], reverse = True )
+    return package_versions[ 0 ][ 0 ]
+
+
+def _toml_loads( content: bytes ) -> dict[ str, __.typx.Any ]:
+    ''' Parses TOML content. '''
+    from tomli import loads as parse
+    result: dict[ str, __.typx.Any ] = parse( content.decode( 'utf-8' ) )
+    return result
 
 
 def _update_available_species(
