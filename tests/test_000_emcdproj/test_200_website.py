@@ -32,7 +32,6 @@ from platformdirs import PlatformDirs
 
 from .__ import PACKAGE_NAME, cache_import_module, create_test_files
 
-
 ictruck.register_module( PACKAGE_NAME )
 
 
@@ -619,6 +618,7 @@ def test_095_provenance_per_release_and_strict(
 ):
     ''' Provenance merges per release and strict refuses empty identity. '''
     import json
+
     from frigid import Dictionary as FrozenDictionary
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
@@ -703,6 +703,7 @@ def _make_git_repo( provide_tempdir, name ):
     ''' Creates git repo with disabled signing, returning paths. '''
     import shutil
     import subprocess
+
     from pathlib import Path
     executable = shutil.which( 'git' )
     assert executable is not None
@@ -800,6 +801,7 @@ def test_101_reject_branch_without_tarball( website, provide_tempdir ):
 def test_097_validate_legacy_inventory( website, provide_tempdir ):
     ''' Legacy inventory passes on intact tree with digests and anchors. '''
     import hashlib
+
     from pathlib import Path
     root = Path( provide_tempdir ) / 'site'
     page = root / 'stable/guide.html'
@@ -828,6 +830,7 @@ def test_097_validate_legacy_inventory( website, provide_tempdir ):
 def test_102_reject_bad_inventory_cases( website, provide_tempdir ):
     ''' Missing files, drift, anchors, and malformed input abort. '''
     import hashlib
+
     from pathlib import Path
     root = Path( provide_tempdir ) / 'site'
     page = root / 'stable/guide.html'
@@ -868,6 +871,7 @@ def test_096_reject_comment_anchors_and_string_fragments(
 ):
     ''' Commented IDs do not count; string fragments are malformed. '''
     import hashlib
+
     from pathlib import Path
     root = Path( provide_tempdir ) / 'site'
     page = root / 'stable/guide.html'
@@ -908,8 +912,9 @@ def test_096_reject_comment_anchors_and_string_fragments(
 
 def test_097_verify_retained_history_classes( website, provide_tempdir ):
     ''' Retained history guards old versions, not new or mutable outputs. '''
-    from frigid import Dictionary as FrozenDictionary
     from pathlib import Path
+
+    from frigid import Dictionary as FrozenDictionary
     root = Path( provide_tempdir ) / 'site'
     ( root / 'v1.0' ).mkdir( parents = True, exist_ok = True )
     ( root / 'v1.0/guide.html' ).write_text( 'old', newline = '' )
@@ -957,6 +962,7 @@ def test_098_provenance_validates_release_tag( website, provide_tempdir ):
     ''' Strict provenance requires HEAD to match the release tag. '''
     import shutil
     import subprocess
+
     from frigid import Dictionary as FrozenDictionary
     executable = shutil.which( 'git' )
     assert executable is not None
@@ -1368,8 +1374,9 @@ def test_108_changed_republish_refused_idempotent_passes(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
     ''' Changed same-version content aborts; identical rerun passes. '''
-    from frigid import Dictionary as FrozenDictionary
     from pathlib import Path
+
+    from frigid import Dictionary as FrozenDictionary
     test_files = {
         'project/.auxiliary/artifacts/sphinx-html/guide.html':
             '<html><body>one</body></html>',
