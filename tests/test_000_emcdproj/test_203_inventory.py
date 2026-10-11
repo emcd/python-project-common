@@ -40,7 +40,7 @@ def test_097_validate_legacy_inventory( website, provide_tempdir ):
     inventory = _write_inventory_case(
         provide_tempdir,
         [ ( 'stable/guide.html', digest, ( 'guide', ), 'frozen' ) ] )
-    website._validate_legacy_inventory(
+    website.validate_legacy_inventory(
         website.Locations(
             project = Path( provide_tempdir ),
             auxiliary = Path( provide_tempdir ) / '.auxiliary',
@@ -87,11 +87,11 @@ def test_102_reject_bad_inventory_cases( website, provide_tempdir ):
     for entries in cases:
         inventory = _write_inventory_case( provide_tempdir, entries )
         with pytest.raises( website.PublicationSourceInvalidity ):
-            website._validate_legacy_inventory( locations, inventory )
+            website.validate_legacy_inventory( locations, inventory )
     malformed = Path( provide_tempdir ) / 'inventory.toml'
     malformed.write_text( '[[entries]\nbroken', newline = '' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._validate_legacy_inventory( locations, malformed )
+        website.validate_legacy_inventory( locations, malformed )
 
 
 def test_096_reject_comment_anchors_and_string_fragments(
@@ -120,12 +120,12 @@ def test_096_reject_comment_anchors_and_string_fragments(
         index = root / 'index.html',
         versions = root / 'versions.json',
         templates = Path( provide_tempdir ) / 'templates' )
-    assert website._extract_element_ids( content ) == { 'guide' }
+    assert website.extract_element_ids( content ) == { 'guide' }
     inventory = _write_inventory_case(
         provide_tempdir,
         [ ( 'stable/guide.html', digest, ( 'ghost', ), 'frozen' ) ] )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._validate_legacy_inventory( locations, inventory )
+        website.validate_legacy_inventory( locations, inventory )
     inventory = Path( provide_tempdir ) / 'inventory.toml'
     inventory.write_text(
         '[[entries]]\n'
@@ -135,4 +135,4 @@ def test_096_reject_comment_anchors_and_string_fragments(
         'semantics = "frozen"\n',
         newline = '' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._validate_legacy_inventory( locations, inventory )
+        website.validate_legacy_inventory( locations, inventory )

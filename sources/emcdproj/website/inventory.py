@@ -22,9 +22,8 @@
 
 
 from . import __
-from .locations import Locations as _Locations
-from .tracks import TrackConfiguration as _TrackConfiguration
-from .tracks import _toml_loads
+from . import locations as _locations
+from . import tracks as _tracks
 
 _MUTABLE_TOP_LEVEL: tuple[ str, ... ] = (
     'index.html', 'versions.json', 'provenance.json',
@@ -35,7 +34,7 @@ _VOLATILE_VERSION_FILES: tuple[ str, ... ] = (
     'coverage.xml', '.buildinfo' )
 
 
-def _snapshot_archive( archive: __.Path ) -> dict[ str, str ]:
+def snapshot_archive( archive: __.Path ) -> dict[ str, str ]:
     ''' Snapshots retained-history digests from the trusted archive.
 
         Reads the pre-update archive members without extracting, so
@@ -63,7 +62,7 @@ def _snapshot_archive( archive: __.Path ) -> dict[ str, str ]:
     return manifest
 
 
-def _reject_alias_collisions(
+def reject_alias_collisions(
     index_data: dict[ __.typx.Any, __.typx.Any ],
     version: str,
 ) -> None:
@@ -86,11 +85,11 @@ def _reject_alias_collisions(
             version, 'version collides with alias' )
 
 
-def _verify_retained_history(
-    locations: _Locations,
+def verify_retained_history(
+    locations: _locations.Locations,
     snapshot: dict[ str, str ],
     version: str,
-    tracks: _TrackConfiguration,
+    tracks: _tracks.TrackConfiguration,
 ) -> None:
     ''' Verifies retained history against the pre-build snapshot.
 
@@ -134,8 +133,8 @@ def _validate_inventory_path( root: __.Path, entry: str ) -> __.Path:
     return root / entry.replace( '/', __.os.sep )
 
 
-def _validate_legacy_inventory(
-    locations: _Locations, inventory: __.Path | str
+def validate_legacy_inventory(
+    locations: _locations.Locations, inventory: __.Path | str
 ) -> None:
     ''' Validates legacy-link inventory against built tree.
 
@@ -147,7 +146,7 @@ def _validate_legacy_inventory(
     try: content = path.read_bytes( )
     except OSError as exception:
         raise __.exceptions.FileAwol( path ) from exception
-    try: data = _toml_loads( content )
+    try: data = _tracks.toml_loads( content )
     except Exception as exception:
         raise __.exceptions.PublicationSourceInvalidity(
             str( path ), 'unparseable inventory' ) from exception
@@ -163,7 +162,7 @@ def _validate_legacy_inventory(
 
 
 def _validate_inventory_entry(
-    locations: _Locations, raw_entry: __.typx.Any
+    locations: _locations.Locations, raw_entry: __.typx.Any
 ) -> None:
     ''' Validates one legacy inventory entry against built tree.
 
@@ -218,7 +217,7 @@ def _check_entry_fragments(
     except TypeError as exception:
         raise __.exceptions.PublicationSourceInvalidity(
             relative, 'malformed fragments' ) from exception
-    identifiers = _extract_element_ids(
+    identifiers = extract_element_ids(
         target.read_text( errors = 'replace' ) )
     for fragment in fragments:
         if not isinstance( fragment, str ) or fragment not in identifiers:
@@ -226,7 +225,7 @@ def _check_entry_fragments(
                 'fragment absent' )
 
 
-def _extract_element_ids( content: str ) -> set[ str ]:
+def extract_element_ids( content: str ) -> set[ str ]:
     ''' Extracts element IDs from HTML content with a real parser. '''
     import html.parser
     identifiers: set[ str ] = set( )

@@ -22,28 +22,9 @@
 
 
 from . import __
-from .inventory import (
-    _reject_alias_collisions,
-    _snapshot_archive,
-    _validate_legacy_inventory,
-    _verify_retained_history,
-)
-from .locations import Locations as _Locations
-from .tracks import (
-    _DEFAULT_TRACKS,
-)
-from .tracks import TrackConfiguration as _TrackConfiguration
-from .tracks import (
-    _is_package_version,
-    _load_default_configuration,
-    _reject_ambiguous_known_tags,
-    _select_latest,
-    _validate_alias,
-)
-from .tracks import load_track_configuration as _load_track_configuration
-from .tracks import (
-    validate_track_configuration as _validate_track_configuration,
-)
+from . import inventory as _inventory
+from . import locations as _locations
+from . import tracks as _tracks
 
 
 def survey(
@@ -56,9 +37,10 @@ def survey(
         Lists all versions from the versions manifest, showing their
         available documentation types and highlighting the latest version.
     '''
-    locations = _Locations.from_project_anchor( auxdata, project_anchor )
+    locations = _locations.Locations.from_project_anchor(
+        auxdata, project_anchor )
     if use_extant:
-        _fetch_publication_branch_and_tarball( locations )
+        fetch_publication_branch_and_tarball( locations )
         # Extract the fetched tarball to view published versions
         if locations.archive.is_file( ):
             from tarfile import open as tarfile_open
@@ -66,7 +48,7 @@ def survey(
                 __.shutil.rmtree( locations.website )
             locations.website.mkdir( exist_ok = True, parents = True )
             with tarfile_open( locations.archive, 'r:xz' ) as archive:
-                _safe_extractall( archive, locations.website )
+                safe_extractall( archive, locations.website )
     if not locations.versions.is_file( ):
         context = "published" if use_extant else "local"
         print( f"No versions manifest found for {context} website. "
@@ -94,7 +76,7 @@ def update(  # noqa: PLR0913
     project_anchor: __.Absential[ __.Path ] = __.absent,
     use_extant: bool = False,
     production: bool = False,
-    tracks: _TrackConfiguration = _DEFAULT_TRACKS,
+    tracks: _tracks.TrackConfiguration = _tracks.DEFAULT_TRACKS,
     configuration: __.Absential[ __.Path | str ] = __.absent,
     legacy_inventory: __.Absential[ __.Path | str ] = __.absent,
 ) -> None:
@@ -106,19 +88,20 @@ def update(  # noqa: PLR0913
         the standard project configuration file, then baked-in defaults.
     '''
     ictr( 2 )( version )
-    _validate_version_label( version )
-    locations = _Locations.from_project_anchor( auxdata, project_anchor )
+    validate_version_label( version )
+    locations = _locations.Locations.from_project_anchor(
+        auxdata, project_anchor )
     if not __.is_absent( configuration ):
-        tracks = _load_track_configuration(  # type: ignore[arg-type]
+        tracks = _tracks.load_track_configuration(  # type: ignore[arg-type]
             configuration )
-    elif tracks is _DEFAULT_TRACKS:
-        tracks = _load_default_configuration( locations.project )
-    tracks = _validate_track_configuration( tracks )
+    elif tracks is _tracks.DEFAULT_TRACKS:
+        tracks = _tracks.load_default_configuration( locations.project )
+    tracks = _tracks.validate_track_configuration( tracks )
     locations.publications.mkdir( exist_ok = True, parents = True )
     # --production implies --use-extant to prevent clobbering existing versions
     expected_sha = ''
     if use_extant or production:
-        expected_sha = _fetch_publication_branch_and_tarball( locations )
+        expected_sha = fetch_publication_branch_and_tarball( locations )
     try:
         _build_publication_tree(
             locations, version, tracks, production, legacy_inventory )
@@ -131,11 +114,11 @@ def update(  # noqa: PLR0913
         with tarfile_open( locations.archive, 'w:xz' ) as archive:
             archive.add( '.' )
     if production:
-        _update_publication_branch( locations, version, expected_sha )
+        update_publication_branch( locations, version, expected_sha )
 
 
 def _promote_track_aliases(
-    locations: _Locations, data: dict[ __.typx.Any, __.typx.Any ]
+    locations: _locations.Locations, data: dict[ __.typx.Any, __.typx.Any ]
 ) -> None:
     ''' Promotes every resolved track alias from its selected version.
 
@@ -144,10 +127,10 @@ def _promote_track_aliases(
         an alias to an older version.
     '''
     for alias, version in data.get( 'track_versions', { } ).items( ):
-        _copy_version_to_alias( locations, version, alias )
+        copy_version_to_alias( locations, version, alias )
 
 
-def _validate_version_label( version: str ) -> None:
+def validate_version_label( version: str ) -> None:
     ''' Validates version label before any destructive operation.
 
         Published versions are package versions and must parse as PEP 440
@@ -176,42 +159,44 @@ def _validate_version_label( version: str ) -> None:
 
 
 def _build_publication_tree(
-    locations: _Locations, version: str, tracks: _TrackConfiguration,
+    locations: _locations.Locations,
+    version: str,
+    tracks: _tracks.TrackConfiguration,
     strict: bool = False,
     legacy_inventory: __.Absential[ __.Path | str ] = __.absent,
 ) -> None:
     ''' Builds version tree, aliases, and indexes for publication. '''
-    baseline = _snapshot_archive( locations.archive )
+    baseline = _inventory.snapshot_archive( locations.archive )
     _restore_publication_tree( locations )
-    available_species = _update_available_species( locations, version )
+    available_species = update_available_species( locations, version )
     j2context = __.jinja2.Environment(
         loader = __.jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
-    index_data = _update_versions_json(
+    index_data = update_versions_json(
         locations, version, available_species )
     _enhance_index_data_with_stable_dev( index_data, tracks )
-    _reject_ambiguous_known_tags(
+    _tracks.reject_ambiguous_known_tags(
         tracks, list( index_data.get( 'versions', { } ).keys( ) ) )
-    _reject_alias_collisions( index_data, version )
+    _inventory.reject_alias_collisions( index_data, version )
     _promote_track_aliases( locations, index_data )
-    _update_index_html( locations, j2context, index_data )
+    update_index_html( locations, j2context, index_data )
     if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
-        _update_coverage_badge( locations, j2context )
-        _update_version_coverage_badge( locations, j2context, version )
+        update_coverage_badge( locations, j2context )
+        update_version_coverage_badge( locations, j2context, version )
     ( locations.website / '.nojekyll' ).touch( )
-    _record_provenance( locations, version, tracks, strict )
+    record_provenance( locations, version, tracks, strict )
     _validate_publication_tree( locations, version, index_data )
-    _verify_retained_history( locations, baseline, version, tracks )
+    _inventory.verify_retained_history( locations, baseline, version, tracks )
     if not __.is_absent( legacy_inventory ):
-        _validate_legacy_inventory(
+        _inventory.validate_legacy_inventory(
             locations, legacy_inventory )  # type: ignore[arg-type]
 
 
-def _copy_version_to_alias(
-    locations: _Locations, version: str, alias: str
+def copy_version_to_alias(
+    locations: _locations.Locations, version: str, alias: str
 ) -> None:
     ''' Copies version tree to alias directory. '''
-    canonical = _validate_alias( alias )
+    canonical = _tracks.validate_alias( alias )
     source = locations.website / version
     destination = locations.website / canonical
     if source == destination: return
@@ -221,7 +206,7 @@ def _copy_version_to_alias(
 
 def _enhance_index_data_with_stable_dev(
     data: dict[ __.typx.Any, __.typx.Any ],
-    tracks: _TrackConfiguration = _DEFAULT_TRACKS,
+    tracks: _tracks.TrackConfiguration = _tracks.DEFAULT_TRACKS,
 ) -> None:
     ''' Enhances index data with stable/development version information.
 
@@ -236,7 +221,7 @@ def _enhance_index_data_with_stable_dev(
         return
     track_versions: dict[ __.typx.Any, __.typx.Any ] = { }
     for name, track in tracks.items( ):
-        selected = _select_latest(
+        selected = _tracks.select_latest(
             versions.keys( ), track.get( 'tag-namespace', '' ),
             track.get( 'selector', 'exact-tag' ), name )
         if not __.is_absent( selected ):
@@ -255,7 +240,7 @@ def _enhance_index_data_with_stable_dev(
     data[ 'stable_dev_versions' ] = stable_dev_versions
 
 
-def _extract_coverage( locations: _Locations ) -> int:
+def extract_coverage( locations: _locations.Locations ) -> int:
     ''' Extracts coverage percentage from coverage report.
 
         Reads the coverage XML report and calculates the overall line coverage
@@ -274,7 +259,9 @@ def _extract_coverage( locations: _Locations ) -> int:
     return __.math.floor( float( line_rate ) * 100 )
 
 
-def _fetch_publication_branch_and_tarball( locations: _Locations ) -> str:
+def fetch_publication_branch_and_tarball(
+    locations: _locations.Locations,
+) -> str:
     ''' Fetches publication branch and tarball, returning destination SHA.
 
         Returns the fetched destination commit only when that exact SHA's
@@ -313,7 +300,7 @@ def _fetch_publication_branch_and_tarball( locations: _Locations ) -> str:
     return destination
 
 
-def _clear_stale_publication_state( locations: _Locations ) -> None:
+def _clear_stale_publication_state( locations: _locations.Locations ) -> None:
     ''' Clears stale local archive and publication ancestry.
 
         Runs on confirmed remote absence so an absent destination never
@@ -341,7 +328,7 @@ def _clear_stale_publication_state( locations: _Locations ) -> None:
             'publication', 'stale ancestry irremovable' )
 
 
-def _remote_has_publication( locations: _Locations ) -> bool:
+def _remote_has_publication( locations: _locations.Locations ) -> bool:
     ''' Checks whether origin holds a publication branch.
 
         Returns false only when absence is confirmed (no remote or empty
@@ -365,7 +352,7 @@ def _remote_has_publication( locations: _Locations ) -> bool:
 
 
 def _generate_coverage_badge_svg(
-    locations: _Locations, j2context: __.jinja2.Environment
+    locations: _locations.Locations, j2context: __.jinja2.Environment
 ) -> str:
     ''' Generates coverage badge SVG content.
 
@@ -375,7 +362,7 @@ def _generate_coverage_badge_svg(
         - yellow: 50-79%
         - green: >= 80%
     '''
-    coverage = _extract_coverage( locations )
+    coverage = extract_coverage( locations )
     color = (
         'red' if coverage < 50 else ( # noqa: PLR2004
             'yellow' if coverage < 80 else 'green' ) ) # noqa: PLR2004
@@ -395,8 +382,10 @@ def _generate_coverage_badge_svg(
         value_width = value_width )
 
 
-def _record_provenance(
-    locations: _Locations, version: str, tracks: _TrackConfiguration,
+def record_provenance(
+    locations: _locations.Locations,
+    version: str,
+    tracks: _tracks.TrackConfiguration,
     strict: bool = False,
 ) -> None:
     ''' Records tag-to-commit provenance for publication.
@@ -434,7 +423,7 @@ def _record_provenance(
         __.json.dump( data, file, indent = 4 )
 
 
-def _reject_symlinks_in_tree( root: __.Path ) -> None:
+def reject_symlinks_in_tree( root: __.Path ) -> None:
     ''' Rejects symlinks anywhere under publication tree. '''
     for path in sorted( root.rglob( '*' ) ):
         if path.is_symlink( ):
@@ -443,7 +432,7 @@ def _reject_symlinks_in_tree( root: __.Path ) -> None:
 
 
 def _resolve_source_identity(
-    locations: _Locations, version: str, strict: bool
+    locations: _locations.Locations, version: str, strict: bool
 ) -> str:
     ''' Resolves source commit, checking release tag in strict mode. '''
     commit = ''
@@ -465,7 +454,9 @@ def _resolve_source_identity(
     return commit
 
 
-def _resolve_release_tag( locations: _Locations, version: str ) -> str:
+def _resolve_release_tag(
+    locations: _locations.Locations, version: str
+) -> str:
     ''' Resolves release tag to commit SHA, or empty when absent.
 
         Peels exact tag references to commits, so annotated and signed
@@ -486,18 +477,18 @@ def _resolve_release_tag( locations: _Locations, version: str ) -> str:
     return ''
 
 
-def _restore_publication_tree( locations: _Locations ) -> None:
+def _restore_publication_tree( locations: _locations.Locations ) -> None:
     ''' Restores prior publication tree from archive, if present. '''
     from tarfile import open as tarfile_open
     if locations.website.is_dir( ): __.shutil.rmtree( locations.website )
     locations.website.mkdir( exist_ok = True, parents = True )
     if locations.archive.is_file( ):
         with tarfile_open( locations.archive, 'r:xz' ) as archive:
-            _safe_extractall( archive, locations.website )
+            safe_extractall( archive, locations.website )
 
 
 def _run_git(
-    locations: _Locations,
+    locations: _locations.Locations,
     arguments: __.cabc.Sequence[ str ],
     check: bool = True,
 ) -> __.typx.Any:
@@ -521,7 +512,7 @@ def _run_git(
         env = environment )
 
 
-def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
+def safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
     ''' Extracts archive after rejecting dangerous members. '''
     for member in archive.getmembers( ):
         name = member.name
@@ -548,7 +539,7 @@ def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
 
 
 def _validate_publication_tree(
-    locations: _Locations,
+    locations: _locations.Locations,
     version: str,
     index_data: dict[ __.typx.Any, __.typx.Any ],
 ) -> None:
@@ -565,7 +556,7 @@ def _validate_publication_tree(
         if not ( locations.website / alias ).is_dir( ):
             raise __.exceptions.PublicationSourceInvalidity( alias,
                 'alias tree absent' )
-    _reject_symlinks_in_tree( locations.website )
+    reject_symlinks_in_tree( locations.website )
 
 
 def _sort_versions(
@@ -575,10 +566,10 @@ def _sort_versions(
     from packaging.version import Version
     package_entries: list[ tuple[ __.typx.Any, __.typx.Any ] ] = [
         entry for entry in versions.items( )
-        if _is_package_version( entry[ 0 ] ) ]
+        if _tracks.is_package_version( entry[ 0 ] ) ]
     docs_entries: list[ tuple[ __.typx.Any, __.typx.Any ] ] = [
         entry for entry in versions.items( )
-        if not _is_package_version( entry[ 0 ] ) ]
+        if not _tracks.is_package_version( entry[ 0 ] ) ]
     package_entries.sort(
         key = lambda entry: Version( str( entry[ 0 ] ).lstrip( 'v' ) ),
         reverse = True )
@@ -586,8 +577,8 @@ def _sort_versions(
     return dict( package_entries + docs_entries )
 
 
-def _update_available_species(
-    locations: _Locations, version: str
+def update_available_species(
+    locations: _locations.Locations, version: str
 ) -> tuple[ str, ... ]:
     available_species: list[ str ] = [ ]
     for species in ( 'coverage-pytest', 'sphinx-html' ):
@@ -600,8 +591,8 @@ def _update_available_species(
     return tuple( available_species )
 
 
-def _update_coverage_badge(
-    locations: _Locations, j2context: __.jinja2.Environment
+def update_coverage_badge(
+    locations: _locations.Locations, j2context: __.jinja2.Environment
 ) -> None:
     ''' Updates coverage badge SVG.
 
@@ -613,8 +604,8 @@ def _update_coverage_badge(
         file.write( svg_content )
 
 
-def _update_publication_branch(
-    locations: _Locations, version: str, expected_sha: str = ''
+def update_publication_branch(
+    locations: _locations.Locations, version: str, expected_sha: str = ''
 ) -> None:
     ''' Updates publication branch with new tarball.
 
@@ -658,8 +649,8 @@ def _update_publication_branch(
               'origin', 'publication:publication' ] )
 
 
-def _update_index_html(
-    locations: _Locations,
+def update_index_html(
+    locations: _locations.Locations,
     j2context: __.jinja2.Environment,
     data: dict[ __.typx.Any, __.typx.Any ],
 ) -> None:
@@ -674,8 +665,10 @@ def _update_index_html(
         file.write( template.render( **data ) )
 
 
-def _update_version_coverage_badge(
-    locations: _Locations, j2context: __.jinja2.Environment, version: str
+def update_version_coverage_badge(
+    locations: _locations.Locations,
+    j2context: __.jinja2.Environment,
+    version: str
 ) -> None:
     ''' Updates version-specific coverage badge SVG.
 
@@ -689,8 +682,8 @@ def _update_version_coverage_badge(
         file.write( svg_content )
 
 
-def _update_versions_json(
-    locations: _Locations,
+def update_versions_json(
+    locations: _locations.Locations,
     version: str,
     species: tuple[ str, ... ],
 ) -> dict[ __.typx.Any, __.typx.Any ]:

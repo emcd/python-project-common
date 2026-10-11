@@ -203,7 +203,7 @@ def _assert_rejected( website, destination, member ):
     ''' Asserts archive with single member is rejected. '''
     archive = _FakeArchive( [ member ] )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._safe_extractall( archive, destination )
+        website.safe_extractall( archive, destination )
 
 
 def _write_inventory_case( base, entries ):

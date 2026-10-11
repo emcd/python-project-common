@@ -32,7 +32,7 @@ _VALID_SELECTORS: tuple[ str, ... ] = (
     'latest-final', 'latest-prerelease', 'exact-tag' )
 
 
-_DEFAULT_TRACKS: TrackMap = (
+DEFAULT_TRACKS: TrackMap = (
     __.immut.Dictionary( {
         'stable': __.immut.Dictionary( {
             'tag-namespace': 'v*',
@@ -53,7 +53,7 @@ def matches_namespace( tag: str, namespace: str ) -> bool:
     return fnmatchcase( tag, namespace )
 
 
-def _load_default_configuration( project: __.Path ) -> TrackMap:
+def load_default_configuration( project: __.Path ) -> TrackMap:
     ''' Loads standard project configuration file or baked-in defaults.
 
         Honors default file absence only on confirmed missing-file errors;
@@ -64,7 +64,7 @@ def _load_default_configuration( project: __.Path ) -> TrackMap:
     candidate = (
         project / '.auxiliary' / 'configuration' / 'website.toml' )
     try: status = candidate.stat( )
-    except FileNotFoundError: return _DEFAULT_TRACKS
+    except FileNotFoundError: return DEFAULT_TRACKS
     except OSError as exception:
         raise __.exceptions.TrackConfigurationInvalidity(
             'configuration', 'unreadable configuration' ) from exception
@@ -83,7 +83,7 @@ def load_track_configuration( location: __.Path | str ) -> TrackMap:
     try: content = path.read_bytes( )
     except OSError as exception:
         raise __.exceptions.FileAwol( path ) from exception
-    try: data = _toml_loads( content )
+    try: data = toml_loads( content )
     except Exception as exception:
         raise __.exceptions.TrackConfigurationInvalidity(
             str( path ), 'unparseable TOML' ) from exception
@@ -117,7 +117,7 @@ def validate_track_configuration(
         if selector not in _VALID_SELECTORS:
             raise __.exceptions.TrackConfigurationInvalidity( name,
                 'invalid selector' )
-        canonical = _validate_alias( alias )
+        canonical = validate_alias( alias )
         if canonical in aliases:
             raise __.exceptions.TrackConfigurationInvalidity( canonical,
                 'duplicate alias' )
@@ -139,12 +139,12 @@ def validate_track_configuration(
                 raise __.exceptions.TrackConfigurationInvalidity(
                     name_a, f"collides with '{name_b}'" )
     if not __.is_absent( known_tags ):
-        _reject_ambiguous_known_tags(
+        reject_ambiguous_known_tags(
             normalized, known_tags )  # type: ignore[arg-type]
     return __.immut.Dictionary( normalized )
 
 
-def _validate_alias( alias: str ) -> str:
+def validate_alias( alias: str ) -> str:
     ''' Validates alias and returns canonical single-component form. '''
     import re
     if not alias:
@@ -219,7 +219,7 @@ def _selector_claims( tag: str, selector: str ) -> bool:
     return version.is_prerelease
 
 
-def _reject_ambiguous_known_tags(
+def reject_ambiguous_known_tags(
     tracks: __.cabc.Mapping[ str, __.cabc.Mapping[ str, str ] ],
     known_tags: __.cabc.Sequence[ str ],
 ) -> None:
@@ -240,7 +240,7 @@ def _reject_ambiguous_known_tags(
                 tag, 'claimed by multiple tracks' )
 
 
-def _is_package_version( label: __.typx.Any ) -> bool:
+def is_package_version( label: __.typx.Any ) -> bool:
     ''' Checks whether label parses as a package version. '''
     from packaging.version import InvalidVersion, Version
     try: Version( str( label ).lstrip( 'v' ) )
@@ -255,7 +255,7 @@ def _parse_package_version( label: __.typx.Any ) -> __.typx.Any:
     except InvalidVersion: return None
 
 
-def _select_latest(
+def select_latest(
     versions: __.cabc.Iterable[ __.typx.Any ],
     namespace: str, selector: str, track: str,
 ) -> __.Absential[ __.typx.Any ]:
@@ -283,7 +283,7 @@ def _select_latest(
     return package_versions[ 0 ][ 0 ]
 
 
-def _toml_loads( content: bytes ) -> dict[ str, __.typx.Any ]:
+def toml_loads( content: bytes ) -> dict[ str, __.typx.Any ]:
     ''' Parses TOML content. '''
     from tomli import loads as parse
     result: dict[ str, __.typx.Any ] = parse( content.decode( 'utf-8' ) )

@@ -35,13 +35,13 @@ def test_010_extract_coverage( locations, website, fs ):
     fs.create_file(
         locations.artifacts / 'coverage-pytest/coverage.xml',
         contents = xml_content )
-    assert website._extract_coverage( locations ) == 85
+    assert website.extract_coverage( locations ) == 85
 
 
 def test_020_extract_coverage_missing_file( locations, website, exceptions ):
     ''' Coverage extraction raises FileAwol for missing XML. '''
     with pytest.raises( exceptions.FileAwol ):
-        website._extract_coverage( locations )
+        website.extract_coverage( locations )
 
 
 def test_030_update_available_species( locations, website, fs ):
@@ -50,7 +50,7 @@ def test_030_update_available_species( locations, website, fs ):
         locations.artifacts / 'coverage-pytest' )
     fs.create_file(
         locations.artifacts / 'coverage-pytest/test.txt', contents = 'test' )
-    species = website._update_available_species( locations, 'v1.0' )
+    species = website.update_available_species( locations, 'v1.0' )
     assert 'coverage-pytest' in species
     assert ( locations.website / 'v1.0/coverage-pytest/test.txt' ).exists( )
 
@@ -69,7 +69,7 @@ def test_040_update_coverage_badge( locations, website, fs ):
     j2context = jinja2.Environment(
         loader = jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
-    website._update_coverage_badge( locations, j2context )
+    website.update_coverage_badge( locations, j2context )
     assert locations.coverage.exists( )
     assert locations.coverage.read_text( ) == 'green'
 
@@ -85,7 +85,7 @@ def test_050_update_index_html( locations, website, fs ):
         loader = jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
     data = { 'latest_version': 'v1.0' }
-    website._update_index_html( locations, j2context, data )
+    website.update_index_html( locations, j2context, data )
     assert locations.index.exists( )
     assert locations.index.read_text( ) == 'v1.0'
 
@@ -94,7 +94,7 @@ def test_060_update_versions_json( locations, website, fs ):
     ''' Versions JSON is updated correctly. '''
     fs.create_dir( locations.website )
     species = ( 'coverage-pytest', )
-    data = website._update_versions_json( locations, 'v1.0', species )
+    data = website.update_versions_json( locations, 'v1.0', species )
     assert locations.versions.exists( )
     assert data[ 'latest_version' ] == 'v1.0'
     assert data[ 'versions' ][ 'v1.0' ] == species

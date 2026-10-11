@@ -28,7 +28,7 @@ from .__ import create_test_files
 
 def test_065_validate_default_tracks( website ):
     ''' Default tracks validate with stable and development aliases. '''
-    tracks = website.validate_track_configuration( website._DEFAULT_TRACKS )
+    tracks = website.validate_track_configuration( website.DEFAULT_TRACKS )
     assert tracks[ 'stable' ][ 'alias' ] == 'stable'
     assert tracks[ 'development' ][ 'alias' ] == 'development'
 
@@ -167,15 +167,15 @@ def test_078_default_configuration_fails_closed( website, provide_tempdir ):
     project = Path( provide_tempdir ) / 'project'
     configuration = project / '.auxiliary/configuration/website.toml'
     configuration.parent.mkdir( parents = True, exist_ok = True )
-    assert website._load_default_configuration(
+    assert website.load_default_configuration(
         project )[ 'stable' ][ 'alias' ] == 'stable'
     configuration.mkdir( exist_ok = True )
     with pytest.raises( website.TrackConfigurationInvalidity ):
-        website._load_default_configuration( project )
+        website.load_default_configuration( project )
     configuration.rmdir( )
     configuration.write_text( 'not = [valid', newline = '' )
     with pytest.raises( website.TrackConfigurationInvalidity ):
-        website._load_default_configuration( project )
+        website.load_default_configuration( project )
     configuration.write_text(
         '[tracks.stable]\n'
         'tag-namespace = "v*"\n'
@@ -185,7 +185,7 @@ def test_078_default_configuration_fails_closed( website, provide_tempdir ):
     configuration.chmod( 0o000 )
     try:
         with pytest.raises( website.TrackConfigurationInvalidity ):
-            website._load_default_configuration( project )
+            website.load_default_configuration( project )
     finally:
         configuration.chmod( 0o644 )
 
@@ -294,9 +294,9 @@ def test_088_reject_absolute_alias_and_version( website ):
         '', '../outside', '/absolute', 'a/b', '.hidden', 'docs-2'
     ):
         with pytest.raises( website.PublicationSourceInvalidity ):
-            website._validate_version_label( bad_version )
-    website._validate_version_label( 'v1.0' )
-    website._validate_version_label( '1.61a0' )
+            website.validate_version_label( bad_version )
+    website.validate_version_label( 'v1.0' )
+    website.validate_version_label( '1.61a0' )
 
 
 def test_089_canonicalize_trailing_slash_alias( website ):

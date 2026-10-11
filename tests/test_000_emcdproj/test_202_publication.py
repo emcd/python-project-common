@@ -43,7 +43,7 @@ def test_085_docs_alias_does_not_alter_stable(
     fs.create_file(
         locations.website / 'docs-2/guide.txt', contents = 'guide' )
     fs.create_dir( locations.website / 'stable' )
-    website._copy_version_to_alias(
+    website.copy_version_to_alias(
         locations, 'docs-2', 'docs-2-copy' )
     assert ( locations.website / 'docs-2-copy/guide.txt' ).exists( )
     assert ( locations.website / 'stable' ).exists( )
@@ -69,7 +69,7 @@ def test_087_reject_symlinks_in_tree( website, provide_tempdir ):
     ( root / 'real.txt' ).write_text( 'real' )
     ( root / 'link.txt' ).symlink_to( root / 'real.txt' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._reject_symlinks_in_tree( root )
+        website.reject_symlinks_in_tree( root )
 
 
 def test_090_floating_major_publish_contract(
@@ -161,15 +161,15 @@ def test_095_provenance_per_release_and_strict(
         } ),
     } )  # type: ignore[arg-type]
     locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
-    website._record_provenance(
+    website.record_provenance(
         locations_tmpdir, 'v1.0', tracks )
-    website._record_provenance(
+    website.record_provenance(
         locations_tmpdir, 'v1.1', tracks )
     provenance = json.loads(
         ( locations_tmpdir.website / 'provenance.json' ).read_text( ) )
     assert set( provenance.keys( ) ) == { 'v1.0', 'v1.1' }
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._record_provenance(
+        website.record_provenance(
             locations_tmpdir, 'v1.2', tracks, strict = True )
 
 
@@ -203,7 +203,7 @@ def test_099_reject_unverifiable_fetch_base( website, provide_tempdir ):
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._fetch_publication_branch_and_tarball( locations )
+        website.fetch_publication_branch_and_tarball( locations )
 
 
 def test_101_reject_branch_without_tarball( website, provide_tempdir ):
@@ -250,7 +250,7 @@ def test_101_reject_branch_without_tarball( website, provide_tempdir ):
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._fetch_publication_branch_and_tarball( locations )
+        website.fetch_publication_branch_and_tarball( locations )
 
 
 def test_097_verify_retained_history_classes( website, provide_tempdir ):
@@ -294,15 +294,15 @@ def test_097_verify_retained_history_classes( website, provide_tempdir ):
         path.relative_to( root ).as_posix( ): hashlib.sha256(
             path.read_bytes( ) ).hexdigest( )
         for path in sorted( root.rglob( '*' ) ) if path.is_file( ) }
-    website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
+    website.verify_retained_history( locations, snapshot, 'v2.0', tracks )
     ( root / 'v1.0/guide.html' ).write_text( 'tampered', newline = '' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._verify_retained_history(
+        website.verify_retained_history(
             locations, snapshot, 'v2.0', tracks )
     ( root / 'v1.0/guide.html' ).write_text( 'old', newline = '' )
     ( root / 'stable/guide.html' ).write_text( 'recopied', newline = '' )
     ( root / 'index.html' ).write_text( 'rerendered', newline = '' )
-    website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
+    website.verify_retained_history( locations, snapshot, 'v2.0', tracks )
 
 
 def test_098_provenance_validates_release_tag( website, provide_tempdir ):
@@ -351,16 +351,16 @@ def test_098_provenance_validates_release_tag( website, provide_tempdir ):
             'alias': 'stable',
         } ),
     } )  # type: ignore[arg-type]
-    website._record_provenance(
+    website.record_provenance(
         locations, '9.9', tracks, strict = True )
     ( project / 'other.txt' ).write_text( 'other', newline = '' )
     git( 'add', 'other.txt' )
     git( 'commit', '-m', 'advance' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._record_provenance(
+        website.record_provenance(
             locations, '9.9', tracks, strict = True )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._record_provenance(
+        website.record_provenance(
             locations, '0.0', tracks, strict = True )
 
 
@@ -434,18 +434,18 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
         index = project / '.auxiliary/artifacts/website/index.html',
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
-    baseline = website._fetch_publication_branch_and_tarball( locations )
+    baseline = website.fetch_publication_branch_and_tarball( locations )
     assert baseline == ''
     # Confirmed absence clears stale state; build regenerates the archive.
     archive.write_bytes( b'archive-a' )
-    website._update_publication_branch( locations, 'v1', baseline )
+    website.update_publication_branch( locations, 'v1', baseline )
     published_a = git( 'rev-parse', 'publication' ).stdout.strip( )
     proceeding = git(
         'commit-tree', 'HEAD^{tree}', '-p', 'publication',
         '-m', 'writer B' ).stdout.strip( )
     git( 'push', 'origin', proceeding + ':publication' )
     with pytest.raises( subprocess.CalledProcessError ):
-        website._update_publication_branch(
+        website.update_publication_branch(
             locations, 'v1-stale', published_a )
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
@@ -453,7 +453,7 @@ def test_094_stale_lease_fails_without_loss( website, provide_tempdir ):
         check = True, capture_output = True, text = True,
         env = _git_environment( ) ).stdout.strip( )
     assert remote_head == proceeding
-    website._update_publication_branch( locations, 'v1-fresh', proceeding )
+    website.update_publication_branch( locations, 'v1-fresh', proceeding )
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
@@ -491,10 +491,10 @@ def test_104_annotated_tag_peels_to_commit( website, provide_tempdir ):
             'alias': 'stable',
         } ),
     } )  # type: ignore[arg-type]
-    website._record_provenance(
+    website.record_provenance(
         locations, '9.8', tracks, strict = True )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._record_provenance(
+        website.record_provenance(
             locations, 'wobbly', tracks, strict = True )
 
 
@@ -519,7 +519,7 @@ def test_105_absence_clears_stale_local_state( website, provide_tempdir ):
         index = project / '.auxiliary/artifacts/website/index.html',
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
-    assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    assert website.fetch_publication_branch_and_tarball( locations ) == ''
     assert not archive.exists( )
     import shutil
     import subprocess
@@ -565,7 +565,7 @@ def test_106_concurrent_creation_fails_without_loss(
         index = project / '.auxiliary/artifacts/website/index.html',
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
-    assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    assert website.fetch_publication_branch_and_tarball( locations ) == ''
     # Confirmed absence clears stale state; build regenerates the archive.
     archive.write_bytes( b'archive-a' )
     tree = git( 'rev-parse', 'HEAD:' ).stdout.strip( )
@@ -573,7 +573,7 @@ def test_106_concurrent_creation_fails_without_loss(
         'commit-tree', tree, '-m', 'writer B' ).stdout.strip( )
     git( 'push', 'origin', proceeding + ':refs/heads/publication' )
     with pytest.raises( subprocess.CalledProcessError ) as excuse:
-        website._update_publication_branch( locations, 'v1', '' )
+        website.update_publication_branch( locations, 'v1', '' )
     assert 'push' in str( excuse.value.cmd )
     local_head = git( 'rev-parse', 'publication' ).stdout.strip( )
     assert local_head != proceeding
@@ -617,9 +617,9 @@ def test_109_absence_without_race_publishes_cleanly(
         index = project / '.auxiliary/artifacts/website/index.html',
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
-    assert website._fetch_publication_branch_and_tarball( locations ) == ''
+    assert website.fetch_publication_branch_and_tarball( locations ) == ''
     archive.write_bytes( b'archive-a' )
-    website._update_publication_branch( locations, 'v1', '' )
+    website.update_publication_branch( locations, 'v1', '' )
     remote_head = subprocess.run(  # noqa: S603
         [ executable, '--git-dir', str( remote ),
           'rev-parse', 'publication' ],
@@ -650,13 +650,13 @@ def test_110_cleanup_failures_abort_before_build( website, provide_tempdir ):
         versions = project / '.auxiliary/artifacts/website/versions.json',
         templates = project / 'templates' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._fetch_publication_branch_and_tarball( locations )
+        website.fetch_publication_branch_and_tarball( locations )
     archive.rmdir( )
     archive.write_bytes( b'stale-local' )
     git( 'branch', 'publication' )
     git( 'checkout', 'publication' )
     with pytest.raises( website.PublicationSourceInvalidity ):
-        website._fetch_publication_branch_and_tarball( locations )
+        website.fetch_publication_branch_and_tarball( locations )
 
 
 def test_107_reject_alias_overwriting_retained_release(

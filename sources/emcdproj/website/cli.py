@@ -22,8 +22,7 @@
 
 
 from . import __
-from .publication import survey as _survey
-from .publication import update as _update
+from . import publication as _publication
 
 
 class SurveyCommand(
@@ -39,7 +38,7 @@ class SurveyCommand(
     async def __call__(
         self, auxdata: __.Globals, display: __.interfaces.ConsoleDisplay
     ) -> None:
-        _survey( auxdata, use_extant = self.use_extant )
+        _publication.survey( auxdata, use_extant = self.use_extant )
 
 
 class UpdateCommand(
@@ -83,7 +82,7 @@ class UpdateCommand(
         inventory: __.Absential[ __.Path ] = __.absent
         if self.legacy_inventory:
             inventory = __.Path( self.legacy_inventory )
-        _update(
+        _publication.update(
             auxdata, self.version,
             use_extant = self.use_extant,
             production = self.production,
