@@ -11,6 +11,29 @@ on:
       python-version:
         required: true
         type: string
+      emcd-projects-version:
+        description: 'Pinned emcd-projects version for website utility.'
+        default: '1.60'
+        required: false
+        type: string
+      tracks-config:
+        description: 'Track configuration TOML file for publication.'
+        default: ''
+        required: false
+        type: string
+      legacy-inventory:
+        description: 'Legacy-link inventory TOML file for validation.'
+        default: ''
+        required: false
+        type: string
+
+# Destination-scoped serialization for the whole pipeline, including
+# Pages deployment: concurrent publications queue rather than race or
+# deploy backwards. Cancellation of a queued run must not kill the
+# active promotion.
+concurrency:
+  group: publication-${{ github.repository }}
+  cancel-in-progress: false
 
 jobs:
 
@@ -38,7 +61,7 @@ jobs:
 
       - name: Install Website Utility
         run: |
-          pipx install emcd-projects
+          pipx install 'emcd-projects==${{ inputs.emcd-projects-version }}'
 
       # TODO: Sign commit with GPG key or use Github API.
       #       If Github API, need to upload tarball to LFS endpoint first.
@@ -52,8 +75,26 @@ jobs:
           set -eu -o pipefail
           git config --global user.name 'Github Actions Robot'
           git config --global user.email '${{ github.actor }}@users.noreply.github.com'
-          version="$(hatch --env develop version 2>/dev/null)"
-          emcdproj website update "${version}" --production
+          if [ -n "${{ inputs.tracks-config }}" ] || [ -n "${{ inputs.legacy-inventory }}" ]; then
+            emcdproj website update --help | grep -q -e '--tracks-config' || {
+              echo 'Installed utility lacks track support; set emcd-projects-version to a release with publisher tracks.' >&2
+              exit 1
+            }
+          fi
+          if [[ "${GITHUB_REF}" == refs/tags/docs-* ]]; then
+            version="${GITHUB_REF#refs/tags/}"
+          else
+            version="$(hatch --env develop version 2>/dev/null)"
+          fi
+          config_args=""
+          if [ -n "${{ inputs.tracks-config }}" ]; then
+            config_args="${config_args} --tracks-config ${{ inputs.tracks-config }}"
+          fi
+          if [ -n "${{ inputs.legacy-inventory }}" ]; then
+            config_args="${config_args} --legacy-inventory ${{ inputs.legacy-inventory }}"
+          fi
+          # shellcheck disable=SC2086
+          emcdproj website update "${version}" --production ${config_args}
           echo "website=$(pwd)/.auxiliary/artifacts/website" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
         shell: bash
