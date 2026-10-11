@@ -125,12 +125,12 @@ _VALID_SELECTORS: tuple[ str, ... ] = (
 _DEFAULT_TRACKS: TrackMap = (
     __.immut.Dictionary( {
         'stable': __.immut.Dictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-final',
             'alias': 'stable',
         } ),
         'development': __.immut.Dictionary( {
-            'tag_namespace': 'v*',
+            'tag-namespace': 'v*',
             'selector': 'latest-prerelease',
             'alias': 'development',
         } ),
@@ -309,10 +309,10 @@ def validate_track_configuration(
     aliases: set[ str ] = set( )
     namespaces: list[ tuple[ str, str ] ] = [ ]
     for name, track in tracks.items( ):
-        try: namespace = track[ 'tag_namespace' ]
+        try: namespace = track[ 'tag-namespace' ]
         except KeyError as exception:
             raise TrackConfigurationInvalidity(
-                name, "missing 'tag_namespace'" ) from exception
+                name, "missing 'tag-namespace'" ) from exception
         try: selector = track[ 'selector' ]
         except KeyError as exception:
             raise TrackConfigurationInvalidity(
@@ -329,7 +329,7 @@ def validate_track_configuration(
         aliases.add( canonical )
         namespaces.append( ( name, namespace ) )
         normalized[ name ] = __.immut.Dictionary( {
-            'tag_namespace': namespace,
+            'tag-namespace': namespace,
             'selector': selector,
             'alias': canonical,
         } )
@@ -349,25 +349,7 @@ def validate_track_configuration(
     return __.immut.Dictionary( normalized )
 
 
-_PACKAGE_PROBES: tuple[ str, ... ] = (
-    'v1.0', 'v1.0a1', 'v2.0rc1', 'v10.0', '1.0', '1.0a1', '2.0' )
 
-
-def _has_docs_policy( tracks: TrackConfiguration ) -> bool:
-    ''' Checks whether tracks configure docs-line aliases.
-
-        A track counts as docs-line when its namespace matches no package
-        probe, so custom package aliases stay package-scoped while unknown
-        namespaces fail closed toward requiring inventory.
-    '''
-    for track in tracks.values( ):
-        namespace = track.get( 'tag_namespace', '' )
-        if not any(
-            matches_namespace( probe, namespace )
-            for probe in _PACKAGE_PROBES
-        ):
-            return True
-    return False
 
 
 def _promote_track_aliases(
@@ -406,7 +388,12 @@ def _validate_alias( alias: str ) -> str:
 
 
 def _validate_version_label( version: str ) -> None:
-    ''' Validates version label before any destructive operation. '''
+    ''' Validates version label before any destructive operation.
+
+        Published versions are package versions and must parse as PEP 440
+        (with optional leading `v`); anything else fails fast here rather
+        than crashing version ordering later.
+    '''
     if not version:
         raise PublicationSourceInvalidity( version, 'empty version' )
     if (
@@ -419,6 +406,11 @@ def _validate_version_label( version: str ) -> None:
         or version.startswith( '.' )
     ):
         raise PublicationSourceInvalidity( version, 'traversal rejected' )
+    from packaging.version import InvalidVersion, Version
+    try: Version( version.lstrip( 'v' ) )
+    except InvalidVersion as exception:
+        raise PublicationSourceInvalidity(
+            version, 'unparseable version' ) from exception
 
 
 def _build_publication_tree(
@@ -447,16 +439,10 @@ def _build_publication_tree(
     ( locations.website / '.nojekyll' ).touch( )
     _record_provenance( locations, version, tracks, strict )
     _validate_publication_tree( locations, version, index_data )
-    if _has_docs_policy( tracks ):
-        if __.is_absent( legacy_inventory ):
-            raise PublicationSourceInvalidity(
-                'inventory', 'required for docs tracks' )
+    if not __.is_absent( legacy_inventory ):
         _validate_legacy_inventory(
             locations, legacy_inventory )  # type: ignore[arg-type]
         _verify_retained_history( locations, baseline, version, tracks )
-    elif not __.is_absent( legacy_inventory ):
-        _validate_legacy_inventory(
-            locations, legacy_inventory )  # type: ignore[arg-type]
 
 
 def _copy_version_to_alias(
@@ -489,7 +475,7 @@ def _enhance_index_data_with_stable_dev(
     track_versions: dict[ __.typx.Any, __.typx.Any ] = { }
     for name, track in tracks.items( ):
         selected = _select_latest(
-            versions.keys( ), track.get( 'tag_namespace', '' ),
+            versions.keys( ), track.get( 'tag-namespace', '' ),
             track.get( 'selector', 'exact-tag' ), name )
         if not __.is_absent( selected ):
             track_versions[ track.get( 'alias', name ) ] = selected
@@ -661,7 +647,13 @@ def _namespaces_collide(
     namespace_a: str, selector_a: str,
     namespace_b: str, selector_b: str,
 ) -> bool:
-    ''' Checks whether two tracks can claim the same tag. '''
+    ''' Checks whether two tracks can claim the same tag.
+
+        Only exact-tag pairs can collide ambiguously; overlapping
+        latest-selector aliases are legitimate shared pointers.
+    '''
+    if selector_a != 'exact-tag' and selector_b != 'exact-tag':
+        return False
     if namespace_a == '*' or namespace_b == '*': return True
     if (
         namespace_a == namespace_b
@@ -742,11 +734,17 @@ def _reject_ambiguous_known_tags(
     tracks: __.cabc.Mapping[ str, __.cabc.Mapping[ str, str ] ],
     known_tags: __.cabc.Sequence[ str ],
 ) -> None:
-    ''' Rejects known tags claimed by multiple tracks. '''
+    ''' Rejects known tags claimed by multiple exact-tag tracks.
+
+        Overlapping latest-selector aliases are legitimate pointers at
+        shared versions (e.g. stable and floating major); only exact-tag
+        multi-claims are ambiguous about which track owns the tag.
+    '''
     for tag in known_tags:
         claimants = [
             name for name, track in tracks.items( )
-            if matches_namespace( tag, track[ 'tag_namespace' ] )
+            if track[ 'selector' ] == 'exact-tag'
+            and matches_namespace( tag, track[ 'tag-namespace' ] )
             and _selector_claims( tag, track[ 'selector' ] ) ]
         if len( claimants ) > 1:
             raise TrackConfigurationInvalidity(
