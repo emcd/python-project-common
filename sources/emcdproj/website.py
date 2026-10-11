@@ -204,26 +204,6 @@ def matches_namespace( tag: str, namespace: str ) -> bool:
     return fnmatchcase( tag, namespace )
 
 
-def select_docs_alias(
-    version: str,
-    tracks: TrackConfiguration = _DEFAULT_TRACKS,
-) -> __.Absential[ str ]:
-    ''' Selects docs-line alias for version without altering stable/dev. '''
-    candidates: list[ str ] = [ ]
-    for name, track in tracks.items( ):
-        if name in ( 'stable', 'development' ): continue
-        namespace = track.get( 'tag_namespace', '' )
-        selector = track.get( 'selector', 'exact-tag' )
-        if not matches_namespace( version, namespace ): continue
-        if not _selector_claims( version, selector ): continue
-        candidates.append( track.get( 'alias', name ) )
-    if not candidates: return __.absent
-    if len( candidates ) > 1:
-        raise TrackConfigurationInvalidity(
-            version, 'ambiguous docs tracks' )
-    return candidates[ 0 ]
-
-
 def load_track_configuration( location: __.Path | str ) -> TrackMap:
     ''' Loads and validates track configuration from TOML file. '''
     path = __.Path( location )
@@ -369,31 +349,38 @@ def validate_track_configuration(
     return __.immut.Dictionary( normalized )
 
 
-def _create_stable_dev_directories(
+_PACKAGE_PROBES: tuple[ str, ... ] = (
+    'v1.0', 'v1.0a1', 'v2.0rc1', 'v10.0', '1.0', '1.0a1', '2.0' )
+
+
+def _has_docs_policy( tracks: TrackConfiguration ) -> bool:
+    ''' Checks whether tracks configure docs-line aliases.
+
+        A track counts as docs-line when its namespace matches no package
+        probe, so custom package aliases stay package-scoped while unknown
+        namespaces fail closed toward requiring inventory.
+    '''
+    for track in tracks.values( ):
+        namespace = track.get( 'tag_namespace', '' )
+        if not any(
+            matches_namespace( probe, namespace )
+            for probe in _PACKAGE_PROBES
+        ):
+            return True
+    return False
+
+
+def _promote_track_aliases(
     locations: Locations, data: dict[ __.typx.Any, __.typx.Any ]
 ) -> None:
-    ''' Creates stable/ and development/ directories with current releases.
+    ''' Promotes every resolved track alias from its selected version.
 
-        Copies the content from the identified stable and development versions
-        to stable/ and development/ directories to provide persistent URLs
-        that don't change when new versions are released.
+        All aliases, including custom stable aliases, emit from the
+        resolved selections, so out-of-order publishes never downgrade
+        an alias to an older version.
     '''
-    stable_version = data.get( 'stable_version' )
-    development_version = data.get( 'development_version' )
-    if stable_version:
-        stable_source = locations.website / stable_version
-        stable_dest = locations.website / 'stable'
-        if stable_dest.is_dir( ):
-            __.shutil.rmtree( stable_dest )
-        if stable_source.is_dir( ):
-            __.shutil.copytree( stable_source, stable_dest )
-    if development_version:
-        dev_source = locations.website / development_version
-        dev_dest = locations.website / 'development'
-        if dev_dest.is_dir( ):
-            __.shutil.rmtree( dev_dest )
-        if dev_source.is_dir( ):
-            __.shutil.copytree( dev_source, dev_dest )
+    for alias, version in data.get( 'track_versions', { } ).items( ):
+        _copy_version_to_alias( locations, version, alias )
 
 
 def _validate_alias( alias: str ) -> str:
@@ -448,40 +435,37 @@ def _build_publication_tree(
     index_data = _update_versions_json(
         locations, version, available_species )
     _enhance_index_data_with_stable_dev( index_data, tracks )
-    _create_stable_dev_directories( locations, index_data )
-    _promote_docs_alias( locations, version, tracks )
+    _reject_ambiguous_known_tags(
+        tracks, list( index_data.get( 'versions', { } ).keys( ) ) )
+    _promote_track_aliases( locations, index_data )
     _update_index_html( locations, j2context, index_data )
     if ( locations.artifacts / 'coverage-pytest' ).is_dir( ):
         _update_coverage_badge( locations, j2context )
         _update_version_coverage_badge( locations, j2context, version )
     ( locations.website / '.nojekyll' ).touch( )
     _record_provenance( locations, version, tracks, strict )
-    _validate_publication_tree( locations, version, tracks, index_data )
-    if not __.is_absent( legacy_inventory ):
+    _validate_publication_tree( locations, version, index_data )
+    if _has_docs_policy( tracks ):
+        if __.is_absent( legacy_inventory ):
+            raise PublicationSourceInvalidity(
+                'inventory', 'required for docs tracks' )
+        _validate_legacy_inventory(
+            locations, legacy_inventory )  # type: ignore[arg-type]
+    elif not __.is_absent( legacy_inventory ):
         _validate_legacy_inventory(
             locations, legacy_inventory )  # type: ignore[arg-type]
 
 
-def _create_docs_alias_directories(
+def _copy_version_to_alias(
     locations: Locations, version: str, alias: str
 ) -> None:
-    ''' Creates docs-line alias directory without altering stable/dev. '''
+    ''' Copies version tree to alias directory. '''
     canonical = _validate_alias( alias )
     source = locations.website / version
     destination = locations.website / canonical
     if source == destination: return
     if destination.is_dir( ): __.shutil.rmtree( destination )
     if source.is_dir( ): __.shutil.copytree( source, destination )
-
-
-def _promote_docs_alias(
-    locations: Locations, version: str, tracks: TrackConfiguration
-) -> None:
-    ''' Promotes docs-line alias for version, leaving stable/dev pinned. '''
-    docs_alias = select_docs_alias( version, tracks )
-    if __.is_absent( docs_alias ): return
-    _create_docs_alias_directories(
-        locations, version, docs_alias )  # type: ignore[arg-type]
 
 
 def _enhance_index_data_with_stable_dev(
@@ -728,7 +712,7 @@ def _record_provenance(
 
 
 def _reject_ambiguous_known_tags(
-    tracks: dict[ str, __.immut.Dictionary[ str, str ] ],
+    tracks: __.cabc.Mapping[ str, __.cabc.Mapping[ str, str ] ],
     known_tags: __.cabc.Sequence[ str ],
 ) -> None:
     ''' Rejects known tags claimed by multiple tracks. '''
@@ -860,7 +844,6 @@ def _validate_inventory_entry(
 def _validate_publication_tree(
     locations: Locations,
     version: str,
-    tracks: TrackConfiguration,
     index_data: dict[ __.typx.Any, __.typx.Any ],
 ) -> None:
     ''' Validates built tree before alias promotion and archiving. '''
@@ -871,15 +854,7 @@ def _validate_publication_tree(
         if not requisite.is_file( ):
             raise PublicationSourceInvalidity(
                 str( requisite ), 'requisite absent' )
-    expected_aliases: list[ str ] = [ ]
-    if index_data.get( 'stable_version' ):
-        expected_aliases.append( 'stable' )
-    if index_data.get( 'development_version' ):
-        expected_aliases.append( 'development' )
-    docs_alias = select_docs_alias( version, tracks )
-    if not __.is_absent( docs_alias ):
-        expected_aliases.append( docs_alias )  # type: ignore[arg-type]
-    for alias in expected_aliases:
+    for alias in index_data.get( 'track_versions', { } ):
         if not ( locations.website / alias ).is_dir( ):
             raise PublicationSourceInvalidity( alias, 'alias tree absent' )
     _reject_symlinks_in_tree( locations.website )

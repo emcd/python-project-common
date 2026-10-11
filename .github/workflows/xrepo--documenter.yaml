@@ -75,7 +75,17 @@ jobs:
           set -eu -o pipefail
           git config --global user.name 'Github Actions Robot'
           git config --global user.email '${{ github.actor }}@users.noreply.github.com'
-          version="$(hatch --env develop version 2>/dev/null)"
+          if [ -n "${{ inputs.tracks-config }}" ] || [ -n "${{ inputs.legacy-inventory }}" ]; then
+            emcdproj website update --help | grep -q -e '--tracks-config' || {
+              echo 'Installed utility lacks track support; set emcd-projects-version to a release with publisher tracks.' >&2
+              exit 1
+            }
+          fi
+          if [[ "${GITHUB_REF}" == refs/tags/docs-* ]]; then
+            version="${GITHUB_REF#refs/tags/}"
+          else
+            version="$(hatch --env develop version 2>/dev/null)"
+          fi
           config_args=""
           if [ -n "${{ inputs.tracks-config }}" ]; then
             config_args="${config_args} --tracks-config ${{ inputs.tracks-config }}"

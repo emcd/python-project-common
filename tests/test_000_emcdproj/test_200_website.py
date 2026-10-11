@@ -292,9 +292,121 @@ def test_075_reject_namespace_collision( website ):
         website.validate_track_configuration( tracks )  # type: ignore[arg-type]
 
 
-def test_080_select_docs_alias_leaves_stable_pinned( website ):
-    ''' Package versions select no docs alias; docs tags do. '''
+def test_080_custom_alias_emitted_from_selection(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Custom stable alias emits from resolved selection. '''
     from frigid import Dictionary as FrozenDictionary
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    tracks = website.validate_track_configuration( {
+        'release': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'release',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+    } )  # type: ignore[arg-type]
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks )
+        assert ( locations_tmpdir.website / 'release' ).is_dir( )
+        assert not ( locations_tmpdir.website / 'stable' ).exists( )
+
+
+def test_081_out_of_order_publish_keeps_latest(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Older publish after newer does not downgrade aliases. '''
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v2.0',
+            project_anchor = locations_tmpdir.project )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project )
+        package_after = sorted(
+            path.relative_to(
+                locations_tmpdir.website / 'v2.0' ).as_posix( )
+            for path in ( locations_tmpdir.website / 'v2.0' ).rglob( '*' ) )
+        stable_suffixes = sorted(
+            path.relative_to(
+                locations_tmpdir.website / 'stable' ).as_posix( )
+            for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
+        assert package_after == stable_suffixes
+
+
+def test_082_overlap_rejected_on_production_path(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Unprobed namespace overlap aborts on retained labels. '''
+    from frigid import Dictionary as FrozenDictionary
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    tracks = website.validate_track_configuration( {
+        'stable': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-final',
+            'alias': 'stable',
+        } ),
+        'development': FrozenDictionary( {
+            'tag_namespace': 'v*',
+            'selector': 'latest-prerelease',
+            'alias': 'development',
+        } ),
+        'docs-a': FrozenDictionary( {
+            'tag_namespace': 'docs-*',
+            'selector': 'exact-tag',
+            'alias': 'docs-a',
+        } ),
+        'docs-b': FrozenDictionary( {
+            'tag_namespace': 'docs-9*',
+            'selector': 'exact-tag',
+            'alias': 'docs-b',
+        } ),
+    } )  # type: ignore[arg-type]
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        with pytest.raises( website.TrackConfigurationInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'docs-99',
+                project_anchor = locations_tmpdir.project,
+                tracks = tracks )
+
+
+def test_083_docs_policy_requires_inventory(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Docs tracks without inventory abort before promotion. '''
+    from frigid import Dictionary as FrozenDictionary
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
     tracks = website.validate_track_configuration( {
         'stable': FrozenDictionary( {
             'tag_namespace': 'v*',
@@ -307,14 +419,18 @@ def test_080_select_docs_alias_leaves_stable_pinned( website ):
             'alias': 'development',
         } ),
         'docs-2': FrozenDictionary( {
-            'tag_namespace': 'docs-2',
+            'tag_namespace': 'docs-*',
             'selector': 'exact-tag',
             'alias': 'docs-2',
         } ),
     } )  # type: ignore[arg-type]
-    assert website.__.is_absent(
-        website.select_docs_alias( 'v1.0', tracks ) )
-    assert website.select_docs_alias( 'docs-2', tracks ) == 'docs-2'
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'docs-2',
+                project_anchor = locations_tmpdir.project,
+                tracks = tracks )
 
 
 def test_085_docs_alias_does_not_alter_stable(
@@ -325,7 +441,7 @@ def test_085_docs_alias_does_not_alter_stable(
     fs.create_file(
         locations.website / 'docs-2/guide.txt', contents = 'guide' )
     fs.create_dir( locations.website / 'stable' )
-    website._create_docs_alias_directories(
+    website._copy_version_to_alias(
         locations, 'docs-2', 'docs-2-copy' )
     assert ( locations.website / 'docs-2-copy/guide.txt' ).exists( )
     assert ( locations.website / 'stable' ).exists( )
@@ -423,10 +539,14 @@ def test_087_reject_symlinks_in_tree( website, provide_tempdir ):
         website._reject_symlinks_in_tree( root )
 
 
-def test_090_staged_docs2_proof(
+def test_090_docs_alias_publish_contract(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):
-    ''' Staged docs-2 publish leaves stable pinned and adds docs alias. '''
+    ''' Docs publish contract pins alias isolation and stable mirroring.
+
+        Fixture-based contract pin only; real staged CI receipts are
+        required before any production URL cutover.
+    '''
     from frigid import Dictionary as FrozenDictionary
     coverage_template = '{{ color }}'
     test_files = {
@@ -452,19 +572,26 @@ def test_090_staged_docs2_proof(
             'alias': 'docs-2',
         } ),
     } )  # type: ignore[arg-type]
+    inventory = _write_inventory_case(
+        provide_tempdir,
+        [ ( 'stable/coverage-pytest/coverage.xml', '', ( ), 'follow' ),
+          ( 'v1.0/coverage-pytest/coverage.xml', '', ( ), 'follow' ),
+          ( 'index.html', '', ( ), 'follow' ) ] )
     with create_test_files( provide_tempdir, test_files ):
         locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
         website.update(
             auxdata_tmpdir, 'v1.0',
             project_anchor = locations_tmpdir.project,
-            tracks = tracks )
+            tracks = tracks,
+            legacy_inventory = inventory )
         stable_before = sorted(
             path.relative_to( locations_tmpdir.website ).as_posix( )
             for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
         website.update(
             auxdata_tmpdir, 'docs-2',
             project_anchor = locations_tmpdir.project,
-            tracks = tracks )
+            tracks = tracks,
+            legacy_inventory = inventory )
         stable_after = sorted(
             path.relative_to( locations_tmpdir.website ).as_posix( )
             for path in ( locations_tmpdir.website / 'stable' ).rglob( '*' ) )
@@ -511,25 +638,6 @@ def test_095_provenance_per_release_and_strict(
     with pytest.raises( website.PublicationSourceInvalidity ):
         website._record_provenance(
             locations_tmpdir, 'v1.2', tracks, strict = True )
-
-
-def test_091_reject_ambiguous_docs_tracks( website ):
-    ''' Multiple docs tracks claiming one version are rejected. '''
-    from frigid import Dictionary as FrozenDictionary
-    tracks = website.validate_track_configuration( {
-        'docs-a': FrozenDictionary( {
-            'tag_namespace': 'docs-*',
-            'selector': 'exact-tag',
-            'alias': 'docs-a',
-        } ),
-        'docs-b': FrozenDictionary( {
-            'tag_namespace': 'docs-9*',
-            'selector': 'exact-tag',
-            'alias': 'docs-b',
-        } ),
-    } )  # type: ignore[arg-type]
-    with pytest.raises( website.TrackConfigurationInvalidity ):
-        website.select_docs_alias( 'docs-99', tracks )
 
 
 def test_092_reject_claimed_known_tag( website ):
