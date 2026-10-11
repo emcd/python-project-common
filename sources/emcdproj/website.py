@@ -419,8 +419,8 @@ def _build_publication_tree(
     legacy_inventory: __.Absential[ __.Path | str ] = __.absent,
 ) -> None:
     ''' Builds version tree, aliases, and indexes for publication. '''
+    baseline = _snapshot_archive( locations.archive )
     _restore_publication_tree( locations )
-    baseline = _snapshot_tree( locations.website )
     available_species = _update_available_species( locations, version )
     j2context = _jinja2.Environment(
         loader = _jinja2.FileSystemLoader( locations.templates ),
@@ -439,10 +439,10 @@ def _build_publication_tree(
     ( locations.website / '.nojekyll' ).touch( )
     _record_provenance( locations, version, tracks, strict )
     _validate_publication_tree( locations, version, index_data )
+    _verify_retained_history( locations, baseline, version, tracks )
     if not __.is_absent( legacy_inventory ):
         _validate_legacy_inventory(
             locations, legacy_inventory )  # type: ignore[arg-type]
-        _verify_retained_history( locations, baseline, version, tracks )
 
 
 def _copy_version_to_alias(
@@ -968,15 +968,31 @@ _VOLATILE_VERSION_FILES: tuple[ str, ... ] = (
     'coverage.xml', '.buildinfo' )
 
 
-def _snapshot_tree( root: __.Path ) -> dict[ str, str ]:
-    ''' Snapshots retained-history digests for every file under root. '''
+def _snapshot_archive( archive: __.Path ) -> dict[ str, str ]:
+    ''' Snapshots retained-history digests from the trusted archive.
+
+        Reads the pre-update archive members without extracting, so
+        restore loss itself is visible to later comparison. Returns an
+        empty manifest when no archive exists yet.
+    '''
     import hashlib
+    import tarfile
+    if not archive.is_file( ): return { }
     manifest: dict[ str, str ] = { }
-    for path in sorted( root.rglob( '*' ) ):
-        if path.is_symlink( ) or not path.is_file( ): continue
-        relative = path.relative_to( root ).as_posix( )
-        manifest[ relative ] = hashlib.sha256(
-            path.read_bytes( ) ).hexdigest( )
+    try:
+        with tarfile.open( archive, mode = 'r:*' ) as bundle:
+            for member in bundle.getmembers( ):
+                if not member.isfile( ): continue
+                name = member.name.replace( '\\', '/' )
+                while name.startswith( './' ): name = name[ 2 : ]
+                if not name or name == '.': continue
+                handle = bundle.extractfile( member )
+                if handle is None: continue
+                manifest[ name ] = hashlib.sha256(
+                    handle.read( ) ).hexdigest( )
+    except ( tarfile.TarError, OSError, EOFError ) as exception:
+        raise PublicationSourceInvalidity(
+            str( archive ), 'unreadable archive' ) from exception
     return manifest
 
 

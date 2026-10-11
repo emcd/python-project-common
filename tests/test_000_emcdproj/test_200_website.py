@@ -927,7 +927,11 @@ def test_097_verify_retained_history_classes( website, provide_tempdir ):
             'alias': 'docs-2',
         } ),
     } )  # type: ignore[arg-type]
-    snapshot = website._snapshot_tree( root )
+    import hashlib
+    snapshot = {
+        path.relative_to( root ).as_posix( ): hashlib.sha256(
+            path.read_bytes( ) ).hexdigest( )
+        for path in sorted( root.rglob( '*' ) ) if path.is_file( ) }
     website._verify_retained_history( locations, snapshot, 'v2.0', tracks )
     ( root / 'v1.0/guide.html' ).write_text( 'tampered', newline = '' )
     with pytest.raises( website.PublicationSourceInvalidity ):
@@ -1413,6 +1417,35 @@ def test_108_changed_republish_refused_idempotent_passes(
                 project_anchor = locations_tmpdir.project,
                 tracks = tracks,
                 legacy_inventory = inventory )
+
+
+def test_111_retained_history_without_inventory(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Retained history enforced without any inventory input. '''
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body>one</body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, 'v1.0',
+            project_anchor = locations_tmpdir.project )
+        guide = (
+            Path( provide_tempdir )
+            / 'project/.auxiliary/artifacts/sphinx-html/guide.html' )
+        guide.write_text( '<html><body>two</body></html>', newline = '' )
+        with pytest.raises( website.PublicationSourceInvalidity ):
+            website.update(
+                auxdata_tmpdir, 'v1.0',
+                project_anchor = locations_tmpdir.project )
+        guide.write_text( '<html><body>one</body></html>', newline = '' )
+        website.update(
+            auxdata_tmpdir, 'v1.1',
+            project_anchor = locations_tmpdir.project )
 
 
 def test_100_integration_update(
