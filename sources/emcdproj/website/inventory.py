@@ -21,8 +21,7 @@
 ''' Publication validation: inventory, history, and anchors. '''
 
 
-from .. import __
-from .. import exceptions as _exceptions
+from . import __
 from .locations import Locations
 from .tracks import TrackConfiguration, _toml_loads
 
@@ -59,7 +58,7 @@ def _snapshot_archive( archive: __.Path ) -> dict[ str, str ]:
                 manifest[ name ] = hashlib.sha256(
                     handle.read( ) ).hexdigest( )
     except ( tarfile.TarError, OSError, EOFError ) as exception:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             str( archive ), 'unreadable archive' ) from exception
     return manifest
 
@@ -80,10 +79,10 @@ def _reject_alias_collisions(
         if label != version }
     for alias, selected in mapping.items( ):
         if alias != selected and alias in retained:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 alias, 'alias collides with retained release' )
     if version in mapping and mapping.get( version ) != version:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             version, 'version collides with alias' )
 
 
@@ -115,22 +114,22 @@ def _verify_retained_history(
             if base in _VOLATILE_VERSION_FILES: continue
         candidate = locations.website / relative
         if not candidate.is_file( ):
-            raise _exceptions.PublicationSourceInvalidity( relative,
+            raise __.exceptions.PublicationSourceInvalidity( relative,
                 'history lost' )
         actual = hashlib.sha256( candidate.read_bytes( ) ).hexdigest( )
         if actual != digest:
-            raise _exceptions.PublicationSourceInvalidity( relative,
+            raise __.exceptions.PublicationSourceInvalidity( relative,
                 'history drift' )
 
 
 def _validate_inventory_path( root: __.Path, entry: str ) -> __.Path:
     ''' Resolves inventory entry path under website root. '''
     if entry.startswith( '/' ) or entry.startswith( '\\' ):
-        raise _exceptions.PublicationSourceInvalidity( entry,
+        raise __.exceptions.PublicationSourceInvalidity( entry,
             'absolute path rejected' )
     parts = entry.replace( '\\', '/' ).split( '/' )
     if '..' in parts or not entry:
-        raise _exceptions.PublicationSourceInvalidity( entry,
+        raise __.exceptions.PublicationSourceInvalidity( entry,
             'traversal rejected' )
     return root / entry.replace( '/', __.os.sep )
 
@@ -147,17 +146,17 @@ def _validate_legacy_inventory(
     path = __.Path( inventory )
     try: content = path.read_bytes( )
     except OSError as exception:
-        raise _exceptions.FileAwol( path ) from exception
+        raise __.exceptions.FileAwol( path ) from exception
     try: data = _toml_loads( content )
     except Exception as exception:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             str( path ), 'unparseable inventory' ) from exception
     try: items = list( data.get( 'entries', [ ] ) )
     except TypeError as exception:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             str( path ), 'malformed inventory' ) from exception
     if not items:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             str( path ), 'empty inventory' )
     for raw_entry in items:
         _validate_inventory_entry( locations, raw_entry )
@@ -173,19 +172,19 @@ def _validate_inventory_entry(
     '''
     get = getattr( raw_entry, 'get', None )
     if get is None:
-        raise _exceptions.PublicationSourceInvalidity( 'entry',
+        raise __.exceptions.PublicationSourceInvalidity( 'entry',
             'malformed entry' )
     relative = get( 'path', '' )
     semantics = get( 'semantics', 'frozen' )
     if not isinstance( relative, str ) or not isinstance( semantics, str ):
-        raise _exceptions.PublicationSourceInvalidity( 'entry',
+        raise __.exceptions.PublicationSourceInvalidity( 'entry',
             'malformed entry' )
     if semantics not in ( 'frozen', 'follow' ):
-        raise _exceptions.PublicationSourceInvalidity( relative,
+        raise __.exceptions.PublicationSourceInvalidity( relative,
             'unknown semantics' )
     target = _validate_inventory_path( locations.website, relative )
     if not target.is_file( ):
-        raise _exceptions.PublicationSourceInvalidity( relative,
+        raise __.exceptions.PublicationSourceInvalidity( relative,
             'entry absent' )
     _check_entry_digest(
         target, relative, get( 'sha256', '' ), semantics )
@@ -200,11 +199,11 @@ def _check_entry_digest(
     import hashlib
     if digest or semantics == 'frozen':
         if not digest:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 relative, 'frozen entry without digest' )
         actual = hashlib.sha256( target.read_bytes( ) ).hexdigest( )
         if actual != digest:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 relative, 'content drift detected' )
 
 
@@ -213,17 +212,17 @@ def _check_entry_fragments(
 ) -> None:
     ''' Checks entry anchor fragments as parsed element IDs. '''
     if isinstance( fragment_source, str ):
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             relative, 'malformed fragments' )
     try: fragments = list( fragment_source )
     except TypeError as exception:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             relative, 'malformed fragments' ) from exception
     identifiers = _extract_element_ids(
         target.read_text( errors = 'replace' ) )
     for fragment in fragments:
         if not isinstance( fragment, str ) or fragment not in identifiers:
-            raise _exceptions.PublicationSourceInvalidity( relative,
+            raise __.exceptions.PublicationSourceInvalidity( relative,
                 'fragment absent' )
 
 

@@ -21,8 +21,7 @@
 ''' Publication track configuration and selection. '''
 
 
-from .. import __
-from .. import exceptions as _exceptions
+from . import __
 
 
 TrackConfiguration: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
@@ -67,14 +66,14 @@ def _load_default_configuration( project: __.Path ) -> TrackMap:
     try: status = candidate.stat( )
     except FileNotFoundError: return _DEFAULT_TRACKS
     except OSError as exception:
-        raise _exceptions.TrackConfigurationInvalidity(
+        raise __.exceptions.TrackConfigurationInvalidity(
             'configuration', 'unreadable configuration' ) from exception
     if not stat.S_ISREG( status.st_mode ):
-        raise _exceptions.TrackConfigurationInvalidity(
+        raise __.exceptions.TrackConfigurationInvalidity(
             'configuration', 'non-regular configuration' )
     try: return load_track_configuration( candidate )
-    except _exceptions.FileAwol as exception:
-        raise _exceptions.TrackConfigurationInvalidity(
+    except __.exceptions.FileAwol as exception:
+        raise __.exceptions.TrackConfigurationInvalidity(
             'configuration', 'unreadable configuration' ) from exception
 
 
@@ -83,13 +82,13 @@ def load_track_configuration( location: __.Path | str ) -> TrackMap:
     path = __.Path( location )
     try: content = path.read_bytes( )
     except OSError as exception:
-        raise _exceptions.FileAwol( path ) from exception
+        raise __.exceptions.FileAwol( path ) from exception
     try: data = _toml_loads( content )
     except Exception as exception:
-        raise _exceptions.TrackConfigurationInvalidity(
+        raise __.exceptions.TrackConfigurationInvalidity(
             str( path ), 'unparseable TOML' ) from exception
     if 'tracks' not in data:
-        raise _exceptions.TrackConfigurationInvalidity(
+        raise __.exceptions.TrackConfigurationInvalidity(
             str( path ), "missing 'tracks' table" )
     return validate_track_configuration( data[ 'tracks' ] )
 
@@ -105,22 +104,22 @@ def validate_track_configuration(
     for name, track in tracks.items( ):
         try: namespace = track[ 'tag-namespace' ]
         except KeyError as exception:
-            raise _exceptions.TrackConfigurationInvalidity(
+            raise __.exceptions.TrackConfigurationInvalidity(
                 name, "missing 'tag-namespace'" ) from exception
         try: selector = track[ 'selector' ]
         except KeyError as exception:
-            raise _exceptions.TrackConfigurationInvalidity(
+            raise __.exceptions.TrackConfigurationInvalidity(
                 name, "missing 'selector'" ) from exception
         try: alias = track[ 'alias' ]
         except KeyError as exception:
-            raise _exceptions.TrackConfigurationInvalidity(
+            raise __.exceptions.TrackConfigurationInvalidity(
                 name, "missing 'alias'" ) from exception
         if selector not in _VALID_SELECTORS:
-            raise _exceptions.TrackConfigurationInvalidity( name,
+            raise __.exceptions.TrackConfigurationInvalidity( name,
                 'invalid selector' )
         canonical = _validate_alias( alias )
         if canonical in aliases:
-            raise _exceptions.TrackConfigurationInvalidity( canonical,
+            raise __.exceptions.TrackConfigurationInvalidity( canonical,
                 'duplicate alias' )
         aliases.add( canonical )
         namespaces.append( ( name, namespace ) )
@@ -137,7 +136,7 @@ def validate_track_configuration(
                 namespace_a, selectors[ name_a ],
                 namespace_b, selectors[ name_b ],
             ):
-                raise _exceptions.TrackConfigurationInvalidity(
+                raise __.exceptions.TrackConfigurationInvalidity(
                     name_a, f"collides with '{name_b}'" )
     if not __.is_absent( known_tags ):
         _reject_ambiguous_known_tags(
@@ -149,23 +148,25 @@ def _validate_alias( alias: str ) -> str:
     ''' Validates alias and returns canonical single-component form. '''
     import re
     if not alias:
-        raise _exceptions.TrackConfigurationInvalidity( alias, 'empty alias' )
+        raise __.exceptions.TrackConfigurationInvalidity( alias,
+            'empty alias' )
     if alias.startswith( '/' ) or alias.startswith( '\\' ):
-        raise _exceptions.TrackConfigurationInvalidity( alias,
+        raise __.exceptions.TrackConfigurationInvalidity( alias,
             'absolute path rejected' )
     normalized = alias.strip( '/' )
     if not normalized:
-        raise _exceptions.TrackConfigurationInvalidity( alias, 'empty alias' )
+        raise __.exceptions.TrackConfigurationInvalidity( alias,
+            'empty alias' )
     if (
         '..' in normalized
         or '/' in normalized
         or '\\' in normalized
         or normalized.startswith( '.' )
     ):
-        raise _exceptions.TrackConfigurationInvalidity( alias,
+        raise __.exceptions.TrackConfigurationInvalidity( alias,
             'traversal rejected' )
     if not re.match( r'^[a-z0-9][a-z0-9-]*$', normalized ):
-        raise _exceptions.TrackConfigurationInvalidity( alias,
+        raise __.exceptions.TrackConfigurationInvalidity( alias,
             'must be kebab-case' )
     return normalized
 
@@ -235,7 +236,7 @@ def _reject_ambiguous_known_tags(
             and matches_namespace( tag, track[ 'tag-namespace' ] )
             and _selector_claims( tag, track[ 'selector' ] ) ]
         if len( claimants ) > 1:
-            raise _exceptions.TrackConfigurationInvalidity(
+            raise __.exceptions.TrackConfigurationInvalidity(
                 tag, 'claimed by multiple tracks' )
 
 
@@ -266,7 +267,7 @@ def _select_latest(
     if selector == 'exact-tag':
         if not matched: return __.absent
         if len( matched ) > 1:
-            raise _exceptions.TrackConfigurationInvalidity(
+            raise __.exceptions.TrackConfigurationInvalidity(
                 track, 'ambiguous exact-tag matches' )
         return matched[ 0 ]
     package_versions: list[ tuple[ __.typx.Any, Version ] ] = [ ]

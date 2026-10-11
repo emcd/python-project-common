@@ -21,10 +21,7 @@
 ''' Publication building, promotion, and synchronization. '''
 
 
-import jinja2 as _jinja2
-
-from .. import __
-from .. import exceptions as _exceptions
+from . import __
 from .inventory import (
     _reject_alias_collisions,
     _snapshot_archive,
@@ -154,7 +151,7 @@ def _validate_version_label( version: str ) -> None:
         than crashing version ordering later.
     '''
     if not version:
-        raise _exceptions.PublicationSourceInvalidity( version,
+        raise __.exceptions.PublicationSourceInvalidity( version,
             'empty version' )
     if (
         version.startswith( '/' )
@@ -165,12 +162,12 @@ def _validate_version_label( version: str ) -> None:
         or version in ( '.', '..' )
         or version.startswith( '.' )
     ):
-        raise _exceptions.PublicationSourceInvalidity( version,
+        raise __.exceptions.PublicationSourceInvalidity( version,
             'traversal rejected' )
     from packaging.version import InvalidVersion, Version
     try: Version( version.lstrip( 'v' ) )
     except InvalidVersion as exception:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             version, 'unparseable version' ) from exception
 
 
@@ -183,8 +180,8 @@ def _build_publication_tree(
     baseline = _snapshot_archive( locations.archive )
     _restore_publication_tree( locations )
     available_species = _update_available_species( locations, version )
-    j2context = _jinja2.Environment(
-        loader = _jinja2.FileSystemLoader( locations.templates ),
+    j2context = __.jinja2.Environment(
+        loader = __.jinja2.FileSystemLoader( locations.templates ),
         autoescape = True )
     index_data = _update_versions_json(
         locations, version, available_species )
@@ -261,14 +258,14 @@ def _extract_coverage( locations: Locations ) -> int:
         percentage, rounded down to the nearest integer.
     '''
     location = locations.artifacts / 'coverage-pytest/coverage.xml'
-    if not location.exists( ): raise _exceptions.FileAwol( location )
+    if not location.exists( ): raise __.exceptions.FileAwol( location )
     from defusedxml import ElementTree
     root = ElementTree.parse( location ).getroot( ) # pyright: ignore
     if root is None:
-        raise _exceptions.FileEmpty( location ) # pragma: no cover
+        raise __.exceptions.FileEmpty( location ) # pragma: no cover
     line_rate = root.get( 'line-rate' )
     if not line_rate:
-        raise _exceptions.FileDataAwol(
+        raise __.exceptions.FileDataAwol(
             location, 'line-rate' ) # pragma: no cover
     return __.math.floor( float( line_rate ) * 100 )
 
@@ -288,7 +285,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         check = False )
     if fetch.returncode != 0:
         if _remote_has_publication( locations ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 'publication', 'fetch failed with remote branch present' )
         _clear_stale_publication_state( locations )
         return ''
@@ -298,7 +295,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         check = False )
     destination = probe.stdout.strip( ) if probe.returncode == 0 else ''
     if not destination:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             'publication', 'unresolvable destination' )
     if locations.archive.is_file( ):
         locations.archive.unlink( )
@@ -307,7 +304,7 @@ def _fetch_publication_branch_and_tarball( locations: Locations ) -> str:
         [ 'checkout', destination, '--', str( locations.archive ) ],
         check = False )
     if checkout.returncode != 0 or not locations.archive.is_file( ):
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             'publication', 'archive unrestorable from destination' )
     return destination
 
@@ -322,10 +319,10 @@ def _clear_stale_publication_state( locations: Locations ) -> None:
     if locations.archive.is_file( ) or locations.archive.is_symlink( ):
         try: locations.archive.unlink( )
         except OSError as exception:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 'archive', 'stale archive irremovable' ) from exception
     elif locations.archive.exists( ):
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             'archive', 'stale archive irremovable' )
     with __.ctxl.suppress( Exception ):
         _run_git(
@@ -336,7 +333,7 @@ def _clear_stale_publication_state( locations: Locations ) -> None:
         [ 'show-ref', '--verify', '--quiet', 'refs/heads/publication' ],
         check = False )
     if probe.returncode == 0:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             'publication', 'stale ancestry irremovable' )
 
 
@@ -355,16 +352,16 @@ def _remote_has_publication( locations: Locations ) -> bool:
             locations, [ 'ls-remote', '--heads', 'origin', 'publication' ],
             check = False )
     except Exception as exception:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             'publication', 'remote probe failed' ) from exception
     if probe.returncode != 0:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             'publication', 'remote probe failed' )
     return bool( probe.stdout.strip( ) )
 
 
 def _generate_coverage_badge_svg(
-    locations: Locations, j2context: _jinja2.Environment
+    locations: Locations, j2context: __.jinja2.Environment
 ) -> str:
     ''' Generates coverage badge SVG content.
 
@@ -417,10 +414,10 @@ def _record_provenance(
             with provenance_file.open( 'r' ) as file:
                 loaded: dict[ str, __.typx.Any ] = __.json.load( file )
         except ValueError as exception:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 'provenance', 'unparseable record' ) from exception
         if not isinstance( loaded, dict ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 'provenance', 'malformed record' )
         data = loaded
     data[ version ] = {
@@ -437,7 +434,7 @@ def _reject_symlinks_in_tree( root: __.Path ) -> None:
     ''' Rejects symlinks anywhere under publication tree. '''
     for path in sorted( root.rglob( '*' ) ):
         if path.is_symlink( ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 str( path ), 'symlink rejected' )
 
 
@@ -451,15 +448,15 @@ def _resolve_source_identity(
             locations, [ 'rev-parse', 'HEAD' ], check = False )
         commit = result.stdout.strip( )
     if strict and not commit:
-        raise _exceptions.PublicationSourceInvalidity(
+        raise __.exceptions.PublicationSourceInvalidity(
             version, 'source identity unavailable' )
     if strict:
         tag_sha = _resolve_release_tag( locations, version )
         if not tag_sha:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 version, 'unresolvable release tag' )
         if tag_sha != commit:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 version, 'source identity mismatch' )
     return commit
 
@@ -525,23 +522,23 @@ def _safe_extractall( archive: __.typx.Any, destination: __.Path ) -> None:
     for member in archive.getmembers( ):
         name = member.name
         if name.startswith( '/' ) or name.startswith( '\\' ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 name, 'absolute path rejected' )
         parts = name.replace( '\\', '/' ).split( '/' )
         if '..' in parts:
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 name, 'traversal rejected' )
         if member.issym( ) or member.islnk( ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 name, 'link rejected' )
         if (
             member.ischr( ) or member.isblk( )
             or member.isfifo( ) or member.isdev( )
         ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 name, 'special file rejected' )
         if not ( member.isfile( ) or member.isdir( ) ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 name, 'non-regular rejected' )
     archive.extractall( path = destination ) # noqa: S202
 
@@ -554,15 +551,15 @@ def _validate_publication_tree(
     ''' Validates built tree before alias promotion and archiving. '''
     version_dir = locations.website / version
     if not version_dir.is_dir( ):
-        raise _exceptions.PublicationSourceInvalidity( version,
+        raise __.exceptions.PublicationSourceInvalidity( version,
             'version tree absent' )
     for requisite in ( locations.index, locations.versions ):
         if not requisite.is_file( ):
-            raise _exceptions.PublicationSourceInvalidity(
+            raise __.exceptions.PublicationSourceInvalidity(
                 str( requisite ), 'requisite absent' )
     for alias in index_data.get( 'track_versions', { } ):
         if not ( locations.website / alias ).is_dir( ):
-            raise _exceptions.PublicationSourceInvalidity( alias,
+            raise __.exceptions.PublicationSourceInvalidity( alias,
                 'alias tree absent' )
     _reject_symlinks_in_tree( locations.website )
 
@@ -600,7 +597,7 @@ def _update_available_species(
 
 
 def _update_coverage_badge(
-    locations: Locations, j2context: _jinja2.Environment
+    locations: Locations, j2context: __.jinja2.Environment
 ) -> None:
     ''' Updates coverage badge SVG.
 
@@ -659,7 +656,7 @@ def _update_publication_branch(
 
 def _update_index_html(
     locations: Locations,
-    j2context: _jinja2.Environment,
+    j2context: __.jinja2.Environment,
     data: dict[ __.typx.Any, __.typx.Any ],
 ) -> None:
     ''' Updates index.html with version information.
@@ -674,7 +671,7 @@ def _update_index_html(
 
 
 def _update_version_coverage_badge(
-    locations: Locations, j2context: _jinja2.Environment, version: str
+    locations: Locations, j2context: __.jinja2.Environment, version: str
 ) -> None:
     ''' Updates version-specific coverage badge SVG.
 

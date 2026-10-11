@@ -332,7 +332,7 @@ def test_092_reject_claimed_known_tag( website ):
             tracks, known_tags = ( 'docs-30', ) )  # type: ignore[arg-type]
 
 
-def test_093_load_tracks_from_toml( website, provide_tempdir ):
+def test_093_load_tracks_from_toml( website, exceptions, provide_tempdir ):
     ''' Track configuration loads from TOML file. '''
     from pathlib import Path
     location = Path( provide_tempdir ) / 'tracks.toml'
@@ -349,6 +349,6 @@ def test_093_load_tracks_from_toml( website, provide_tempdir ):
     tracks = website.load_track_configuration( location )
     assert tracks[ 'stable' ][ 'alias' ] == 'stable'
     assert tracks[ 'docs-2' ][ 'tag-namespace' ] == 'docs-*'
-    with pytest.raises( website._exceptions.FileAwol ):
+    with pytest.raises( exceptions.FileAwol ):
         website.load_track_configuration(
             Path( provide_tempdir ) / 'absent.toml' )

@@ -21,7 +21,7 @@
 ''' Publication filesystem locations. '''
 
 
-from .. import __
+from . import __
 
 
 class Locations( __.immut.DataclassObject ):
