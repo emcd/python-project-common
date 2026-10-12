@@ -28,6 +28,39 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63 (2026-10-12)
+=================================
+
+Enhancements
+------------
+
+- Move the Python baseline to 3.12, drop PyPy support, and add CPython 3.15
+  to the version options and defaults. ``requires-python``,
+  classifiers, Hatch environments, and the CI matrix follow the answers.
+- Add a module-size gate (1000 lines per module over ``sources`` and
+  ``tests``) wired into the generated ``linters`` chain, restoring the
+  Pylint C0302 enforcement lost in the Pylint-to-Ruff migration.
+- Bump the Ruff pre-commit hook to ``v0.17.0``.
+
+Notes
+-----
+
+- Updating across this baseline requires the data file
+  ``.auxiliary/data/copier/python-baseline-3.12.yaml`` (fetch it from this
+  tag) passed via ``--data-file``; without it, the update coerces to the
+  new defaults (with ``--defaults``) or requires interactive input.
+  The file carries 3.12-3.14 because choices validate against the
+  previously-recorded template; add 3.15 afterwards with
+  ``--data 'python_versions=["3.12", "3.13", "3.14", "3.15"]'``.
+- The removed ``pypy_versions`` key in existing answers files is dropped
+  silently; no manual cleanup is needed.
+- CPython 3.15 currently fails at import time in ``classcore``/``frigid``
+  foundation projects (``typing`` 3.15 dunders vs attribute immutability);
+  the incompatibility is reported upstream. Omit 3.15 from project answers
+  until it is resolved.
+- This tag sorts above package tag ``v1.62`` under PEP 440.
+
+
 Copier Template 1.61 (2026-09-27)
 =================================
 
