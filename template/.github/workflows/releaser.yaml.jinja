@@ -22,6 +22,44 @@ jobs:
   initialize:
     uses: ./.github/workflows/core--initializer.yaml
 
+  check-if-release:
+    runs-on: ubuntu-latest
+    outputs:
+      is-release: {% raw %}${{ steps.decide.outputs.is-release }}{% endraw %}
+    steps:
+
+      - name: Checkout Sources
+        uses: actions/checkout@v6
+
+      - name: Determine Release Eligibility
+        id: decide
+        shell: python
+        run: |
+          import re
+          from os import environ
+          from pathlib import Path
+          init = Path( 'sources/{{ package_name }}/__init__.py' ).read_text( )
+          package_version = re.search(
+              r"^__version__ = '([^']+)'", init, re.M ).group( 1 )
+          ref = environ[ 'GITHUB_REF' ]
+          ref_name = environ[ 'GITHUB_REF_NAME' ]
+          is_release = 'true'
+          reason = 'Publication is allowed for non-tag workflow dispatch.'
+          if ref.startswith( 'refs/tags/' ):
+              tag_version = ref_name[ 1: ] if ref_name.startswith( 'v' ) else ref_name
+              if tag_version == package_version:
+                  reason = f"Tag version {tag_version} matches package version."
+              else:
+                  is_release = 'false'
+                  reason = f"Tag version {tag_version} does not match package version {package_version}; test and report only."
+          with open( environ[ 'GITHUB_OUTPUT' ], 'a', encoding = 'utf-8' ) as file:
+              print( f"is-release={is_release}", file = file )
+          with open( environ[ 'GITHUB_STEP_SUMMARY' ], 'a', encoding = 'utf-8' ) as file:
+              print( '## Release Eligibility', file = file )
+              print( f"- Package version: `{package_version}`", file = file )
+              print( f"- Is release: `{is_release}`", file = file )
+              print( f"- Reason: {reason}", file = file )
+
   test:
     needs: [initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@gha-1
@@ -41,7 +79,8 @@ jobs:
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}
 
   docsgen:
-    needs: [initialize, report]
+    if: {% raw %}${{ needs.check-if-release.outputs.is-release == 'true' }}{% endraw %}
+    needs: [check-if-release, initialize, report]
     permissions:
       contents: write
       id-token: write
@@ -52,7 +91,8 @@ jobs:
       python-version: {% raw %}'${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'{% endraw %}
 
   package:
-    needs: [initialize, docsgen]
+    if: {% raw %}${{ needs.check-if-release.outputs.is-release == 'true' }}{% endraw %}
+    needs: [check-if-release, initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@gha-1
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
