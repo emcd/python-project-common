@@ -28,6 +28,20 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.1 (2026-10-12)
+===================================
+
+Repairs
+-------
+
+- Gate release publication jobs on tag-package match: template-tag pushes
+  run test and report only, instead of failing in documentation generation
+  on the dev package version.
+- Match both hyphenated and underscore-normalized artifact globs in release
+  integrity values and attestations, so wheels and sdists are covered for
+  hyphenated distribution names.
+
+
 Copier Template 1.63 (2026-10-12)
 =================================
 
