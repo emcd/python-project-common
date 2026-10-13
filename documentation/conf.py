@@ -183,6 +183,7 @@ myst_enable_extensions = [
     # 'substitution',
     'tasklist',         # - [ ] tasks
 ]
+myst_heading_anchors = 3
 
 # -- Options for todo extension ----------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration
