@@ -175,6 +175,7 @@ def _build_publication_tree(
     index_data = update_versions_json(
         locations, version, available_species )
     _enhance_index_data_with_stable_dev( index_data, tracks )
+    _write_versions_json( locations, index_data )
     _tracks.reject_ambiguous_known_tags(
         tracks, list( index_data.get( 'versions', { } ).keys( ) ) )
     _inventory.reject_alias_collisions( index_data, version )
@@ -710,3 +711,12 @@ def update_versions_json(
         __.json.dump( data, file, indent = 4 )
         file.truncate( )
     return data
+
+
+def _write_versions_json(
+    locations: _locations.Locations,
+    data: dict[ __.typx.Any, __.typx.Any ],
+) -> None:
+    ''' Persists enhanced index data (tracks, aliases) to versions.json. '''
+    with locations.versions.open( 'w' ) as file:
+        __.json.dump( data, file, indent = 4 )
