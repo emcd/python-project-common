@@ -850,8 +850,9 @@ def test_112_bare_label_stable_alias(
 
 def test_113_index_renders_alias_rows( website ):
     ''' Real index template renders floating alias lines with targets. '''
-    from jinja2 import Environment, FileSystemLoader
     from pathlib import Path
+
+    from jinja2 import Environment, FileSystemLoader
     templates = (
         Path( __file__ ).parent.parent.parent
         / 'data' / 'templates' )
