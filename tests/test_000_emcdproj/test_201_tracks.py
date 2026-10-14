@@ -66,6 +66,16 @@ def test_075_reject_namespace_collision( website ):
         website.validate_track_configuration( tracks )  # type: ignore[arg-type]
 
 
+def test_076_match_bare_label_namespace( website ):
+    ''' Bare version labels match tag-shaped namespaces. '''
+    assert website.matches_namespace( '1.0', 'v*' )
+    assert website.matches_namespace( 'v1.0', 'v*' )
+    assert not website.matches_namespace( '1.0', 'docs-*' )
+    assert website.matches_namespace( 'docs-2', 'docs-*' )
+    assert not website.matches_namespace( 'docs-2', 'v*' )
+    assert not website.matches_namespace( 'stable', 'v*' )
+
+
 def test_080_custom_alias_emitted_from_selection(
     auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
 ):

@@ -818,3 +818,31 @@ def test_111_retained_history_without_inventory(
         website.update(
             auxdata_tmpdir, 'v1.1',
             project_anchor = locations_tmpdir.project )
+
+
+def test_112_bare_label_stable_alias(
+    auxdata_tmpdir, locations_tmpdir, website, provide_tempdir
+):
+    ''' Bare version labels resolve tag-shaped track namespaces. '''
+    test_files = {
+        'project/.auxiliary/artifacts/sphinx-html/guide.html':
+            '<html><body></body></html>',
+        'package/data/templates/coverage.svg.jinja': '{{ color }}',
+        'package/data/templates/website.html.jinja': '{{ latest_version }}',
+    }
+    tracks = website.validate_track_configuration( website.DEFAULT_TRACKS )
+    with create_test_files( provide_tempdir, test_files ):
+        locations_tmpdir.website.mkdir( parents = True, exist_ok = True )
+        website.update(
+            auxdata_tmpdir, '1.0',
+            project_anchor = locations_tmpdir.project,
+            tracks = tracks )
+        stable = locations_tmpdir.website / 'stable'
+        assert stable.is_dir( )
+        assert ( stable / 'sphinx-html/guide.html' ).is_file( )
+        assert not ( locations_tmpdir.website / 'development' ).exists( )
+        import json
+        versions = json.loads(
+            ( locations_tmpdir.website / 'versions.json' ).read_text( ) )
+        assert versions[ 'track_versions' ][ 'stable' ] == '1.0'
+        assert versions[ 'stable_version' ] == '1.0'
