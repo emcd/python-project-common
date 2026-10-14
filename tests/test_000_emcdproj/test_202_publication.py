@@ -846,3 +846,23 @@ def test_112_bare_label_stable_alias(
             ( locations_tmpdir.website / 'versions.json' ).read_text( ) )
         assert versions[ 'track_versions' ][ 'stable' ] == '1.0'
         assert versions[ 'stable_version' ] == '1.0'
+
+
+def test_113_index_renders_alias_rows( website ):
+    ''' Real index template renders floating alias lines with targets. '''
+    from jinja2 import Environment, FileSystemLoader
+    from pathlib import Path
+    templates = (
+        Path( __file__ ).parent.parent.parent
+        / 'data' / 'templates' )
+    environment = Environment(
+        loader = FileSystemLoader( templates ), autoescape = True )
+    template = environment.get_template( 'website.html.jinja' )
+    html = template.render(
+        versions = { '1.0': ( 'sphinx-html', ), '1.1': ( 'sphinx-html', ) },
+        latest_version = '1.1',
+        track_versions = { 'v1': '1.1' },
+        stable_dev_versions = { },
+        stable_version = None )
+    assert 'v1 (1.1)' in html
+    assert 'v1/sphinx-html/index.html' in html
