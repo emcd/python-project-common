@@ -16,6 +16,11 @@ on:
         default: '1.62.1'
         required: false
         type: string
+      production:
+        description: 'Update publication branch with new tarball.'
+        default: true
+        required: false
+        type: boolean
       configuration:
         description: 'Track configuration TOML file for publication.'
         default: ''
@@ -97,8 +102,12 @@ jobs:
           if [ -n "${{ inputs.legacy-inventory }}" ]; then
             config_args="${config_args} --legacy-inventory ${{ inputs.legacy-inventory }}"
           fi
+          production_args="--production"
+          if [ "${{ inputs.production }}" != 'true' ]; then
+            production_args=""
+          fi
           # shellcheck disable=SC2086
-          emcdproj website update "${version}" --production ${config_args}
+          emcdproj website update "${version}" ${production_args} ${config_args}
           echo "website=$(pwd)/.auxiliary/artifacts/website" >>${GITHUB_OUTPUT}
           cat ${GITHUB_OUTPUT}
         shell: bash
