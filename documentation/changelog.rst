@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+emcdproj 1.62.2 (2026-10-14)
+============================
+
+Enhancements
+------------
+
+- Render floating alias rows with targets in the website version table, driven by track versions instead of hardcoded stable/development labels.
+
+
 emcdproj 1.62.1 (2026-10-14)
 ============================
 
