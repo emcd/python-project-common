@@ -25,7 +25,7 @@
 <body>
     <h1>Available Releases</h1>
     
-    {% if stable_dev_versions %}
+    {% if track_versions %}
     <h2>Current Releases</h2>
     <table>
         <thead>
@@ -36,27 +36,19 @@
             </tr>
         </thead>
         <tbody>
-        {% for version_label, attributes in stable_dev_versions.items() %}
+        {% for alias, version in track_versions.items() %}
             <tr>
-                <td>{{ version_label }}</td>
+                <td>{{ alias }} ({{ version }})</td>
                 <td>
-                {% if 'sphinx-html' in attributes %}
-                    {% if version_label.startswith('stable') %}
-                        <a href="stable/sphinx-html/index.html">Docs</a>
-                    {% elif version_label.startswith('development') %}
-                        <a href="development/sphinx-html/index.html">Docs</a>
-                    {% endif %}
+                {% if 'sphinx-html' in versions[version] %}
+                    <a href="{{ alias }}/sphinx-html/index.html">Docs</a>
                 {% else %}
                     N/A
                 {% endif %}
                 </td>
                 <td>
-                {% if 'coverage-pytest' in attributes %}
-                    {% if version_label.startswith('stable') %}
-                        <a href="stable/coverage-pytest/index.html">Coverage</a>
-                    {% elif version_label.startswith('development') %}
-                        <a href="development/coverage-pytest/index.html">Coverage</a>
-                    {% endif %}
+                {% if 'coverage-pytest' in versions[version] %}
+                    <a href="{{ alias }}/coverage-pytest/index.html">Coverage</a>
                 {% else %}
                     N/A
                 {% endif %}
@@ -65,7 +57,7 @@
         {% endfor %}
         </tbody>
     </table>
-    
+
     <h2>All Releases</h2>
     {% endif %}
     
