@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+emcdproj 1.62.1 (2026-10-14)
+============================
+
+Repairs
+-------
+
+- Resolve track aliases for bare version labels, so default tracks emit ``stable/`` and ``development/`` and ``versions.json`` carries the track manifest.
+
+
 emcdproj 1.62 (2026-10-11)
 ==========================
 

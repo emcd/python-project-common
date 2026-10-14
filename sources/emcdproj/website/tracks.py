@@ -48,9 +48,18 @@ DEFAULT_TRACKS: TrackMap = (
 
 
 def matches_namespace( tag: str, namespace: str ) -> bool:
-    ''' Checks whether tag matches track namespace pattern. '''
+    ''' Checks whether tag matches track namespace pattern.
+
+        Version labels may be bare ('1.0') while namespaces are
+        tag-shaped ('v*'); the 'v'-prefixed form is tried as fallback,
+        but only when the label parses as a package version, so
+        non-version labels (aliases, docs tags) never match spuriously.
+    '''
     from fnmatch import fnmatchcase
-    return fnmatchcase( tag, namespace )
+    if fnmatchcase( tag, namespace ): return True
+    if tag.startswith( 'v' ): return False
+    if not fnmatchcase( f'v{tag}', namespace ): return False
+    return _parse_package_version( tag ) is not None
 
 
 def load_default_configuration( project: __.Path ) -> TrackMap:
