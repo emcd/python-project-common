@@ -1,23 +1,18 @@
-# Copier data file: Python 3.12 baseline migration (template v1.63).
+# Copier data file: Python 3.12 baseline migration.
 #
-# Downstream projects updating across the v1.63 baseline bump must pass
-# this file to pick up the new baseline instead of keeping stale answers:
+# Downstream projects updating across the baseline bump pass this file
+# to pick up the new baseline instead of keeping stale answers:
 #
-#   copier update --vcs-ref v1.63 \
+#   copier update \
 #       --data-file https://raw.githubusercontent.com/emcd/python-project-common/v1.63/.auxiliary/data/copier/python-baseline-3.12.yaml \
 #       --skip-answered
 #
 # Without it, the update coerces to the new defaults (with --defaults)
 # or requires interactive input; pass this file for the canonical
 # migration path.
-#
-# The version list intentionally stops at 3.14: choices are validated
-# against the previously-recorded template, which lacks 3.15. Add 3.15
-# afterwards with a second pass:
-#
-#   copier update --data 'python_versions=["3.12", "3.13", "3.14", "3.15"]'
 python_version_min: '3.12'
 python_versions:
     - '3.12'
     - '3.13'
     - '3.14'
+    - '3.15'
