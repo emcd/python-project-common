@@ -101,7 +101,7 @@ jobs:
   {%- if enable_publication %}
 
   check-if-publish:
-    needs: [package]
+    needs: [package, test, report, docsgen]
     runs-on: ubuntu-latest
     outputs:
       package-version: {% raw %}${{ steps.decide.outputs.package-version }}{% endraw %}

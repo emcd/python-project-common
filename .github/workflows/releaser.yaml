@@ -96,7 +96,7 @@ jobs:
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
   check-if-publish:
-    needs: [package]
+    needs: [package, test, report, docsgen]
     runs-on: ubuntu-latest
     outputs:
       package-version: ${{ steps.decide.outputs.package-version }}
