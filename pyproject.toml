@@ -17,7 +17,7 @@ requires-python = '>= 3.10'
 dependencies = [
   'Jinja2',
   'defusedxml',
-  'icecream-truck~=1.4',
+  'ictr~=1.0a1',
   'packaging',
   'tomli~=2.0',
   'typing-extensions',
