@@ -61,6 +61,8 @@ jobs:
             hatch: "py3.13"
           "3.14":
             hatch: "py3.14"
+          "3.15":
+            hatch: "py3.15"
           EOF
           )"
           echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}

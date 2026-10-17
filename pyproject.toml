@@ -37,6 +37,7 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: 3.14',
+  'Programming Language :: Python :: 3.15',
   'Programming Language :: Python :: Implementation :: CPython',
   # --- END: Injected by Copier ---
   'Topic :: Software Development',
@@ -147,7 +148,9 @@ module-sizes = [
 ]
 linters = [
   """ruff check --quiet sources documentation tests""",
-  """vibelinter check""",
+  # External install only (e.g. uv tool install): a develop dependency
+  # cycles for packages below emcd-vibe-linter in the stack.
+  #"""vibelinter check""",
   # --- BEGIN: Injected by Copier ---
   # --- END: Injected by Copier ---
   """isort --check-only --diff sources tests""",
@@ -193,6 +196,7 @@ python = [
     '3.12',
     '3.13',
     '3.14',
+    '3.15',
 ]
 [tool.hatch.version]
 path = 'sources/emcdproj/__init__.py'
