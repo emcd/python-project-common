@@ -28,6 +28,17 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.3 (2026-10-17)
+===================================
+
+Repairs
+-------
+
+- Remove the ``emcd-vibe-linter`` develop dependency and disable the wired
+  ``vibelinter check``: the package closure cycles for projects below it in
+  the stack. Run the linter from an external install instead.
+
+
 Copier Template 1.63.2 (2026-10-15)
 ===================================
 
