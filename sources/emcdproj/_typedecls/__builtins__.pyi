@@ -2,6 +2,6 @@
 
 # https://github.com/microsoft/pyright/blob/main/docs/builtins.md
 
-from ictruck import Truck
+from ictr import Dispatcher
 
-ictr: Truck
+ictr: Dispatcher

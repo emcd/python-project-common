@@ -97,8 +97,8 @@ async def _prepare(
     exits: __.ctxl.AsyncExitStack,
 ) -> __.Globals:
     ''' Configures logging based on verbosity. '''
-    import ictruck
-    # TODO: Finetune Icecream truck installation from CLI arguments.
-    ictruck.install( trace_levels = 9 )
+    import ictr
+    # TODO: Finetune dispatcher installation from CLI arguments.
+    ictr.install( trace_levels = 9 )
     return await __.appcore.prepare(
         environment = environment, exits = exits )

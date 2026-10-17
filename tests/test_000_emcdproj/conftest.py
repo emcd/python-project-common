@@ -26,7 +26,7 @@ import tempfile
 from contextlib import AsyncExitStack
 from pathlib import Path
 
-import ictruck
+import ictr
 import pytest
 import typing_extensions as typx
 
@@ -35,7 +35,7 @@ from platformdirs import PlatformDirs
 from .__ import PACKAGE_NAME, cache_import_module
 
 
-ictruck.register_module( PACKAGE_NAME )
+ictr.register_address( PACKAGE_NAME )
 
 
 @pytest.fixture
