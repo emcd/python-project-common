@@ -28,6 +28,18 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.4 (2026-10-17)
+===================================
+
+Repairs
+-------
+
+- Re-anchor release validation at the publication barrier: the eligibility
+  gate change had severed the test/report/docs ordering upstream of
+  publication, so matching-tag distributions could publish on failed or
+  pending validation. The barrier job now needs all validation jobs.
+
+
 Copier Template 1.63.3 (2026-10-17)
 ===================================
 
