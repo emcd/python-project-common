@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+emcdproj 1.62.3 (2026-10-17)
+============================
+
+Enhancements
+------------
+
+- Depend on the ``ictr`` distribution directly instead of ``icecream-truck`` for debug tracing; the installed builtin alias and call convention are unchanged.
+
+
 emcdproj 1.62.2 (2026-10-14)
 ============================
 
