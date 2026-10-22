@@ -13,7 +13,7 @@ on:
         type: string
       emcd-projects-version:
         description: 'Pinned emcd-projects version for website utility.'
-        default: '1.62.1'
+        default: '1.62.3'
         required: false
         type: string
       production:
