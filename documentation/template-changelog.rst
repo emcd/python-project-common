@@ -28,6 +28,18 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.5 (2026-10-27)
+===================================
+
+Repairs
+-------
+
+- Revert release artifact globs to the underscore form only: Hatchling
+  normalizes both wheels and sdists to underscores (PEP 625), so the
+  hyphen pattern matched nothing and broke integrity values under
+  ``set -eu`` on the release path.
+
+
 Copier Template 1.63.4 (2026-10-17)
 ===================================
 

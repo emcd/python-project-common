@@ -289,15 +289,16 @@ jobs:
         run: |
           set -eu -o pipefail
           cd {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}
-          sha256sum {{ distribution_name }}-*{% if '-' in distribution_name %} {{ distribution_name | replace('-', '_') }}-*{% endif %} >SHA256SUMS.txt
+          # Hatchling normalizes both wheels and sdists to underscores
+          # (PEP 625), so the underscore form matches all artifacts.
+          sha256sum {{ distribution_name | replace('-', '_') }}-* >SHA256SUMS.txt
 
       - name: Attest Build Provenance
         uses: actions/attest-build-provenance@v2
         with:
           subject-path: |
             {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/SHA256SUMS.txt
-            {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/{{ distribution_name }}-*{% if '-' in distribution_name %}
-            {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/{{ distribution_name | replace('-', '_') }}-*{% endif %}
+            {% raw %}${{ env.DISTRIBUTIONS_PATH }}{% endraw %}/{{ distribution_name | replace('-', '_') }}-*
 
       - name: Generate Release Notes
         run: |
