@@ -31,6 +31,12 @@ projects.
 Copier Template 1.63.5 (2026-10-27)
 ===================================
 
+Enhancements
+------------
+
+- Raise the generated ``emcd-appcore[cli]`` floor to ``~=1.8``: appcore 1.8
+  dropped ``tomli``, unblocking frozen builds on Python 3.12+.
+
 Repairs
 -------
 
