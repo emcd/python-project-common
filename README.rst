@@ -194,6 +194,6 @@ Other Projects by This Author 🌟
 * `python-frigid <https://github.com/emcd/python-frigid>`_ (`frigid <https://pypi.org/project/frigid/>`_ on PyPI)
 
   🔒 A Python library package which provides **immutable data structures** - collections which cannot be modified after creation.
-* `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI)
+* `python-ictr <https://github.com/emcd/python-ictr>`_ (`ictr <https://pypi.org/project/ictr/>`_ on PyPI) 
 
-  🍦 **Flavorful Debugging** - A Python library which enhances the powerful and well-known ``icecream`` package with flavored traces, configuration hierarchies, customized outputs, ready-made recipes, and more.
+  🍦 **Non-Intrusive Debugging** - A Python library which provides flavored traces, configuration hierarchies, customized outputs, and ready-made recipes for logging and debug printing.
