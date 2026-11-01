@@ -28,6 +28,20 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.6 (2026-11-01)
+===================================
+
+Enhancements
+------------
+
+- Refresh the Other Projects map: add ``agentmux``, ``cistella`` and
+  ``nb-mcp-server`` (Crates.io), replace ``python-icecream-truck`` with
+  ``python-ictr``, and drop ``python-absence``, ``python-librovore`` and
+  ``python-mimeogram``.
+- Ignore ``crates.io`` pages in linkcheck: the registry fingerprints user
+  agents and 404s bot probes, so generated linkchecks must skip them.
+
+
 Copier Template 1.63.5 (2026-10-27)
 ===================================
 
