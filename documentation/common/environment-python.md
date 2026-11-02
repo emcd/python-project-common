@@ -49,16 +49,25 @@ the [environment guide](environment.md).
 <a id="git-hooks"></a>
 ## Git Hooks
 
-Install Git pre-commit and pre-push hooks with the standalone runner
-(system-wide install, independent of any Hatch environment):
+Install Git pre-commit and pre-push hooks with a per-user `pre-commit`
+installation outside any Hatch development environment, so hooks keep
+working even when Hatch environments are pruned or rebuilt:
 
 ```shell
 uv tool install pre-commit
 uv tool install vulture
+```
+
+`pipx install pre-commit vulture` remains functionally compatible, but `uv` is the
+single documented path to match the tooling section above.
+
+Then install the hooks in the repository:
+
+```shell
 pre-commit install --config .auxiliary/configuration/pre-commit.yaml
 ```
 
-The hooks themselves invoke container-local tooling directly; only the
+The hooks themselves invoke standalone tooling directly; only the
 heavyweight suites resolve Hatch environments, at push time or in CI
 where those environments are provisioned rather than assumed.
 
