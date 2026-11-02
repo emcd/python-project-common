@@ -49,12 +49,18 @@ the [environment guide](environment.md).
 <a id="git-hooks"></a>
 ## Git Hooks
 
-Install Git pre-commit and pre-push hooks with the Python development
-environment:
+Install Git pre-commit and pre-push hooks with the standalone runner
+(system-wide install, independent of any Hatch environment):
 
 ```shell
-hatch --env develop run pre-commit install --config .auxiliary/configuration/pre-commit.yaml
+uv tool install pre-commit
+uv tool install vulture
+pre-commit install --config .auxiliary/configuration/pre-commit.yaml
 ```
+
+The hooks themselves invoke container-local tooling directly; only the
+heavyweight suites resolve Hatch environments, at push time or in CI
+where those environments are provisioned rather than assumed.
 
 <a id="refreshing-environments"></a>
 ## Refreshing Environments
