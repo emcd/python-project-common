@@ -55,10 +55,9 @@ working even when Hatch environments are pruned or rebuilt:
 
 ```shell
 uv tool install pre-commit
-uv tool install vulture
 ```
 
-`pipx install pre-commit vulture` remains functionally compatible, but `uv` is the
+`pipx install pre-commit` remains functionally compatible, but `uv` is the
 single documented path to match the tooling section above.
 
 Then install the hooks in the repository:
@@ -67,9 +66,11 @@ Then install the hooks in the repository:
 pre-commit install --config .auxiliary/configuration/pre-commit.yaml
 ```
 
-The hooks themselves invoke standalone tooling directly; only the
-heavyweight suites resolve Hatch environments, at push time or in CI
-where those environments are provisioned rather than assumed.
+The hooks themselves delegate to Hatch environments, which are resolved
+guest-locally at hook time and never shared across the sandbox boundary.
+If a hook fails because its environment went stale, rebuild the project
+environments with `hatch env prune` from the project root
+(all environments are removed and recreated on next use) and re-run the hook.
 
 <a id="refreshing-environments"></a>
 ## Refreshing Environments

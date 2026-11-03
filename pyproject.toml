@@ -111,7 +111,6 @@ dependencies = [
   'furo',
   'isort',
   'myst-parser',
-  'pre-commit',
   'pyfakefs',
   'pyright',
   'pytest',
