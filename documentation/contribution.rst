@@ -24,8 +24,10 @@
 Contribution
 *******************************************************************************
 
-Contribution to this project is welcome! However, it must follow the :doc:`code
-of conduct <common/conduct>` for the project.
+Contribution to this project is welcome! However, it must follow the `code of
+conduct
+<https://emcd.github.io/documentation-common/v1/sphinx-html/common/conduct.html>`_
+for the project.
 
 
 Ways to Contribute
@@ -62,32 +64,42 @@ Requirements and Design
 Guidance and Standards
 -------------------------------------------------------------------------------
 
-* Follow the :doc:`development environment preparation and management
-  instructions <common/environment>` to ensure consistency with maintainer
-  development environments and CI workflows.
+* Follow the `development environment preparation and management instructions
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/environment.html>`_
+  to ensure consistency with maintainer development environments and CI
+  workflows.
 
 * Configure Git commit signing as required for all contributions. See the
-  :doc:`environment setup guide <common/environment>` for configuration
-  details.
+  `environment setup guide
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/environment.html#git-commit-signatures>`_
+  for configuration details.
 
-* Adhere to the :doc:`development practices <common/practices>`, :doc:`code
-  style <common/style>`, and :doc:`testing guidelines <common/tests>` to
-  improve the probability of pull request acceptance. You may wish to use an
+* Adhere to the `development practices
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/practices.html>`_,
+  `code style
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/style.html>`_,
+  and `testing guidelines
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/tests.html>`_
+  to improve the probability of pull request acceptance. You may wish to use an
   LLM to assist with this, if the standards seem too onerous or specific.
 
-* Also consider the :doc:`nomenclature advice <common/nomenclature>` for
-  consistency and to improve the probability of pull request acceptance.
+* Also consider the `nomenclature advice
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/nomenclature.html>`_
+  for consistency and to improve the probability of pull request acceptance.
 
-* Run validation commands before submitting contributions. See the
-  :doc:`validation guide <common/validation>` for available commands and
-  workflow. (If you installed the Git pre-commit and pre-push hooks during
-  environment setup, then they will run the validations for you.)
+* Run validation commands before submitting contributions. See the `validation
+  guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/validation.html>`_
+  for available commands and workflow. (If you installed the Git pre-commit and
+  pre-push hooks during environment setup, then they will run the validations
+  for you.)
 
-* Prepare changelog fragments according to the :doc:`releases guide
-  <common/releases>` as appropriate.
+* Prepare changelog fragments according to the `releases guide
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/releases.html>`_
+  as appropriate.
 
 * Although unnecessary for non-maintainer contributions, additional background
-  can be found in the :doc:`maintenance guide <common/maintenance>`.
+  can be found in the `maintenance guide
+  <https://emcd.github.io/documentation-common/v1/sphinx-html/common/maintenance.html>`_.
 
 Artificial Intelligence
 -------------------------------------------------------------------------------
@@ -109,19 +121,19 @@ Resources
 .. toctree::
    :maxdepth: 2
 
-   Code of Conduct <common/conduct>
+   Code of Conduct <https://emcd.github.io/documentation-common/v1/sphinx-html/common/conduct.html>
    devapi
-   Environment Guide <common/environment>
-   Practices Guide <common/practices>
-   Code Style Guide <common/style>
-   Testing Guide <common/tests>
-   Nomenclature Guide <common/nomenclature>
-   Germanic Nomenclature Guide <common/nomenclature-germanic>
-   Validation Guide <common/validation>
-   Release Guide <common/releases>
-   Maintenance Guide <common/maintenance>
-   Architecture Guide <common/architecture>
-   Requirements Guide <common/requirements>
+   Environment Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/environment.html>
+   Practices Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/practices.html>
+   Code Style Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/style.html>
+   Testing Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/tests.html>
+   Nomenclature Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/nomenclature.html>
+   Germanic Nomenclature Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/nomenclature-germanic.html>
+   Validation Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/validation.html>
+   Release Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/releases.html>
+   Maintenance Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/maintenance.html>
+   Architecture Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/architecture.html>
+   Requirements Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/requirements.html>
 
 .. Language-specific guides stay in a hidden toctree so Sphinx includes them
    in the site graph without adding renderer-specific navigation glue to the
@@ -129,13 +141,13 @@ Resources
 .. toctree::
    :hidden:
 
-   Python Environment Guide <common/environment-python>
-   Python Architecture Guide <common/architecture-python>
-   Python Development Guide <common/practices-python>
-   Rust Development Guide <common/practices-rust>
-   TOML Configuration Practices <common/practices-toml>
-   Latin-derived Verb Vocabulary <common/nomenclature-latin>
-   Python Automatic Formatting <common/python-autoformat>
-   Python Testing Guide <common/tests-python>
-   Python Validation Guide <common/validation-python>
-   Python Release Guide <common/releases-python>
+   Python Environment Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/environment-python.html>
+   Python Architecture Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/architecture-python.html>
+   Python Development Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/practices-python.html>
+   Rust Development Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/practices-rust.html>
+   TOML Configuration Practices <https://emcd.github.io/documentation-common/v1/sphinx-html/common/practices-toml.html>
+   Latin-derived Verb Vocabulary <https://emcd.github.io/documentation-common/v1/sphinx-html/common/nomenclature-latin.html>
+   Python Automatic Formatting <https://emcd.github.io/documentation-common/v1/sphinx-html/common/python-autoformat.html>
+   Python Testing Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/tests-python.html>
+   Python Validation Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/validation-python.html>
+   Python Release Guide <https://emcd.github.io/documentation-common/v1/sphinx-html/common/releases-python.html>
