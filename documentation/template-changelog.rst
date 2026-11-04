@@ -28,6 +28,20 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.7 (2026-11-04)
+===================================
+
+Enhancements
+------------
+
+- Install the ``pre-commit`` runner standalone, outside any Hatch
+  environment, so commit-time hooks survive environment rebuilds: the
+  hooks still delegate to guest-local Hatch environments, with a
+  documented prune-based recovery path.
+- Cut over common-documentation links to documentation-common: generated
+  guides now point at the floating ``v1`` line instead of the local copies.
+
+
 Copier Template 1.63.6 (2026-11-01)
 ===================================
 
