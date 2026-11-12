@@ -28,6 +28,17 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
+Copier Template 1.63.8 (2026-11-12)
+===================================
+
+Repairs
+-------
+
+- Exclude singular ``.auxiliary/poc/`` directories from pre-commit
+  alongside the canonical ``pocs/`` form, so downstream PoC scratch
+  trees need no local patching.
+
+
 Copier Template 1.63.7 (2026-11-04)
 ===================================
 
