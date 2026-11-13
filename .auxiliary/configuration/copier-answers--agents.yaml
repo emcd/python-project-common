@@ -1,20 +1,13 @@
 # Changes here will be overwritten by Copier
-_commit: v1.0a12-25-ge0f3797
+_commit: v1.0a19-7-g9682364
 _src_path: gh:emcd/agents-common
 coders:
 - claude
 - codex
 - opencode
-instructions_sources:
--   files:
-        '*.rst':
-            strip_header_lines: 20
-    source: github:emcd/python-project-common@docs-1#documentation/common
 instructions_target: .auxiliary/instructions
 languages:
 - python
 - rust
-project_bundle_name: python-foundation
 project_name: python-project-common
-provide_instructions: true
 support_local_models: true
