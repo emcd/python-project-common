@@ -7,6 +7,19 @@ _answers_file: .auxiliary/configuration/copier-answers.yaml
 _subdirectory: template
 _templates_suffix: .jinja
 
+_message_after_copy: |
+    Project created from the python-project-common template.
+
+    Next: read the update runbook at
+    https://github.com/emcd/python-project-common/blob/master/documentation/applying-template-updates.md
+    for the update procedure you will use later.
+
+_message_after_update: |
+    Template update rendered. Read the update runbook at
+    https://github.com/emcd/python-project-common/blob/master/documentation/applying-template-updates.md
+    before committing: review conflicts first, then re-verify hooks
+    and tests.
+
 project_name:
     type: str
     help: Project directory or Git repository name
