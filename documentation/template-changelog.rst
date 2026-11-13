@@ -28,8 +28,21 @@ These release notes summarize changes to the Copier template and generated
 projects.
 
 
-Copier Template 1.63.8 (2026-11-12)
+Copier Template 1.64.0 (2026-11-13)
 ===================================
+
+Enhancements
+------------
+
+- Publish a template update runbook:
+  ``documentation/applying-template-updates.md`` covers the standard
+  update procedure, principles, checklists, retired-content handling,
+  and rollback. Copier now prints post-copy and post-update banners
+  pointing at the published guide.
+
+
+Copier Template 1.63.8 (2026-11-12)
+=====================================
 
 Repairs
 -------
