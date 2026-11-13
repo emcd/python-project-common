@@ -24,9 +24,9 @@
 from . import imports as __
 
 
-ComparisonResult: __.typx.TypeAlias = bool | __.types.NotImplementedType
-NominativeArguments: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
-PositionalArguments: __.typx.TypeAlias = __.cabc.Sequence[ __.typx.Any ]
+type ComparisonResult = bool | __.types.NotImplementedType
+type NominativeArguments = __.cabc.Mapping[ str, __.typx.Any ]
+type PositionalArguments = __.cabc.Sequence[ __.typx.Any ]
 
 
 package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]

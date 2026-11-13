@@ -24,8 +24,8 @@
 from . import __
 
 
-TrackConfiguration: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
-TrackMap: __.typx.TypeAlias = __.immut.Dictionary[ str, __.typx.Any ]
+type TrackConfiguration = __.cabc.Mapping[ str, __.typx.Any ]
+type TrackMap = __.immut.Dictionary[ str, __.typx.Any ]
 
 
 _VALID_SELECTORS: tuple[ str, ... ] = (
