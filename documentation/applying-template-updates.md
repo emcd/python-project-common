@@ -112,7 +112,13 @@ validators). Review each proposed deletion: accept template
 retirements, keep project-owned content. If a hook fails on duplicate
 keys after an update, treat it as a stale copy of a moved or
 reformatted key until proven otherwise — delete the stale copy so the
-file matches a fresh template render.
+file matches a fresh template render. If instead a hook fails on valid
+new syntax (for example `check-ast` reporting `SyntaxError` on a `type`
+statement the baseline supports), suspect a stale hook environment, not
+the code: pre-commit caches per-hook interpreters, and an old cache can
+parse with an interpreter older than the baseline. Refresh with
+`pre-commit clean` and re-run; do not pin `language_version` to an
+interpreter dev machines lack.
 
 ## Rollback
 
