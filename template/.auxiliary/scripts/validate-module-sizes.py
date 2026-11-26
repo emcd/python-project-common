@@ -3,7 +3,11 @@
 
 Restores the Pylint C0302 (max-module-lines) enforcement lost in the
 Pylint-to-Ruff migration. Modules exceeding the limit must be split
-into subpackages following the classcore hub pattern.
+into a same-named subpackage that preserves the original interface:
+move the module contents into the package directory and re-export
+the public names from its __init__.py. See the subpackage pattern
+in the Python architecture guide:
+https://emcd.github.io/documentation-common/v1/sphinx-html/common/architecture-python.html#the-subpackage-pattern
 """
 
 import sys as _sys
@@ -38,8 +42,13 @@ def main( ) -> None:
         return
     for path, count in oversize:
         print(
-            f'{path}: {count} lines exceeds {_LIMIT}-line limit. '
-            f'Split into a subpackage.' )
+            f'{path}: {count} lines exceeds the {_LIMIT}-line limit. '
+            f'Split it into a same-named subpackage, re-exporting '
+            f'the public names from __init__.py so imports keep '
+            f'working: '
+            f'https://emcd.github.io/documentation-common/v1/'
+            f'sphinx-html/common/architecture-python.html'
+            f'#the-subpackage-pattern' )
     _sys.exit( 1 )
 
 
